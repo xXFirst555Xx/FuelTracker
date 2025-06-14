@@ -24,6 +24,8 @@ class StorageService:
         if engine is not None:
             self.engine = engine
         else:
+            db_path = Path(db_path)
+            db_path.parent.mkdir(parents=True, exist_ok=True)
             self.engine = create_engine(f"sqlite:///{db_path}", echo=False)
 
         SQLModel.metadata.create_all(
