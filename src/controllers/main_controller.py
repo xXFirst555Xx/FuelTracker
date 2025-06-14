@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtCore import Qt
 from pathlib import Path
+import os
 
 from ..models import FuelEntry, Vehicle
 from ..services import ReportService, StorageService
@@ -61,7 +62,9 @@ class MainController:
         app = QApplication.instance()
         if not app:
             return
-        css_path = Path(__file__).resolve().parents[1] / "assets" / "qss" / "theme.qss"
+        theme = os.getenv("FT_THEME", "light").lower()
+        base = Path(__file__).resolve().parents[1] / "assets" / "qss"
+        css_path = base / ("theme_dark.qss" if theme == "dark" else "theme.qss")
         if css_path.exists():
             app.setStyleSheet(css_path.read_text(encoding="utf-8"))
 

@@ -1,16 +1,16 @@
-/* Light theme ------------------------------------------------------------- */
+/* Dark theme -------------------------------------------------------------- */
 * {
     font-family: "Prompt", "Segoe UI", sans-serif;
     font-size: 11pt;
-    color: #222222;
+    color: #EEEEEE;
 }
 
 QMainWindow {
-    background: #FAFAFA;
+    background: #121212;
 }
 
 QDialog {
-    background: #FFFFFF;
+    background: #1E1E1E;
 }
 
 QPushButton {
@@ -27,31 +27,32 @@ QPushButton:pressed {
 }
 
 QLineEdit, QComboBox {
-    background: #FFFFFF;
-    border: 1px solid #BDBDBD;
+    background: #1E1E1E;
+    color: #EEEEEE;
+    border: 1px solid #555555;
     border-radius: 4px;
     padding: 4px;
 }
 QLineEdit:focus, QComboBox:focus {
-    border-color: #2962FF;
+    border-color: #82B1FF;
 }
 
 QLabel {
-    color: #333333;
+    color: #EEEEEE;
 }
 
-/* Sidebar QListWidget */
 QListWidget {
-    background: #FFFFFF;
+    background: #1E1E1E;
     border: none;
 }
 QListWidget::item {
     padding: 12px 16px;
+    color: #EEEEEE;
 }
 QListWidget::item:selected {
-    background: #E3F2FD;
-    color: #2962FF;
-    border-left: 4px solid #2962FF;
+    background: #003c8f;
+    color: #82B1FF;
+    border-left: 4px solid #82B1FF;
 }
 
 /* ------------------------------------------------------------------------- */
