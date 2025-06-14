@@ -15,7 +15,11 @@ from pathlib import Path
 
 from ..models import FuelEntry, Vehicle
 from ..services import ReportService, StorageService
-from .. import resources_rc  # Qt resource initialization
+try:
+    from .. import resources_rc  # type: ignore  # Qt resource initialization
+except Exception as exc:  # pragma: no cover - icon resources optional
+    resources_rc = None
+    print("⚠ Feather icon resources not available:", exc)
 from ..views import (
     load_ui,
     load_add_entry_dialog,
@@ -72,10 +76,18 @@ class MainController:
         if not hasattr(self.window, "sidebarList"):
             return
         icons = ["home", "plus-square", "bar-chart-2", "settings"]
+        missing = False
         for idx, name in enumerate(icons):
             item = self.window.sidebarList.item(idx)
-            if item:
-                item.setIcon(QIcon(f":/icons/{name}.svg"))
+            if not item:
+                continue
+            icon = QIcon(f":/icons/{name}.svg")
+            if icon.isNull():
+                missing = True
+            else:
+                item.setIcon(icon)
+        if missing:
+            print("⚠ Feather icons missing; sidebar will use text labels")
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
