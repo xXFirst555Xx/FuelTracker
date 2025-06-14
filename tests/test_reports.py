@@ -2,7 +2,7 @@ from datetime import date
 import pytest
 from src.models import FuelEntry
 from src.services import ReportService
-
+from fpdf import FPDF
 
 def test_calc_overall_stats_empty(in_memory_storage):
     service = ReportService(in_memory_storage)
@@ -147,3 +147,30 @@ def test_export_pdf(tmp_path, in_memory_storage):
     service.export_pdf(date(2024, 5, 1), 1, pdf_path)
     assert pdf_path.exists()
     assert pdf_path.stat().st_size > 0
+
+
+def test_export_pdf_cleanup_on_error(tmp_path, in_memory_storage, monkeypatch):
+    storage = in_memory_storage
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 5, 1),
+            vehicle_id=1,
+            odo_before=0,
+            odo_after=100,
+            amount_spent=50,
+            liters=20,
+        )
+    )
+    service = ReportService(storage)
+    pdf_path = tmp_path / "report.pdf"
+
+    def fail_output(self, *args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(FPDF, "output", fail_output)
+
+    with pytest.raises(RuntimeError):
+        service.export_pdf(date(2024, 5, 1), 1, pdf_path)
+
+    chart_file = pdf_path.with_suffix(".png")
+    assert not chart_file.exists()
