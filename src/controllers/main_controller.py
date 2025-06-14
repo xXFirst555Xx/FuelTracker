@@ -26,8 +26,9 @@ from ..views import (
 class MainController:
     """Glue code between Qt widgets and application services."""
 
-    def __init__(self, db_path: str | Path = "fuel.db") -> None:
+    def __init__(self, db_path: str | Path = "fuel.db", dark_mode: bool | None = None) -> None:
         self.storage = StorageService(db_path)
+        self._dark_mode = dark_mode
         self.report_service = ReportService(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self._selected_vehicle_id = None
@@ -62,11 +63,22 @@ class MainController:
         app = QApplication.instance()
         if not app:
             return
-        theme = os.getenv("FT_THEME", "light").lower()
-        base = Path(__file__).resolve().parents[1] / "assets" / "qss"
-        css_path = base / ("theme_dark.qss" if theme == "dark" else "theme.qss")
-        if css_path.exists():
-            app.setStyleSheet(css_path.read_text(encoding="utf-8"))
+        if self._dark_mode is None:
+            theme = os.getenv("FT_THEME", "light").lower()
+        else:
+            theme = "dark" if self._dark_mode else "light"
+
+        base = Path(__file__).resolve().parents[2] / "assets" / "qss"
+        if theme == "dark":
+            candidates = ["dark.qss", "theme_dark.qss"]
+        else:
+            candidates = ["theme.qss"]
+
+        for name in candidates:
+            css_path = base / name
+            if css_path.exists():
+                app.setStyleSheet(css_path.read_text(encoding="utf-8"))
+                break
 
 
     def _switch_page(self, index: int) -> None:

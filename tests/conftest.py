@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
+from PySide6.QtWidgets import QApplication
 
 # Ensure 'src' package is on the Python path
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,3 +24,14 @@ def in_memory_storage():
     SQLModel.metadata.create_all(engine)
     storage = StorageService(engine=engine)
     return storage
+
+
+@pytest.fixture(scope="session")
+def qapp():
+    """Provide a QApplication instance for UI tests."""
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    return app
