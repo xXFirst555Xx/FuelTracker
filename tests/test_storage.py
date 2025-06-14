@@ -74,3 +74,9 @@ def test_entry_crud_and_filter(in_memory_storage: StorageService) -> None:
     entries_after = storage.get_entries_by_vehicle(vehicle.id)
     assert len(entries_after) == 1
     assert entries_after[0].id == e1.id
+
+
+def test_init_nested_path(tmp_path) -> None:
+    nested_path = tmp_path / "nested" / "dir" / "fuel.db"
+    service = StorageService(db_path=nested_path)
+    assert nested_path.exists()
