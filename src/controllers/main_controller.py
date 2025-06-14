@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtCore import Qt
+from pathlib import Path
 
 from ..models import FuelEntry, Vehicle
 from ..services import ReportService, StorageService
@@ -23,8 +24,8 @@ from ..views import (
 class MainController:
     """Glue code between Qt widgets and application services."""
 
-    def __init__(self) -> None:
-        self.storage = StorageService()
+    def __init__(self, db_path: str | Path = "fuel.db") -> None:
+        self.storage = StorageService(db_path)
         self.report_service = ReportService(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self._selected_vehicle_id = None
