@@ -4,13 +4,28 @@ from pathlib import Path
 from typing import List, Optional
 
 from sqlmodel import Session, SQLModel, create_engine, select
+from sqlalchemy.engine import Engine
 
 from ..models import FuelEntry, Vehicle
 
 
 class StorageService:
-    def __init__(self, db_path: str | Path = "fuel.db") -> None:
-        self.engine = create_engine(f"sqlite:///{db_path}", echo=False)
+    def __init__(self, db_path: str | Path = "fuel.db", engine: Engine | None = None) -> None:
+        """Initialize the storage service.
+
+        Parameters
+        ----------
+        db_path: str | Path
+            Path to the SQLite database file. Ignored if ``engine`` is provided.
+        engine: Engine | None
+            Optional pre-configured SQLAlchemy engine to use.
+        """
+
+        if engine is not None:
+            self.engine = engine
+        else:
+            self.engine = create_engine(f"sqlite:///{db_path}", echo=False)
+
         SQLModel.metadata.create_all(
             self.engine, tables=[FuelEntry.__table__, Vehicle.__table__]
         )
