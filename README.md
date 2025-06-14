@@ -1,6 +1,9 @@
 # FuelTracker
 
 Simple application demonstrating MVC architecture for tracking fuel usage.
+
+This edition removes Feather icon resources completely. The sidebar now shows
+Thai text labels only.
 ## Screenshot
 
 ![Screenshot](assets/ui.png)

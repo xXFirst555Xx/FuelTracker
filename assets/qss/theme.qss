@@ -1,6 +1,7 @@
 /* Minimal modern theme */
 * {
-    font-family: "Segoe UI", "Prompt", sans-serif;
+    font-family: "Prompt", "Segoe UI", sans-serif;
+    font-size: 11pt;
 }
 QMainWindow {
     background: #FAFAFA;
@@ -17,11 +18,16 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #1c4fd9;
 }
+/* Sidebar QListWidget */
 QListWidget {
     background: #FFFFFF;
     border: none;
 }
+QListWidget::item {
+    padding: 12px 16px;
+}
 QListWidget::item:selected {
     background: #E3F2FD;
     color: #2962FF;
+    border-left: 4px solid #2962FF;
 }

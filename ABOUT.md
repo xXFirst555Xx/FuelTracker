@@ -1,3 +1,5 @@
 # About
 
-FuelTracker uses [Feather Icons](https://feathericons.com) which are distributed under the MIT License.
+FuelTracker is a demo application for tracking fuel usage.
+This version removes the Feather icon set entirely and displays
+sidebar navigation with plain Thai text labels.
