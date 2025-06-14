@@ -21,8 +21,10 @@ pip install -r requirements.txt
 ## Running
 
 ```bash
-python src/app.py
+python -m src.app
 ```
+
+Launching via `-m` ensures the package is recognized, preventing the relative-import error.
 
 ## Building
 
