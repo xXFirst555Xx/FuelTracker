@@ -18,8 +18,26 @@ def test_calc_overall_stats_empty(in_memory_storage):
 
 def test_calc_overall_stats(in_memory_storage):
     storage = in_memory_storage
-    storage.add_entry(FuelEntry(entry_date=date.today(), distance=100.0, liters=10.0, price=20.0))
-    storage.add_entry(FuelEntry(entry_date=date.today(), distance=200.0, liters=20.0, price=40.0))
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=1,
+            odo_before=0.0,
+            odo_after=100.0,
+            amount_spent=20.0,
+            liters=10.0,
+        )
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=1,
+            odo_before=100.0,
+            odo_after=300.0,
+            amount_spent=40.0,
+            liters=20.0,
+        )
+    )
     service = ReportService(storage)
     stats = service.calc_overall_stats()
     assert stats["total_distance"] == 300.0
@@ -31,7 +49,16 @@ def test_calc_overall_stats(in_memory_storage):
 
 def test_generate_report_output(capsys, in_memory_storage):
     storage = in_memory_storage
-    storage.add_entry(FuelEntry(entry_date=date.today(), distance=50.0, liters=5.0, price=10.0))
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=1,
+            odo_before=0.0,
+            odo_after=50.0,
+            amount_spent=10.0,
+            liters=5.0,
+        )
+    )
     service = ReportService(storage)
     service.generate_report()
     captured = capsys.readouterr()

@@ -4,24 +4,45 @@ from src.models import FuelEntry
 
 
 def test_calc_metrics_full():
-    entry = FuelEntry(entry_date=date.today(), distance=100.0, liters=50.0, price=100.0)
+    entry = FuelEntry(
+        entry_date=date.today(),
+        vehicle_id=1,
+        odo_before=1000.0,
+        odo_after=1100.0,
+        amount_spent=50.0,
+        liters=10.0,
+    )
     metrics = entry.calc_metrics()
-    assert metrics["price_per_liter"] == pytest.approx(2.0)
-    assert metrics["liters_per_100km"] == pytest.approx(50.0)
-    assert metrics["cost_per_km"] == pytest.approx(1.0)
+    assert metrics["distance"] == pytest.approx(100.0)
+    assert metrics["cost_per_km"] == pytest.approx(0.5)
+    assert metrics["fuel_efficiency_km_l"] == pytest.approx(10.0)
 
 
-def test_calc_metrics_zero_liters():
-    entry = FuelEntry(entry_date=date.today(), distance=100.0, liters=0.0, price=100.0)
+def test_calc_metrics_no_liters():
+    entry = FuelEntry(
+        entry_date=date.today(),
+        vehicle_id=1,
+        odo_before=200.0,
+        odo_after=300.0,
+        amount_spent=25.0,
+        liters=None,
+    )
     metrics = entry.calc_metrics()
-    assert metrics["price_per_liter"] is None
-    assert metrics["liters_per_100km"] == pytest.approx(0.0)
-    assert metrics["cost_per_km"] == pytest.approx(1.0)
+    assert metrics["distance"] == pytest.approx(100.0)
+    assert metrics["cost_per_km"] == pytest.approx(0.25)
+    assert metrics["fuel_efficiency_km_l"] is None
 
 
 def test_calc_metrics_zero_distance():
-    entry = FuelEntry(entry_date=date.today(), distance=0.0, liters=10.0, price=20.0)
+    entry = FuelEntry(
+        entry_date=date.today(),
+        vehicle_id=1,
+        odo_before=500.0,
+        odo_after=500.0,
+        amount_spent=20.0,
+        liters=10.0,
+    )
     metrics = entry.calc_metrics()
-    assert metrics["price_per_liter"] == pytest.approx(2.0)
-    assert metrics["liters_per_100km"] is None
+    assert metrics["distance"] == pytest.approx(0.0)
     assert metrics["cost_per_km"] is None
+    assert metrics["fuel_efficiency_km_l"] is None
