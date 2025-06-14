@@ -158,7 +158,8 @@ class ReportService:
         if chart_file and chart_file.exists():
             pdf.image(str(chart_file), w=170)
 
-        pdf.output(str(path))
-
-        if chart_file and chart_file.exists():
-            chart_file.unlink()
+        try:
+            pdf.output(str(path))
+        finally:
+            if chart_file and chart_file.exists():
+                chart_file.unlink()
