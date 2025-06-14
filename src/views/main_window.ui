@@ -2,31 +2,63 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>400</width>
-    <height>300</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Fuel Tracker</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="mainLayout">
     <item>
-     <widget class="QPushButton" name="addButton">
-      <property name="text">
-       <string>Add Entry</string>
-      </property>
-     </widget>
+     <layout class="QVBoxLayout" name="sidebarLayout">
+      <item>
+       <widget class="QPushButton" name="addVehicleButton">
+        <property name="text">
+         <string>Add Vehicle</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListWidget" name="vehicleListWidget"/>
+      </item>
+     </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="reportButton">
-      <property name="text">
-       <string>Generate Report</string>
-      </property>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <widget class="QWidget" name="entryPage">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QPushButton" name="addEntryButton">
+          <property name="text">
+           <string>Add Entry</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="reportButton">
+          <property name="text">
+           <string>Show Report</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="reportPage">
+       <layout class="QVBoxLayout" name="reportLayout">
+        <item>
+         <widget class="QLabel" name="reportLabel">
+          <property name="text">
+           <string>Report</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="backButton">
+          <property name="text">
+           <string>Back</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
