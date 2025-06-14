@@ -1,0 +1,9 @@
+PySide6>=6.7
+SQLModel>=0.0.16
+pandas
+fpdf2
+matplotlib
+python-dotenv
+pytest
+pytest-cov
+pyinstaller
