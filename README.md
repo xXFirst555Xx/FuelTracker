@@ -28,6 +28,13 @@ the application will load variables from this file using
 [`python-dotenv`](https://pypi.org/project/python-dotenv/).
 The `DB_PATH` variable controls where the SQLite database is stored.
 
+## Themes
+
+Two Qt stylesheets are included: `theme.qss` (light) and `theme_dark.qss`.
+Set the `FT_THEME` environment variable to `dark` to enable the dark palette.
+Omitting the variable or setting it to `light` uses the default light theme.
+Simply restart the application after changing the variable to switch themes.
+
 ## Running
 
 ```bash
