@@ -1,0 +1,27 @@
+/* Minimal modern theme */
+* {
+    font-family: "Segoe UI", "Prompt", sans-serif;
+}
+QMainWindow {
+    background: #FAFAFA;
+}
+QPushButton {
+    background-color: #2962FF;
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #3d74ff;
+}
+QPushButton:pressed {
+    background-color: #1c4fd9;
+}
+QListWidget {
+    background: #FFFFFF;
+    border: none;
+}
+QListWidget::item:selected {
+    background: #E3F2FD;
+    color: #2962FF;
+}
