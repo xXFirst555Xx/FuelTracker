@@ -3,61 +3,98 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowTitle">
-   <string>Fuel Tracker</string>
+   <string>FuelTracker – ตัวติดตามการใช้น้ำมัน</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="mainLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <layout class="QVBoxLayout" name="sidebarLayout">
-      <item>
-       <widget class="QPushButton" name="addVehicleButton">
+     <widget class="QSplitter" name="mainSplitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QListWidget" name="sidebarList">
+       <property name="minimumWidth">
+        <number>200</number>
+       </property>
+       <property name="maximumWidth">
+        <number>200</number>
+       </property>
+       <item>
         <property name="text">
-         <string>Add Vehicle</string>
+         <string>หน้าหลัก</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QListWidget" name="vehicleListWidget"/>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QStackedWidget" name="stackedWidget">
-      <widget class="QWidget" name="entryPage">
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QPushButton" name="addEntryButton">
-          <property name="text">
-           <string>Add Entry</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="reportButton">
-          <property name="text">
-           <string>Show Report</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       </item>
+       <item>
+        <property name="text">
+         <string>บันทึกใหม่</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>รายงาน</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ตั้งค่า</string>
+        </property>
+       </item>
       </widget>
-      <widget class="QWidget" name="reportPage">
-       <layout class="QVBoxLayout" name="reportLayout">
-        <item>
-         <widget class="QLabel" name="reportLabel">
-          <property name="text">
-           <string>Report</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="backButton">
-          <property name="text">
-           <string>Back</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+      <widget class="QStackedWidget" name="stackedWidget">
+       <widget class="QWidget" name="dashboardPage">
+        <layout class="QVBoxLayout" name="dashboardLayout">
+         <item>
+          <widget class="QPushButton" name="addVehicleButton">
+           <property name="text">
+            <string>เพิ่มยานพาหนะ</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="vehicleListWidget"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="addEntryPage">
+        <layout class="QVBoxLayout" name="entryLayout">
+         <item>
+          <widget class="QPushButton" name="addEntryButton">
+           <property name="text">
+            <string>เพิ่มข้อมูลการเติมน้ำมัน</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="reportsPage">
+        <layout class="QVBoxLayout" name="reportsLayout">
+         <item>
+          <widget class="QLabel" name="reportLabel">
+           <property name="text">
+            <string>รายงาน</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="backButton">
+           <property name="text">
+            <string>ย้อนกลับ</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="settingsPage">
+        <layout class="QVBoxLayout" name="settingsLayout">
+         <item>
+          <widget class="QLabel" name="settingsLabel">
+           <property name="text">
+            <string>การตั้งค่า</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>

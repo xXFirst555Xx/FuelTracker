@@ -3,18 +3,18 @@
  <class>AddEntryDialog</class>
  <widget class="QDialog" name="AddEntryDialog">
   <property name="windowTitle">
-   <string>Add Entry</string>
+   <string>บันทึกการเติมน้ำมัน</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QFormLayout" name="formLayout">
+    <layout class="QFormLayout" name="formLayout">
      <property name="fieldGrowthPolicy">
       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="dateLabel">
        <property name="text">
-        <string>Date</string>
+        <string>วันที่</string>
        </property>
       </widget>
      </item>
@@ -28,7 +28,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="vehicleLabel">
        <property name="text">
-        <string>Vehicle</string>
+        <string>รถ</string>
        </property>
       </widget>
      </item>
@@ -36,46 +36,62 @@
       <widget class="QComboBox" name="vehicleComboBox"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="odoBeforeLabel">
+      <widget class="QLabel" name="amountLabel">
        <property name="text">
-        <string>Odometer Before</string>
+        <string>เงิน (บาท)</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="odoBeforeEdit"/>
+      <widget class="QLineEdit" name="amountEdit">
+       <property name="toolTip">
+        <string>กรอกจำนวนเงินที่จ่าย</string>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="odoAfterLabel">
+      <widget class="QLabel" name="odoBeforeLabel">
        <property name="text">
-        <string>Odometer After</string>
+        <string>เลขไมล์ก่อน</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QLineEdit" name="odoAfterEdit"/>
+      <widget class="QLineEdit" name="odoBeforeEdit">
+       <property name="toolTip">
+        <string>เลขไมล์ก่อนเติม</string>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="amountLabel">
+      <widget class="QLabel" name="odoAfterLabel">
        <property name="text">
-        <string>Amount Spent</string>
+        <string>เลขไมล์หลัง</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="amountEdit"/>
+      <widget class="QLineEdit" name="odoAfterEdit">
+       <property name="toolTip">
+        <string>เลขไมล์หลังเติม</string>
+       </property>
+      </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="litersLabel">
        <property name="text">
-        <string>Liters</string>
+        <string>ลิตร (ไม่บังคับ)</string>
        </property>
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QLineEdit" name="litersEdit"/>
+      <widget class="QLineEdit" name="litersEdit">
+       <property name="toolTip">
+        <string>ระบุปริมาณเชื้อเพลิงถ้ามี</string>
+       </property>
+      </widget>
      </item>
-    </widget>
+    </layout>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
