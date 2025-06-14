@@ -12,9 +12,16 @@ class ReportService:
 
     def calc_overall_stats(self) -> Dict[str, float]:
         entries = self.storage.list_entries()
-        total_distance = sum(e.distance for e in entries)
-        total_liters = sum(e.liters for e in entries)
-        total_price = sum(e.price for e in entries)
+        total_distance = 0.0
+        total_liters = 0.0
+        total_price = 0.0
+
+        for e in entries:
+            distance = e.odo_after - e.odo_before
+            total_distance += distance
+            if e.liters:
+                total_liters += e.liters
+            total_price += e.amount_spent
 
         avg_consumption = (total_liters / total_distance * 100) if total_distance else 0.0
         cost_per_km = (total_price / total_distance) if total_distance else 0.0

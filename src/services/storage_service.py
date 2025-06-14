@@ -5,7 +5,7 @@ from typing import List
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from ..models import FuelEntry
+from ..models import FuelEntry, Vehicle
 
 
 class StorageService:
@@ -18,7 +18,17 @@ class StorageService:
             session.add(entry)
             session.commit()
 
+    def add_vehicle(self, vehicle: Vehicle) -> None:
+        with Session(self.engine) as session:
+            session.add(vehicle)
+            session.commit()
+
     def list_entries(self) -> List[FuelEntry]:
         with Session(self.engine) as session:
             statement = select(FuelEntry)
+            return list(session.exec(statement))
+
+    def list_vehicles(self) -> List[Vehicle]:
+        with Session(self.engine) as session:
+            statement = select(Vehicle)
             return list(session.exec(statement))
