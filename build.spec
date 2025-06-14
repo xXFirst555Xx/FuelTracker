@@ -30,6 +30,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('src/views/*.ui', 'views'),
+        ('src/views/dialogs/*.ui', 'views/dialogs'),
         ('assets/*', 'assets'),
     ],
     hiddenimports=[],
