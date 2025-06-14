@@ -26,7 +26,13 @@ class StorageService:
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
-            self.engine = create_engine(f"sqlite:///{db_path}", echo=False)
+            # ``check_same_thread`` must be disabled so a single engine can be
+            # shared across threads during testing and normal application use.
+            self.engine = create_engine(
+                f"sqlite:///{db_path}",
+                echo=False,
+                connect_args={"check_same_thread": False},
+            )
 
         SQLModel.metadata.create_all(
             self.engine, tables=[FuelEntry.__table__, Vehicle.__table__]
