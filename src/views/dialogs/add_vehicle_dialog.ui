@@ -3,7 +3,7 @@
  <class>AddVehicleDialog</class>
  <widget class="QDialog" name="AddVehicleDialog">
   <property name="windowTitle">
-   <string>Add Vehicle</string>
+   <string>เพิ่มยานพาหนะ</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -14,7 +14,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="nameLabel">
        <property name="text">
-        <string>Name</string>
+        <string>ชื่อ</string>
        </property>
       </widget>
      </item>
@@ -24,7 +24,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="typeLabel">
        <property name="text">
-        <string>Type</string>
+        <string>ประเภท</string>
        </property>
       </widget>
      </item>
@@ -34,7 +34,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="plateLabel">
        <property name="text">
-        <string>License Plate</string>
+        <string>ป้ายทะเบียน</string>
        </property>
       </widget>
      </item>
@@ -44,7 +44,7 @@
      <item row="3" column="0">
       <widget class="QLabel" name="capacityLabel">
        <property name="text">
-        <string>Tank Capacity (L)</string>
+        <string>ความจุถัง (ลิตร)</string>
        </property>
       </widget>
      </item>
