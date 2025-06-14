@@ -35,3 +35,5 @@ The resulting binary will be placed in the `dist` directory. Set the `SIGNTOOL` 
 
 The PyInstaller spec embeds the application icon as a base64 string so no separate
 binary asset needs to be stored in the repository.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
