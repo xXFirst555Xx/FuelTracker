@@ -21,6 +21,5 @@ def in_memory_storage():
         poolclass=StaticPool,
     )
     SQLModel.metadata.create_all(engine)
-    storage = StorageService(":memory:")
-    storage.engine = engine
+    storage = StorageService(engine=engine)
     return storage
