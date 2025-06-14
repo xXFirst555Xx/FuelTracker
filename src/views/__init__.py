@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QDialog
 from PySide6.QtCore import QFile
 
 BASE_PATH = Path(__file__).resolve().parent
@@ -20,3 +20,13 @@ def load_ui(name: str) -> QWidget:
     widget = loader.load(file)
     file.close()
     return widget
+
+
+def load_add_entry_dialog() -> QDialog:
+    """Convenience loader for the Add Entry dialog."""
+    return load_ui("dialogs/add_entry_dialog")  # type: ignore
+
+
+def load_add_vehicle_dialog() -> QDialog:
+    """Convenience loader for the Add Vehicle dialog."""
+    return load_ui("dialogs/add_vehicle_dialog")  # type: ignore
