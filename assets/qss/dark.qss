@@ -1,0 +1,58 @@
+/* Extra dark theme ------------------------------------------------------- */
+* {
+    font-family: "Prompt", "Segoe UI", sans-serif;
+    font-size: 11pt;
+    color: #DDDDDD;
+}
+
+QMainWindow {
+    background: #101010;
+}
+
+QDialog {
+    background: #181818;
+}
+
+QPushButton {
+    background-color: #2962FF;
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #3d74ff;
+}
+QPushButton:pressed {
+    background-color: #1c4fd9;
+}
+
+QLineEdit, QComboBox {
+    background: #181818;
+    color: #DDDDDD;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 4px;
+}
+QLineEdit:focus, QComboBox:focus {
+    border-color: #82B1FF;
+}
+
+QLabel {
+    color: #DDDDDD;
+}
+
+QListWidget {
+    background: #181818;
+    border: none;
+}
+QListWidget::item {
+    padding: 12px 16px;
+    color: #DDDDDD;
+}
+QListWidget::item:selected {
+    background: #003c8f;
+    color: #82B1FF;
+    border-left: 4px solid #82B1FF;
+}
+
+/* ------------------------------------------------------------------------- */
