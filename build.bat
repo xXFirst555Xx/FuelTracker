@@ -1,8 +1,6 @@
 @echo off
 setlocal
 
-python tools\fetch_icons.py
-python tools\compile_resources.py
 
 REM Build FuelTracker with PyInstaller
 pyinstaller --noconfirm --clean --onefile build.spec

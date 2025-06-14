@@ -17,7 +17,16 @@
         <number>200</number>
        </property>
        <property name="maximumWidth">
-        <number>200</number>
+        <number>240</number>
+       </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideRight</enum>
+       </property>
+       <property name="font">
+        <font>
+         <family>Prompt, Segoe UI, sans-serif</family>
+         <pointsize>11</pointsize>
+        </font>
        </property>
        <item>
         <property name="text">

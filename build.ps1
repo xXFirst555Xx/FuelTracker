@@ -1,7 +1,5 @@
 $ErrorActionPreference = 'Stop'
 
-python tools/fetch_icons.py
-python tools/compile_resources.py
 
 pyinstaller --noconfirm --clean --onefile build.spec
 

@@ -9,17 +9,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QDialog,
 )
-from PySide6.QtGui import QDoubleValidator, QIcon
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtCore import Qt
 from pathlib import Path
 
 from ..models import FuelEntry, Vehicle
 from ..services import ReportService, StorageService
-try:
-    from .. import resources_rc  # type: ignore  # Qt resource initialization
-except Exception as exc:  # pragma: no cover - icon resources optional
-    resources_rc = None
-    print("⚠ Feather icon resources not available:", exc)
 from ..views import (
     load_ui,
     load_add_entry_dialog,
@@ -36,7 +31,6 @@ class MainController:
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self._selected_vehicle_id = None
         self._setup_style()
-        self._setup_sidebar_icons()
         self._connect_signals()
         self.refresh_vehicle_list()
         if hasattr(self.window, "stackedWidget"):
@@ -71,23 +65,6 @@ class MainController:
         if css_path.exists():
             app.setStyleSheet(css_path.read_text(encoding="utf-8"))
 
-    def _setup_sidebar_icons(self) -> None:
-        """Assign Feather icons to sidebar items."""
-        if not hasattr(self.window, "sidebarList"):
-            return
-        icons = ["home", "plus-square", "bar-chart-2", "settings"]
-        missing = False
-        for idx, name in enumerate(icons):
-            item = self.window.sidebarList.item(idx)
-            if not item:
-                continue
-            icon = QIcon(f":/icons/{name}.svg")
-            if icon.isNull():
-                missing = True
-            else:
-                item.setIcon(icon)
-        if missing:
-            print("⚠ Feather icons missing; sidebar will use text labels")
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
