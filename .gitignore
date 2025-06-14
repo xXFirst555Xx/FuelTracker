@@ -1,8 +1,33 @@
+# Python bytecode and caches
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+
+# Virtual environments
 .venv/
+venv/
+env/
+ENV/
+
+# Environment files
+.env
+
+# Package metadata
+*.egg-info/
+
+# IDE settings
 .idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
 .DS_Store
-dist/
+
+# PyInstaller build artifacts
 build/
+dist/
+*.spec
+
+# Misc
 assets/ui.png
