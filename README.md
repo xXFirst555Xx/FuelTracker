@@ -18,6 +18,13 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Configuration
+
+Copy `.env.example` to `.env` and adjust the values as needed. At runtime
+the application will load variables from this file using
+[`python-dotenv`](https://pypi.org/project/python-dotenv/).
+The `DB_PATH` variable controls where the SQLite database is stored.
+
 ## Running
 
 ```bash
