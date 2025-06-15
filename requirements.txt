@@ -3,8 +3,9 @@ SQLModel>=0.0.16
 pandas
 fpdf2
 matplotlib
-reportlab
 python-dotenv
+reportlab
+win10toast
 pytest
 pytest-cov
 pyinstaller
