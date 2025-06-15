@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication
 # Ensure 'src' package is on the Python path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
 
 from src.services import StorageService  # noqa: E402
 

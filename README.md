@@ -54,7 +54,7 @@ pip install -r requirements.txt
 ## การใช้งาน
 
 ```bash
-python -m src.app
+python -m fueltracker
 ```
 
 การรันด้วย `-m` ช่วยให้โมดูลถูกค้นพบถูกต้อง ป้องกันปัญหาการนำเข้าแบบ relative

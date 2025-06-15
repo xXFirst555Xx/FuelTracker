@@ -3,7 +3,7 @@ setlocal
 
 
 REM Build FuelTracker with PyInstaller
-pyinstaller --noconfirm --clean --onefile build.spec
+pyinstaller --noconfirm --clean --onefile fueltracker.spec
 
 REM Optionally sign the binary if SIGNTOOL and CERT_PATH are set
 IF NOT "%SIGNTOOL%"=="" IF NOT "%CERT_PATH%"=="" (

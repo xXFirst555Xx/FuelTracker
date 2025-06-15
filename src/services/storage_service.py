@@ -6,11 +6,14 @@ from typing import List, Optional
 import os
 import shutil
 from getpass import getpass
+
 try:
     from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore
+
     _SQLCIPHER_AVAILABLE = True
 except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missing
     import sqlite3 as sqlcipher
+
     _SQLCIPHER_AVAILABLE = False
 
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -76,7 +79,9 @@ class StorageService:
             db_path.parent.mkdir(parents=True, exist_ok=True)
             if password is None:
                 if _SQLCIPHER_AVAILABLE:
-                    password = os.environ.get("FT_DB_PASSWORD") or getpass("DB password: ")
+                    password = os.environ.get("FT_DB_PASSWORD") or getpass(
+                        "DB password: "
+                    )
                 else:
                     password = ""
             self._password = password
