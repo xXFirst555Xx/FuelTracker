@@ -3,7 +3,7 @@
 from pathlib import Path
 import sys
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QWidget, QDialog
+from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox
 from PySide6.QtCore import QFile, QDir
 
 BASE_PATH = Path(__file__).resolve().parent
@@ -33,6 +33,13 @@ def load_ui(name: str) -> QWidget:
     loader = QUiLoader()
     widget = loader.load(file)
     file.close()
+
+    if isinstance(widget, QDialog):
+        button_box = widget.findChild(QDialogButtonBox, "buttonBox")
+        if button_box is not None:
+            button_box.accepted.connect(widget.accept)
+            button_box.rejected.connect(widget.reject)
+
     return widget
 
 
