@@ -5,6 +5,9 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import requests
+
+# Reusable HTTP session for API requests
+_HTTP_SESSION = requests.Session()
 from sqlmodel import Session, select
 
 from ..models import FuelPrice
@@ -40,7 +43,9 @@ def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
 
 
 def fetch_latest(session: Session, station: str = "ptt") -> None:
-    resp = requests.get(f"{API_BASE}/latest")
+    """Fetch and store the latest fuel prices from the Thai Oil API."""
+
+    resp = _HTTP_SESSION.get(f"{API_BASE}/latest", timeout=5)
     resp.raise_for_status()
     data = resp.json()
     day = date.fromisoformat(data["date"])

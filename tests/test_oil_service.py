@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtWidgets import QDialog
 from sqlmodel import Session, select
 
-import requests
+from src.services import oil_service
 
 from src.services.oil_service import fetch_latest
 from src.models import FuelPrice, Vehicle
@@ -31,7 +31,7 @@ SAMPLE = {
 }
 
 
-def fake_get(url: str):
+def fake_get(url: str, timeout: int | None = None):
     class R:
         def raise_for_status(self) -> None:
             pass
@@ -43,7 +43,7 @@ def fake_get(url: str):
 
 
 def test_fetch_latest(monkeypatch, in_memory_storage):
-    monkeypatch.setattr(requests, "get", fake_get)
+    monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
     with Session(in_memory_storage.engine) as s:
         fetch_latest(s)
         rows = s.exec(select(FuelPrice)).all()
