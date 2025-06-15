@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
     QListWidgetItem,
+    QListWidget,
     QMessageBox,
     QDialog,
     QDockWidget,
@@ -44,6 +45,15 @@ class StatsDock(QDockWidget):
         self.setWidget(widget)
 
 
+class MaintenanceDock(QDockWidget):
+    """Dockable widget listing upcoming maintenance tasks."""
+
+    def __init__(self, parent: QMainWindow | None = None) -> None:
+        super().__init__("Maintenance", parent)
+        self.list_widget = QListWidget()
+        self.setWidget(self.list_widget)
+
+
 class MainController(QObject):
     entry_changed = Signal()
     """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
@@ -65,8 +75,11 @@ class MainController(QObject):
         self.cloud_path: Path | None = None
         self._selected_vehicle_id = None
         self.stats_dock = StatsDock(self.window)
+        self.maint_dock = MaintenanceDock(self.window)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
+        self.window.addDockWidget(Qt.RightDockWidgetArea, self.maint_dock)
         self.entry_changed.connect(self._update_stats_panel)
+        self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
         self._connect_signals()
         self.refresh_vehicle_list()
@@ -139,6 +152,46 @@ class MainController(QObject):
                     )
                 except Exception:
                     pass
+
+    def _refresh_maintenance_panel(self) -> None:
+        vid = self._selected_vehicle_id
+        if vid is None:
+            self.maint_dock.list_widget.clear()
+            return
+        tasks = self.storage.list_maintenances(vid)
+        self.maint_dock.list_widget.clear()
+        entries = self.storage.get_entries_by_vehicle(vid)
+        current_odo = (
+            entries[-1].odo_after
+            if entries and entries[-1].odo_after is not None
+            else None
+        )
+        for t in tasks:
+            text = t.name
+            if not t.is_done:
+                if t.due_odo is not None:
+                    text += f" @ {t.due_odo}km"
+                if t.due_date is not None:
+                    text += f" by {t.due_date}"
+            item = QListWidgetItem(text)
+            if (
+                current_odo is not None
+                and t.due_odo is not None
+                and current_odo >= t.due_odo
+            ) or (t.due_date is not None and t.due_date <= date.today()):
+                item.setForeground(Qt.red)
+            self.maint_dock.list_widget.addItem(item)
+
+    def _notify_due_maintenance(self, vehicle_id: int, odo: float, when: date) -> None:
+        due = self.storage.list_due_maintenances(vehicle_id, odo=odo, date_=when)
+        if not due:
+            return
+        names = ", ".join(d.name for d in due)
+        QMessageBox.information(
+            self.window,
+            "Maintenance due",
+            f"Tasks due: {names}",
+        )
 
     def _setup_style(self) -> None:
         """Apply light or dark palette automatically."""
@@ -241,6 +294,10 @@ class MainController(QObject):
                 QMessageBox.warning(dialog, "การตรวจสอบ", str(exc))
                 return
             self._check_budget(entry.vehicle_id, entry.entry_date)
+            if entry.odo_after is not None:
+                self._notify_due_maintenance(
+                    entry.vehicle_id, entry.odo_after, entry.entry_date
+                )
 
     # ------------------------------------------------------------------
     # Page switching
