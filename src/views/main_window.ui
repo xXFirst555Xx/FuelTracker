@@ -80,6 +80,20 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="editVehicleButton">
+           <property name="text">
+            <string>แก้ไขยานพาหนะ</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="deleteVehicleButton">
+           <property name="text">
+            <string>ลบยานพาหนะ</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QListWidget" name="vehicleListWidget"/>
          </item>
         </layout>
