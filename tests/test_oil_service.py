@@ -11,22 +11,27 @@ from src.controllers.main_controller import MainController
 from src.views import load_add_entry_dialog
 
 SAMPLE = {
-    "date": "2024-06-01",
-    "ptt": {
-        "g95": {"name_th": "G95", "price": 50},
-        "g91": {"name_th": "G91", "price": 48},
-        "e20": {"name_th": "E20", "price": 44},
-        "e85": {"name_th": "E85", "price": 40},
-        "diesel": {"name_th": "Diesel", "price": 32},
-        "b7": {"name_th": "B7", "price": 33},
-    },
-    "bcp": {
-        "g95": {"name_th": "G95", "price": 49},
-        "g91": {"name_th": "G91", "price": 47},
-        "e20": {"name_th": "E20", "price": 43},
-        "e85": {"name_th": "E85", "price": 39},
-        "diesel": {"name_th": "Diesel", "price": 31},
-        "b7": {"name_th": "B7", "price": 32},
+    "status": "success",
+    "response": {
+        "date": "1 มิถุนายน 2567",
+        "stations": {
+            "ptt": {
+                "g95": {"name_th": "G95", "price": 50},
+                "g91": {"name_th": "G91", "price": 48},
+                "e20": {"name_th": "E20", "price": 44},
+                "e85": {"name_th": "E85", "price": 40},
+                "diesel": {"name_th": "Diesel", "price": 32},
+                "b7": {"name_th": "B7", "price": 33},
+            },
+            "bcp": {
+                "g95": {"name_th": "G95", "price": 49},
+                "g91": {"name_th": "G91", "price": 47},
+                "e20": {"name_th": "E20", "price": 43},
+                "e85": {"name_th": "E85", "price": 39},
+                "diesel": {"name_th": "Diesel", "price": 31},
+                "b7": {"name_th": "B7", "price": 32},
+            },
+        },
     },
 }
 

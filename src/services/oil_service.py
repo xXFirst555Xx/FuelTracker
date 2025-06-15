@@ -14,11 +14,34 @@ from ..models import FuelPrice
 
 API_BASE = "https://api.chnwt.dev/thai-oil-api"
 
+# Mapping of Thai month names to numbers for API date parsing
+_THAI_MONTHS = {
+    "มกราคม": 1,
+    "กุมภาพันธ์": 2,
+    "มีนาคม": 3,
+    "เมษายน": 4,
+    "พฤษภาคม": 5,
+    "มิถุนายน": 6,
+    "กรกฎาคม": 7,
+    "สิงหาคม": 8,
+    "กันยายน": 9,
+    "ตุลาคม": 10,
+    "พฤศจิกายน": 11,
+    "ธันวาคม": 12,
+}
+
+
+def _parse_thai_date(text: str) -> date:
+    """Convert Thai date string from the API to :class:`~datetime.date`."""
+
+    day_str, month_name, year_str = text.split()
+    year = int(year_str) - 543  # convert Buddhist Era to Gregorian
+    month = _THAI_MONTHS[month_name]
+    return date(year, month, int(day_str))
+
 
 def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
     for station, fuels in data.items():
-        if station == "date":
-            continue
         for ftype, info in fuels.items():
             exists = session.exec(
                 select(FuelPrice).where(
@@ -48,8 +71,10 @@ def fetch_latest(session: Session, station: str = "ptt") -> None:
     resp = _HTTP_SESSION.get(f"{API_BASE}/latest", timeout=5)
     resp.raise_for_status()
     data = resp.json()
-    day = date.fromisoformat(data["date"])
-    _parse_prices(data, day, session)
+    thai_date = data["response"]["date"]
+    day = _parse_thai_date(thai_date)
+    stations = data["response"]["stations"]
+    _parse_prices(stations, day, session)
 
 
 def get_price(
