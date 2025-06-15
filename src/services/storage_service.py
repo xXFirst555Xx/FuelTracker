@@ -1,4 +1,4 @@
-"""Service handling persistence of entries using SQLModel."""
+"""บริการจัดการการบันทึกข้อมูลด้วย SQLModel"""
 
 from pathlib import Path
 from typing import List, Optional
@@ -11,14 +11,14 @@ from ..models import FuelEntry, Vehicle
 
 class StorageService:
     def __init__(self, db_path: str | Path = "fuel.db", engine: Engine | None = None) -> None:
-        """Initialize the storage service.
+        """เริ่มต้นบริการจัดเก็บข้อมูล
 
-        Parameters
+        พารามิเตอร์
         ----------
         db_path: str | Path
-            Path to the SQLite database file. Ignored if ``engine`` is provided.
+            เส้นทางไปยังไฟล์ฐานข้อมูล SQLite ไม่ใช้ถ้ากำหนด ``engine``
         engine: Engine | None
-            Optional pre-configured SQLAlchemy engine to use.
+            ออบเจ็กต์ Engine ที่เตรียมไว้ (ไม่บังคับ)
         """
 
         if engine is not None:
@@ -61,19 +61,19 @@ class StorageService:
             return list(session.exec(statement))
 
     def get_vehicle(self, vehicle_id: int) -> Optional[Vehicle]:
-        """Retrieve a vehicle by its identifier."""
+        """ดึงข้อมูลยานพาหนะตามรหัส"""
         with Session(self.engine) as session:
             return session.get(Vehicle, vehicle_id)
 
     def update_vehicle(self, vehicle: Vehicle) -> None:
-        """Persist changes to an existing vehicle."""
+        """บันทึกการแก้ไขข้อมูลยานพาหนะ"""
         with Session(self.engine) as session:
             session.add(vehicle)
             session.commit()
             session.refresh(vehicle)
 
     def delete_vehicle(self, vehicle_id: int) -> None:
-        """Delete a vehicle from the database."""
+        """ลบยานพาหนะออกจากฐานข้อมูล"""
         with Session(self.engine) as session:
             obj = session.get(Vehicle, vehicle_id)
             if obj:
@@ -81,25 +81,25 @@ class StorageService:
                 session.commit()
 
     def get_entries_by_vehicle(self, vehicle_id: int) -> List[FuelEntry]:
-        """Return all entries associated with a vehicle."""
+        """คืนรายการทั้งหมดของยานพาหนะที่กำหนด"""
         with Session(self.engine) as session:
             statement = select(FuelEntry).where(FuelEntry.vehicle_id == vehicle_id)
             return list(session.exec(statement))
 
     def get_entry(self, entry_id: int) -> Optional[FuelEntry]:
-        """Retrieve a fuel entry by id."""
+        """ดึงข้อมูลการเติมน้ำมันตามรหัส"""
         with Session(self.engine) as session:
             return session.get(FuelEntry, entry_id)
 
     def update_entry(self, entry: FuelEntry) -> None:
-        """Persist changes to a fuel entry."""
+        """บันทึกการแก้ไขข้อมูลการเติมน้ำมัน"""
         with Session(self.engine) as session:
             session.add(entry)
             session.commit()
             session.refresh(entry)
 
     def delete_entry(self, entry_id: int) -> None:
-        """Remove a fuel entry from the database."""
+        """ลบข้อมูลการเติมน้ำมันออกจากฐานข้อมูล"""
         with Session(self.engine) as session:
             obj = session.get(FuelEntry, entry_id)
             if obj:

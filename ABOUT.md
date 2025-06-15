@@ -1,4 +1,4 @@
-# About
+# เกี่ยวกับ
 
-FuelTracker is a demo application for tracking fuel usage.
-This version uses the Feather icon set in the sidebar alongside Thai text labels.
+FuelTracker เป็นแอปตัวอย่างสำหรับติดตามการใช้น้ำมัน
+เวอร์ชันนี้ใช้ชุดไอคอน Feather ในแถบด้านข้างพร้อมป้ายภาษาไทย

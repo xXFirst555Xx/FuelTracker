@@ -1,66 +1,57 @@
 # FuelTracker
 
-Simple application demonstrating MVC architecture for tracking fuel usage.
+โปรแกรมตัวอย่างแสดงโครงสร้าง MVC สำหรับบันทึกการใช้น้ำมัน
 
-The sidebar uses Feather icons alongside Thai text labels.
+แถบด้านข้างใช้ชุดไอคอน Feather พร้อมข้อความภาษาไทย
 
-## Requirements
+## ความต้องการ
 
 - Python 3.12
-- Packages listed in `requirements.txt`
+- ติดตั้งแพ็กเกจที่ระบุใน `requirements.txt`
 
-## Setup
+## การติดตั้ง
 
 ```bash
 python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Configuration
+## การตั้งค่า
 
-Copy `.env.example` to `.env` and adjust the values as needed. At runtime
-the application will load variables from this file using
-[`python-dotenv`](https://pypi.org/project/python-dotenv/).
-The `DB_PATH` variable controls where the SQLite database is stored.
+คัดลอก `.env.example` ไปเป็น `.env` แล้วปรับค่าตามต้องการ
+เมื่อรันโปรแกรม ตัวแปรจะถูกโหลดจากไฟล์นี้ผ่าน [`python-dotenv`](https://pypi.org/project/python-dotenv/) ตัวแปร `DB_PATH` ใช้กำหนดตำแหน่งฐานข้อมูล SQLite
 
-## Themes
+## ธีม
 
-Three Qt stylesheets are included: `theme.qss` (light), `theme_dark.qss` (dark)
-and `modern.qss`.
-Set the `FT_THEME` environment variable or pass `--theme` on the command line
-to select a theme. Valid values are `light`, `dark` and `modern`. Omitting the
-argument uses the default light theme. Simply restart the application after
-changing the variable or option to switch themes.
+มีไฟล์สไตล์ชีต Qt ให้เลือกสามแบบได้แก่ `theme.qss` (โทนสว่าง) `theme_dark.qss` (โทนมืด) และ `modern.qss`
+ตั้งค่าตัวแปร `FT_THEME` หรือระบุ `--theme` ขณะเรียกโปรแกรมเพื่อเลือกธีม
+ค่าที่รองรับคือ `light`, `dark` และ `modern` หากไม่ระบุจะใช้ธีมสว่างเป็นค่าเริ่มต้น
+เพียงเริ่มโปรแกรมใหม่หลังเปลี่ยนค่าเพื่อให้ธีมใหม่ทำงาน
 
-## Fonts
+## แบบอักษร
 
-The application now relies on widely available fonts rather than the
-previously required **Prompt** typeface. The QSS themes default to
-`Tahoma`, `Arial` and finally the system sans-serif. No additional font
-installation is needed.
+โปรแกรมใช้แบบอักษรที่มีใช้งานทั่วไป จึงไม่จำเป็นต้องติดตั้งแบบอักษร **Prompt**
+ไฟล์ QSS ตั้งค่าเริ่มต้นเป็น `Tahoma`, `Arial` และแบบ sans-serif ของระบบ
+หากต้องการใช้แบบอักษรอื่น ให้วางไฟล์ `.ttf` ไว้ใน `assets/fonts` แล้วปรับ `font-family` ในไฟล์ QSS
 
-To use custom fonts, place the `.ttf` files under `assets/fonts` and
-update the `font-family` rules in the QSS files.
-
-## Running
+## การใช้งาน
 
 ```bash
 python -m src.app
 ```
 
-Launching via `-m` ensures the package is recognized, preventing the relative-import error.
+การรันด้วย `-m` ช่วยให้โมดูลถูกค้นพบถูกต้อง ป้องกันปัญหาการนำเข้าแบบ relative
 
-## Building
+## การสร้างแพ็กเกจ
 
-Run the included batch script on Windows to create a standalone executable:
+รันสคริปต์ batch ที่ให้มาบน Windows เพื่อสร้างไฟล์ปฏิบัติการ
 
 ```bat
 build.bat
 ```
 
-The resulting binary will be placed in the `dist` directory. Set the `SIGNTOOL` and `CERT_PATH` environment variables to automatically sign the executable.
+ไฟล์ที่ได้จะอยู่ในไดเรกทอรี `dist` กำหนดตัวแปร `SIGNTOOL` และ `CERT_PATH` เพื่อเซ็นไฟล์อัตโนมัติ
 
-The PyInstaller spec embeds the application icon as a base64 string so no separate
-binary asset needs to be stored in the repository.
+สเปกของ PyInstaller ฝังไอคอนโปรแกรมเป็น base64 จึงไม่ต้องเก็บไฟล์แยกในคลัง
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+โปรเจ็กต์นี้ใช้สัญญาอนุญาต MIT ดูรายละเอียดได้ที่ไฟล์ [LICENSE](LICENSE)

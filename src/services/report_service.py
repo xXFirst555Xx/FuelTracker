@@ -1,4 +1,4 @@
-"""Service for generating simple reports based on stored entries."""
+"""บริการสร้างรายงานอย่างง่ายจากข้อมูลที่บันทึกไว้"""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ class ReportService:
     # ------------------------------------------------------------------
 
     def _filter_entries(self, month: date, vehicle_id: int) -> List[FuelEntry]:
-        """Return entries for a given vehicle within the specified month."""
+        """ดึงรายการของยานพาหนะในเดือนที่กำหนด"""
         entries = self.storage.get_entries_by_vehicle(vehicle_id)
         return [
             e
@@ -62,7 +62,7 @@ class ReportService:
         ]
 
     def _monthly_df(self, month: date, vehicle_id: int) -> pd.DataFrame:
-        """Return a pandas DataFrame for the month's entries."""
+        """คืนค่า DataFrame ของรายการประจำเดือน"""
         entries = self._filter_entries(month, vehicle_id)
         data = []
         for e in entries:
@@ -95,7 +95,7 @@ class ReportService:
         return df
 
     def get_monthly_stats(self, month: date, vehicle_id: int) -> Dict[str, float]:
-        """Compute totals and averages for a given month and vehicle."""
+        """คำนวณผลรวมและค่าเฉลี่ยของเดือนสำหรับยานพาหนะ"""
         df = self._monthly_df(month, vehicle_id)
         if df.empty:
             return {
@@ -121,12 +121,12 @@ class ReportService:
         }
 
     def export_csv(self, month: date, vehicle_id: int, path: Path) -> None:
-        """Export monthly entries to a CSV file."""
+        """ส่งออกรายการประจำเดือนเป็นไฟล์ CSV"""
         df = self._monthly_df(month, vehicle_id)
         df.to_csv(path, index=False)
 
     def export_pdf(self, month: date, vehicle_id: int, path: Path) -> None:
-        """Generate a PDF report with a simple chart."""
+        """สร้างรายงาน PDF พร้อมกราฟอย่างง่าย"""
         df = self._monthly_df(month, vehicle_id)
 
         # Create a line chart showing distance and amount spent per day

@@ -1,1 +1,1 @@
-"""FuelTracker package root."""
+"""รากแพ็กเกจของ FuelTracker"""

@@ -1,4 +1,4 @@
-"""Main controller connecting the GUI with services and models."""
+"""คอนโทรลเลอร์หลักเชื่อมต่อ GUI กับบริการและโมเดล"""
 
 from datetime import date
 
@@ -24,7 +24,7 @@ from ..views import (
 
 
 class MainController:
-    """Glue code between Qt widgets and application services."""
+    """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
 
     def __init__(
         self,
@@ -65,7 +65,7 @@ class MainController:
             self._selected_vehicle_id = None
 
     def _setup_style(self) -> None:
-        """Load application QSS theme."""
+        """โหลดธีม QSS ของแอป"""
         app = QApplication.instance()
         if not app:
             return
