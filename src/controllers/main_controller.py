@@ -18,15 +18,19 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QDoubleValidator, QUndoStack
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
+
 try:
     from win10toast import ToastNotifier
 except Exception:  # pragma: no cover - optional on non-Windows systems
+
     class ToastNotifier:
         def __init__(self, *_, **__):
             pass
 
         def show_toast(self, *_, **__):
             pass
+
+
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -37,7 +41,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from ..models import FuelEntry, Vehicle, FuelPrice
-from ..services import ReportService, StorageService
+from ..services import ReportService, StorageService, Exporter
 from ..services.oil_service import fetch_latest, get_price
 from .undo_commands import (
     AddEntryCommand,
@@ -52,6 +56,7 @@ from ..views import (
     load_add_vehicle_dialog,
     load_about_dialog,
 )
+from ..views.reports_page import ReportsPage
 
 DEFAULT_STATION = "ptt"
 DEFAULT_FUEL_TYPE = "e20"
@@ -111,6 +116,7 @@ class MainController(QObject):
         self._dark_mode = dark_mode
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
+        self.exporter = Exporter(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
@@ -122,6 +128,12 @@ class MainController(QObject):
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.maint_dock)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.oil_dock)
+        if hasattr(self.window, "reportsContainer"):
+            self.reports_page = ReportsPage(self.report_service, self.window)
+            self.window.reportsLayout.replaceWidget(
+                self.window.reportsContainer, self.reports_page
+            )
+            self.window.reportsContainer.deleteLater()
         self.thread_pool = QThreadPool.globalInstance()
         self._price_timer_started = False
         self.window.installEventFilter(self)
@@ -151,6 +163,9 @@ class MainController(QObject):
             w.vehicleListWidget.itemSelectionChanged.connect(self._vehicle_changed)
         if hasattr(w, "sidebarList"):
             w.sidebarList.currentRowChanged.connect(self._switch_page)
+        if hasattr(self, "reports_page"):
+            self.reports_page.export_button.clicked.connect(self.export_report)
+            self.reports_page.refresh_button.clicked.connect(self.reports_page.refresh)
 
     def _vehicle_changed(self) -> None:
         item = self.window.vehicleListWidget.currentItem()
@@ -273,7 +288,9 @@ class MainController(QObject):
         qss_file = qss_map.get(theme)
         if qss_file:
             try:
-                qss_path = Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
+                qss_path = (
+                    Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
+                )
                 with open(qss_path, "r", encoding="utf-8") as fh:
                     app.setStyleSheet(fh.read())
             except OSError:
@@ -361,11 +378,14 @@ class MainController(QObject):
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกรายการ")
             return
         vid = item.data(Qt.UserRole)
-        if QMessageBox.question(
-            self.window,
-            "ยืนยัน",
-            "ลบยานพาหนะที่เลือกหรือไม่?",
-        ) != QMessageBox.StandardButton.Yes:
+        if (
+            QMessageBox.question(
+                self.window,
+                "ยืนยัน",
+                "ลบยานพาหนะที่เลือกหรือไม่?",
+            )
+            != QMessageBox.StandardButton.Yes
+        ):
             return
         cmd = DeleteVehicleCommand(self.storage, vid)
         self.undo_stack.push(cmd)
@@ -441,6 +461,13 @@ class MainController(QObject):
         dialog = load_about_dialog()
         dialog.exec()
 
+    def export_report(self) -> None:
+        out_csv = Path("report.csv")
+        out_pdf = Path("report.pdf")
+        today = date.today()
+        self.exporter.monthly_csv(today.month, today.year, out_csv)
+        self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+
     # ------------------------------------------------------------------
     # Page switching
     # ------------------------------------------------------------------
@@ -453,10 +480,8 @@ class MainController(QObject):
             self.window.stackedWidget.setCurrentWidget(self.window.addEntryPage)
 
     def show_report_page(self) -> None:
-        stats = self.report_service.calc_overall_stats()
-        if hasattr(self.window, "reportLabel"):
-            text = "\n".join(f"{k}: {v}" for k, v in stats.items())
-            self.window.reportLabel.setText(text)
+        if hasattr(self, "reports_page"):
+            self.reports_page.refresh()
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.reportsPage)
 

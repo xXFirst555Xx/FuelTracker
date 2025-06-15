@@ -132,11 +132,7 @@
        <widget class="QWidget" name="reportsPage">
         <layout class="QVBoxLayout" name="reportsLayout">
          <item>
-          <widget class="QLabel" name="reportLabel">
-           <property name="text">
-            <string>รายงาน</string>
-           </property>
-          </widget>
+          <widget class="QWidget" name="reportsContainer"/>
          </item>
          <item>
           <widget class="QPushButton" name="backButton">

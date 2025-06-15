@@ -10,8 +10,9 @@ import pandas as pd
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 
-from ..models import FuelEntry
+from ..models import FuelEntry, Vehicle
 from .storage_service import StorageService
+from ..constants import FUEL_TYPE_TH
 
 
 class ReportService:
@@ -69,17 +70,26 @@ class ReportService:
     def _monthly_df(self, month: date, vehicle_id: int) -> pd.DataFrame:
         """คืนค่า DataFrame ของรายการประจำเดือน"""
         entries = self._filter_entries(month, vehicle_id)
+        vehicles: Dict[int, Vehicle] = {}
         data = []
         for e in entries:
+            if e.vehicle_id not in vehicles:
+                vehicles[e.vehicle_id] = self.storage.get_vehicle(e.vehicle_id)  # type: ignore[assignment]
+            v = vehicles[e.vehicle_id]
             dist = None if e.odo_after is None else e.odo_after - e.odo_before
+            kmpl = dist / e.liters if dist and e.liters else None
+            cpk = e.amount_spent / dist if dist and e.amount_spent else None
             data.append(
                 {
                     "date": e.entry_date,
-                    "odo_before": e.odo_before,
-                    "odo_after": e.odo_after,
+                    "vehicle": v.name if v else "",
+                    "vehicle_type": v.vehicle_type if v else "",
+                    "fuel_type": FUEL_TYPE_TH.get(e.fuel_type or "", e.fuel_type or ""),
                     "distance": dist,
                     "liters": e.liters,
                     "amount_spent": e.amount_spent,
+                    "km_per_l": kmpl,
+                    "thb_per_km": cpk,
                 }
             )
 
@@ -87,11 +97,14 @@ class ReportService:
             return pd.DataFrame(
                 columns=[
                     "date",
-                    "odo_before",
-                    "odo_after",
+                    "vehicle",
+                    "vehicle_type",
+                    "fuel_type",
                     "distance",
                     "liters",
                     "amount_spent",
+                    "km_per_l",
+                    "thb_per_km",
                 ]
             )
 
@@ -170,3 +183,51 @@ class ReportService:
         finally:
             if chart_file and chart_file.exists():
                 chart_file.unlink()
+
+    # ------------------------------------------------------------------
+    # Data helpers for UI charts
+    # ------------------------------------------------------------------
+
+    def last_year_summary(self) -> pd.DataFrame:
+        """Return aggregated data for the last 12 months."""
+        entries = self.storage.list_entries()
+        data = []
+        for e in entries:
+            if e.odo_after is None or e.liters is None:
+                continue
+            dist = e.odo_after - e.odo_before
+            data.append(
+                {
+                    "date": e.entry_date,
+                    "fuel_type": FUEL_TYPE_TH.get(e.fuel_type or "", e.fuel_type or ""),
+                    "distance": dist,
+                    "liters": e.liters,
+                    "amount_spent": e.amount_spent or 0.0,
+                }
+            )
+
+        if not data:
+            return pd.DataFrame(
+                columns=["month", "distance", "liters", "amount_spent", "km_per_l"]
+            )
+
+        df = pd.DataFrame(data)
+        df["month"] = df["date"].dt.to_period("M")
+        grouped = (
+            df.groupby("month")[["distance", "liters", "amount_spent"]]
+            .sum()
+            .sort_index()
+        )
+        grouped["km_per_l"] = grouped["distance"] / grouped["liters"]
+        return grouped.tail(12).reset_index()
+
+    def liters_by_type(self) -> pd.Series:
+        """Aggregate liters by fuel type."""
+        entries = self.storage.list_entries()
+        data: Dict[str, float] = {}
+        for e in entries:
+            if not e.liters:
+                continue
+            key = FUEL_TYPE_TH.get(e.fuel_type or "", e.fuel_type or "")
+            data[key] = data.get(key, 0.0) + e.liters
+        return pd.Series(data)
