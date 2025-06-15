@@ -6,7 +6,9 @@ from src.services import StorageService
 
 def test_incomplete_entry_update(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    vehicle = Vehicle(name="Car", vehicle_type="sedan", license_plate="A", tank_capacity_liters=40)
+    vehicle = Vehicle(
+        name="Car", vehicle_type="sedan", license_plate="A", tank_capacity_liters=40
+    )
     storage.add_vehicle(vehicle)
 
     e1 = FuelEntry(
@@ -15,6 +17,7 @@ def test_incomplete_entry_update(in_memory_storage: StorageService) -> None:
         odo_before=1000.0,
         odo_after=None,
         amount_spent=50.0,
+        liters=5.0,
     )
     storage.add_entry(e1)
 
@@ -25,6 +28,7 @@ def test_incomplete_entry_update(in_memory_storage: StorageService) -> None:
         odo_before=1100.0,
         odo_after=1200.0,
         amount_spent=60.0,
+        liters=6.0,
     )
     storage.add_entry(e2)
 
@@ -34,7 +38,9 @@ def test_incomplete_entry_update(in_memory_storage: StorageService) -> None:
 
 def test_add_incomplete_without_followup(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    vehicle = Vehicle(name="Car", vehicle_type="sedan", license_plate="B", tank_capacity_liters=40)
+    vehicle = Vehicle(
+        name="Car", vehicle_type="sedan", license_plate="B", tank_capacity_liters=40
+    )
     storage.add_vehicle(vehicle)
 
     entry = FuelEntry(
@@ -43,6 +49,7 @@ def test_add_incomplete_without_followup(in_memory_storage: StorageService) -> N
         odo_before=500.0,
         odo_after=None,
         amount_spent=30.0,
+        liters=3.0,
     )
     storage.add_entry(entry)
 
@@ -51,4 +58,3 @@ def test_add_incomplete_without_followup(in_memory_storage: StorageService) -> N
     assert fetched.odo_after is None
     metrics = fetched.calc_metrics()
     assert metrics["distance"] is None
-

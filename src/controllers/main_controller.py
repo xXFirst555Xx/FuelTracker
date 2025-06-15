@@ -8,9 +8,13 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QDialog,
+    QDockWidget,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
 )
 from PySide6.QtGui import QDoubleValidator
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject, Signal
 from pathlib import Path
 import os
 
@@ -23,7 +27,22 @@ from ..views import (
 )
 
 
-class MainController:
+class StatsDock(QDockWidget):
+    """Dockable widget showing live statistics for a vehicle."""
+
+    def __init__(self, parent: QMainWindow | None = None) -> None:
+        super().__init__("Statistics", parent)
+        self.kml_label = QLabel("km/L: -")
+        self.cost_label = QLabel("฿/km: -")
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(self.kml_label)
+        layout.addWidget(self.cost_label)
+        self.setWidget(widget)
+
+
+class MainController(QObject):
+    entry_changed = Signal()
     """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
 
     def __init__(
@@ -32,12 +51,16 @@ class MainController:
         dark_mode: bool | None = None,
         theme: str | None = None,
     ) -> None:
+        super().__init__()
         self.storage = StorageService(db_path)
         self._dark_mode = dark_mode
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self._selected_vehicle_id = None
+        self.stats_dock = StatsDock(self.window)
+        self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
+        self.entry_changed.connect(self._update_stats_panel)
         self._setup_style()
         self._connect_signals()
         self.refresh_vehicle_list()
@@ -63,6 +86,30 @@ class MainController:
             self._selected_vehicle_id = item.data(Qt.UserRole)
         else:
             self._selected_vehicle_id = None
+        self._update_stats_panel()
+
+    def _update_stats_panel(self) -> None:
+        vid = self._selected_vehicle_id
+        if vid is None:
+            self.stats_dock.kml_label.setText("km/L: -")
+            self.stats_dock.cost_label.setText("฿/km: -")
+            return
+        entries = self.storage.get_entries_by_vehicle(vid)
+        total_distance = 0.0
+        total_liters = 0.0
+        total_price = 0.0
+        for e in entries:
+            if e.odo_after is None:
+                continue
+            total_distance += e.odo_after - e.odo_before
+            if e.liters:
+                total_liters += e.liters
+            if e.amount_spent:
+                total_price += e.amount_spent
+        kmpl = total_distance / total_liters if total_liters else 0.0
+        cost = total_price / total_distance if total_distance else 0.0
+        self.stats_dock.kml_label.setText(f"km/L: {kmpl:.2f}")
+        self.stats_dock.cost_label.setText(f"฿/km: {cost:.2f}")
 
     def _setup_style(self) -> None:
         """โหลดธีม QSS ของแอป"""
@@ -178,7 +225,12 @@ class MainController:
             except ValueError:
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
                 return
-            self.storage.add_entry(entry)
+            try:
+                self.storage.add_entry(entry)
+            except ValueError as exc:
+                QMessageBox.warning(dialog, "การตรวจสอบ", str(exc))
+                return
+            self.entry_changed.emit()
 
     # ------------------------------------------------------------------
     # Page switching
@@ -202,3 +254,11 @@ class MainController:
     def show_settings_page(self) -> None:
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.settingsPage)
+
+    # ------------------------------------------------------------------
+    # Data modification helpers
+    # ------------------------------------------------------------------
+
+    def delete_entry(self, entry_id: int) -> None:
+        self.storage.delete_entry(entry_id)
+        self.entry_changed.emit()

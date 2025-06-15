@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fueltracker"
+version = "0.1.0"
+description = "Fuel tracker sample application"
+requires-python = ">=3.12"
+authors = [{name="Example", email="example@example.com"}]
+dependencies = [
+    "PySide6>=6.7",
+    "SQLModel>=0.0.16",
+    "pandas",
+    "fpdf2",
+    "matplotlib",
+    "python-dotenv",
+]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88

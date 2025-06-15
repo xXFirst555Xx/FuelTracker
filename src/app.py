@@ -35,6 +35,7 @@ def main(argv: list[str] | None = None) -> None:
         theme=theme,
     )
     controller.window.show()
+    app.aboutToQuit.connect(controller.storage.auto_backup)
     app.exec()
 
 
