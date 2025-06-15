@@ -25,6 +25,9 @@ class ReportService:
         total_price = 0.0
 
         for e in entries:
+            if e.odo_after is None:
+                total_price += e.amount_spent
+                continue
             distance = e.odo_after - e.odo_before
             total_distance += distance
             if e.liters:
@@ -66,13 +69,13 @@ class ReportService:
         entries = self._filter_entries(month, vehicle_id)
         data = []
         for e in entries:
-            distance = e.odo_after - e.odo_before
+            dist = None if e.odo_after is None else e.odo_after - e.odo_before
             data.append(
                 {
                     "date": e.entry_date,
                     "odo_before": e.odo_before,
                     "odo_after": e.odo_after,
-                    "distance": distance,
+                    "distance": dist,
                     "liters": e.liters,
                     "amount_spent": e.amount_spent,
                 }
@@ -106,7 +109,7 @@ class ReportService:
                 "cost_per_km": 0.0,
             }
 
-        total_distance = float(df["distance"].sum())
+        total_distance = float(df["distance"].fillna(0).sum())
         total_liters = float(df["liters"].fillna(0).sum())
         total_price = float(df["amount_spent"].sum())
         avg_consumption = (total_liters / total_distance * 100) if total_distance else 0.0

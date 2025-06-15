@@ -40,6 +40,21 @@ class StorageService:
 
     def add_entry(self, entry: FuelEntry) -> None:
         with Session(self.engine) as session:
+            # If there is an older entry for the same vehicle without
+            # ``odo_after`` set, fill it with the new ``odo_before`` value.
+            statement = (
+                select(FuelEntry)
+                .where(
+                    FuelEntry.vehicle_id == entry.vehicle_id,
+                    FuelEntry.odo_after.is_(None),
+                )
+                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+            )
+            prev = session.exec(statement).first()
+            if prev is not None:
+                prev.odo_after = entry.odo_before
+                session.add(prev)
+
             session.add(entry)
             session.commit()
             session.refresh(entry)

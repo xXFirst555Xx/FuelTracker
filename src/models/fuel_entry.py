@@ -13,21 +13,25 @@ class FuelEntry(SQLModel, table=True):
     entry_date: date
     vehicle_id: int
     odo_before: float
-    odo_after: float
+    #: Odometer reading after refueling. ``None`` when user didn't provide it.
+    odo_after: Optional[float] = None
     amount_spent: float
     liters: Optional[float] = None
 
     def calc_metrics(self) -> Dict[str, Optional[float]]:
         """คำนวณค่าต่าง ๆ เช่น ระยะทางและประสิทธิภาพ"""
 
-        distance = self.odo_after - self.odo_before
+        if self.odo_after is None:
+            distance = None
+        else:
+            distance = self.odo_after - self.odo_before
         metrics: Dict[str, Optional[float]] = {
             "distance": distance,
             "cost_per_km": None,
             "fuel_efficiency_km_l": None,
         }
 
-        if distance > 0:
+        if distance is not None and distance > 0:
             metrics["cost_per_km"] = self.amount_spent / distance
             if self.liters and self.liters > 0:
                 metrics["fuel_efficiency_km_l"] = distance / self.liters
