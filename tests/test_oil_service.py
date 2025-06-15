@@ -68,9 +68,9 @@ def test_autofill_liters(qapp, monkeypatch, tmp_path):
         "src.controllers.main_controller.get_price", lambda *a, **k: Decimal("50")
     )
 
-    def fake_exec(self: QDialog):
-        self.amountEdit.setText("100")
-        self.amountEdit.editingFinished.emit()
+    def fake_exec():
+        dialog.amountEdit.setText("100")
+        dialog.amountEdit.editingFinished.emit()
         return QDialog.Rejected
 
     monkeypatch.setattr(dialog, "exec", fake_exec)

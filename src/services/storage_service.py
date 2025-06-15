@@ -6,7 +6,12 @@ from typing import List, Optional
 import os
 import shutil
 from getpass import getpass
-from pysqlcipher3 import dbapi2 as sqlcipher
+try:
+    from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore
+    _SQLCIPHER_AVAILABLE = True
+except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missing
+    import sqlite3 as sqlcipher
+    _SQLCIPHER_AVAILABLE = False
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
@@ -22,6 +27,9 @@ def _is_plain_sqlite(path: Path) -> bool:
 
 
 def _migrate_plain_to_encrypted(path: Path, password: str) -> None:
+    if not _SQLCIPHER_AVAILABLE:
+        return
+
     tmp = path.with_suffix(".tmp")
     conn = sqlcipher.connect(str(tmp))
     conn.execute(f"PRAGMA key='{password}';")
@@ -67,15 +75,19 @@ class StorageService:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
             if password is None:
-                password = os.environ.get("FT_DB_PASSWORD") or getpass("DB password: ")
+                if _SQLCIPHER_AVAILABLE:
+                    password = os.environ.get("FT_DB_PASSWORD") or getpass("DB password: ")
+                else:
+                    password = ""
             self._password = password
 
-            if db_path.exists() and _is_plain_sqlite(db_path):
+            if password and db_path.exists() and _is_plain_sqlite(db_path):
                 _migrate_plain_to_encrypted(db_path, password)
 
             def _connect() -> sqlcipher.Connection:
                 raw = sqlcipher.connect(str(db_path))
-                raw.execute(f"PRAGMA key='{password}';")
+                if _SQLCIPHER_AVAILABLE:
+                    raw.execute(f"PRAGMA key='{password}';")
                 return _ConnProxy(raw)
 
             self.engine = create_engine(
