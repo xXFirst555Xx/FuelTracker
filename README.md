@@ -4,6 +4,19 @@
 
 แถบด้านข้างใช้ชุดไอคอน Feather พร้อมข้อความภาษาไทย
 
+## Features
+
+- **Statistics panel** shows kilometres per litre and cost per kilometre. See
+  [USAGE.md](docs/USAGE.md) for details.
+- **Automatic backups** keep up to 30 daily copies under
+  `~/.fueltracker/backups/` (see [USAGE.md](docs/USAGE.md)).
+- **Monthly budget alerts** display a toast notification when the limit is
+  exceeded. Usage in [BUDGET.md](docs/BUDGET.md).
+- **Maintenance scheduler** highlights overdue tasks. Learn more in
+  [MAINTENANCE.md](docs/MAINTENANCE.md).
+- **CSV/PDF exporting** creates monthly reports, described in
+  [EXPORTING.md](docs/EXPORTING.md).
+
 ## ความต้องการ
 
 - Python 3.12
