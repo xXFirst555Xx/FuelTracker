@@ -1,4 +1,3 @@
-import os
 from src.controllers import MainController
 
 

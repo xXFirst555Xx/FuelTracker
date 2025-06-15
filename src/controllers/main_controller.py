@@ -12,14 +12,17 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
+    QUndoStack,
 )
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtCore import Qt, QObject, Signal
+from win10toast import ToastNotifier
 from pathlib import Path
 import os
 
 from ..models import FuelEntry, Vehicle
 from ..services import ReportService, StorageService
+from .undo_commands import AddEntryCommand, DeleteEntryCommand
 from ..views import (
     load_ui,
     load_add_entry_dialog,
@@ -57,6 +60,9 @@ class MainController(QObject):
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
+        self.undo_stack = QUndoStack(self.window)
+        self.sync_enabled = False
+        self.cloud_path: Path | None = None
         self._selected_vehicle_id = None
         self.stats_dock = StatsDock(self.window)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
@@ -111,44 +117,47 @@ class MainController(QObject):
         self.stats_dock.kml_label.setText(f"km/L: {kmpl:.2f}")
         self.stats_dock.cost_label.setText(f"฿/km: {cost:.2f}")
 
+    def _check_budget(self, vehicle_id: int, entry_date: date) -> None:
+        budget = self.storage.get_budget(vehicle_id)
+        if budget is None:
+            return
+        total = self.storage.get_total_spent(
+            vehicle_id, entry_date.year, entry_date.month
+        )
+        if total > budget:
+            QMessageBox.warning(
+                self.window,
+                "Budget exceeded",
+                "This month's fuel spending exceeded the set budget.",
+            )
+            if os.name == "nt":
+                try:
+                    ToastNotifier().show_toast(
+                        "FuelTracker",
+                        "Budget exceeded",
+                        threaded=True,
+                    )
+                except Exception:
+                    pass
+
     def _setup_style(self) -> None:
-        """โหลดธีม QSS ของแอป"""
+        """Apply light or dark palette automatically."""
         app = QApplication.instance()
         if not app:
             return
-        if self._theme_override is not None:
-            theme = self._theme_override
-        elif self._dark_mode is None:
-            theme = None
-        else:
-            theme = "dark" if self._dark_mode else "light"
 
-        if theme is None:
-            args = app.arguments()
-            for i, arg in enumerate(args):
-                if arg.startswith("--theme="):
-                    theme = arg.split("=", 1)[1].lower()
-                    break
-                if arg == "--theme" and i + 1 < len(args):
-                    theme = args[i + 1].lower()
-                    break
+        theme = (self._theme_override or os.getenv("FT_THEME", "system")).lower()
+        if theme == "system":
+            scheme = app.styleHints().colorScheme()
+            theme = "dark" if scheme == Qt.ColorScheme.Dark else "light"
 
-        if theme is None:
-            theme = os.getenv("FT_THEME", "light").lower()
-
-        base = Path(__file__).resolve().parents[2] / "assets" / "qss"
         if theme == "dark":
-            candidates = ["dark.qss", "theme_dark.qss"]
-        elif theme == "modern":
-            candidates = ["modern.qss"]
-        else:
-            candidates = ["theme.qss"]
+            import qdarktheme
 
-        for name in candidates:
-            css_path = base / name
-            if css_path.exists():
-                app.setStyleSheet(css_path.read_text(encoding="utf-8"))
-                break
+            qdarktheme.setup_theme()
+        else:
+            app.setStyle("Fusion")
+            app.setPalette(app.style().standardPalette())
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
@@ -226,11 +235,12 @@ class MainController(QObject):
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
                 return
             try:
-                self.storage.add_entry(entry)
+                cmd = AddEntryCommand(self.storage, entry, self.entry_changed)
+                self.undo_stack.push(cmd)
             except ValueError as exc:
                 QMessageBox.warning(dialog, "การตรวจสอบ", str(exc))
                 return
-            self.entry_changed.emit()
+            self._check_budget(entry.vehicle_id, entry.entry_date)
 
     # ------------------------------------------------------------------
     # Page switching
@@ -260,5 +270,10 @@ class MainController(QObject):
     # ------------------------------------------------------------------
 
     def delete_entry(self, entry_id: int) -> None:
-        self.storage.delete_entry(entry_id)
-        self.entry_changed.emit()
+        cmd = DeleteEntryCommand(self.storage, entry_id, self.entry_changed)
+        self.undo_stack.push(cmd)
+
+    def shutdown(self) -> None:
+        backup = self.storage.auto_backup()
+        if self.sync_enabled and self.cloud_path is not None:
+            self.storage.sync_to_cloud(backup.parent, self.cloud_path)

@@ -8,4 +8,3 @@ def test_sidebar_icons(qapp, tmp_path):
     for i in range(sidebar.count()):
         item = sidebar.item(i)
         assert not item.icon().isNull(), f"Icon missing for item {i}"
-

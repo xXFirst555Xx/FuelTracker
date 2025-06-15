@@ -4,6 +4,7 @@ from src.models import FuelEntry
 from src.services import ReportService
 from fpdf import FPDF
 
+
 def test_calc_overall_stats_empty(in_memory_storage):
     service = ReportService(in_memory_storage)
     stats = service.calc_overall_stats()
