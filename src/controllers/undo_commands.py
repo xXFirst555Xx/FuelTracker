@@ -23,12 +23,22 @@ class AddEntryCommand(QUndoCommand):
         if self.entry.id is not None:
             self.storage.delete_entry(self.entry.id)
         if self.signal is not None:
-            self.signal.emit()
+            try:
+                self.signal.emit()
+            except RuntimeError:
+                pass
 
     def redo(self) -> None:
+        # Recreate entry to ensure a fresh insert when redoing after an undo
+        if self.entry.id is not None:
+            data = self.entry.model_dump(exclude={"id"})
+            self.entry = FuelEntry(**data)
         self.storage.add_entry(self.entry)
         if self.signal is not None:
-            self.signal.emit()
+            try:
+                self.signal.emit()
+            except RuntimeError:
+                pass
 
 
 class DeleteEntryCommand(QUndoCommand):
@@ -45,12 +55,20 @@ class DeleteEntryCommand(QUndoCommand):
 
     def undo(self) -> None:
         if self.entry is not None:
+            data = self.entry.model_dump(exclude={"id"})
+            self.entry = FuelEntry(**data)
             self.storage.add_entry(self.entry)
         if self.signal is not None:
-            self.signal.emit()
+            try:
+                self.signal.emit()
+            except RuntimeError:
+                pass
 
     def redo(self) -> None:
         if self.entry is not None and self.entry.id is not None:
             self.storage.delete_entry(self.entry.id)
         if self.signal is not None:
-            self.signal.emit()
+            try:
+                self.signal.emit()
+            except RuntimeError:
+                pass

@@ -14,12 +14,19 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
-    QUndoStack,
 )
-from PySide6.QtGui import QDoubleValidator
+from PySide6.QtGui import QDoubleValidator, QUndoStack
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
-from win10toast import ToastNotifier
+try:
+    from win10toast import ToastNotifier
+except Exception:  # pragma: no cover - optional on non-Windows systems
+    class ToastNotifier:
+        def __init__(self, *_, **__):
+            pass
+
+        def show_toast(self, *_, **__):
+            pass
 from pathlib import Path
 import os
 from datetime import timedelta
@@ -227,23 +234,37 @@ class MainController(QObject):
         )
 
     def _setup_style(self) -> None:
-        """Apply light or dark palette automatically."""
+        """Apply application stylesheet based on the selected theme."""
         app = QApplication.instance()
         if not app:
             return
 
-        theme = (self._theme_override or os.getenv("FT_THEME", "system")).lower()
+        theme = self._theme_override
+        if theme is None:
+            for arg in app.arguments():
+                if arg.startswith("--theme="):
+                    theme = arg.split("=", 1)[1]
+                    break
+        theme = (theme or os.getenv("FT_THEME", "system")).lower()
+        if self._dark_mode is not None:
+            theme = "dark" if self._dark_mode else "light"
         if theme == "system":
             scheme = app.styleHints().colorScheme()
             theme = "dark" if scheme == Qt.ColorScheme.Dark else "light"
 
-        if theme == "dark":
-            import qdarktheme
-
-            qdarktheme.setup_theme()
-        else:
-            app.setStyle("Fusion")
-            app.setPalette(app.style().standardPalette())
+        qss_map = {
+            "light": "theme.qss",
+            "dark": "theme_dark.qss",
+            "modern": "modern.qss",
+        }
+        qss_file = qss_map.get(theme)
+        if qss_file:
+            try:
+                qss_path = Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
+                with open(qss_path, "r", encoding="utf-8") as fh:
+                    app.setStyleSheet(fh.read())
+            except OSError:
+                pass
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
