@@ -39,7 +39,13 @@ from matplotlib.figure import Figure
 from ..models import FuelEntry, Vehicle, FuelPrice
 from ..services import ReportService, StorageService
 from ..services.oil_service import fetch_latest, get_price
-from .undo_commands import AddEntryCommand, DeleteEntryCommand
+from .undo_commands import (
+    AddEntryCommand,
+    DeleteEntryCommand,
+    AddVehicleCommand,
+    DeleteVehicleCommand,
+    UpdateVehicleCommand,
+)
 from ..views import (
     load_ui,
     load_add_entry_dialog,
@@ -132,6 +138,10 @@ class MainController(QObject):
             w.addEntryButton.clicked.connect(self.open_add_entry_dialog)
         if hasattr(w, "addVehicleButton"):
             w.addVehicleButton.clicked.connect(self.open_add_vehicle_dialog)
+        if hasattr(w, "editVehicleButton"):
+            w.editVehicleButton.clicked.connect(self.open_edit_vehicle_dialog)
+        if hasattr(w, "deleteVehicleButton"):
+            w.deleteVehicleButton.clicked.connect(self.delete_selected_vehicle)
         if hasattr(w, "backButton"):
             w.backButton.clicked.connect(self.show_dashboard)
         if hasattr(w, "vehicleListWidget"):
@@ -308,8 +318,55 @@ class MainController(QObject):
                 license_plate=plate,
                 tank_capacity_liters=float(cap_text),
             )
-            self.storage.add_vehicle(vehicle)
+            cmd = AddVehicleCommand(self.storage, vehicle)
+            self.undo_stack.push(cmd)
             self.refresh_vehicle_list()
+
+    def open_edit_vehicle_dialog(self) -> None:
+        item = self.window.vehicleListWidget.currentItem()
+        if item is None:
+            QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกยานพาหนะ")
+            return
+        vid = item.data(Qt.UserRole)
+        vehicle = self.storage.get_vehicle(vid)
+        if vehicle is None:
+            return
+        before = Vehicle.model_validate(vehicle)
+        dialog = load_add_vehicle_dialog()
+        dialog.setWindowTitle("แก้ไขยานพาหนะ")
+        dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
+        dialog.nameLineEdit.setText(vehicle.name)
+        dialog.typeLineEdit.setText(vehicle.vehicle_type)
+        dialog.plateLineEdit.setText(vehicle.license_plate)
+        dialog.capacityLineEdit.setText(str(vehicle.tank_capacity_liters))
+        if dialog.exec() == QDialog.Accepted:
+            vehicle.name = dialog.nameLineEdit.text().strip()
+            vehicle.vehicle_type = dialog.typeLineEdit.text().strip()
+            vehicle.license_plate = dialog.plateLineEdit.text().strip()
+            try:
+                vehicle.tank_capacity_liters = float(dialog.capacityLineEdit.text())
+            except ValueError:
+                QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
+                return
+            cmd = UpdateVehicleCommand(self.storage, vehicle, before)
+            self.undo_stack.push(cmd)
+            self.refresh_vehicle_list()
+
+    def delete_selected_vehicle(self) -> None:
+        item = self.window.vehicleListWidget.currentItem()
+        if item is None:
+            QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกรายการ")
+            return
+        vid = item.data(Qt.UserRole)
+        if QMessageBox.question(
+            self.window,
+            "ยืนยัน",
+            "ลบยานพาหนะที่เลือกหรือไม่?",
+        ) != QMessageBox.StandardButton.Yes:
+            return
+        cmd = DeleteVehicleCommand(self.storage, vid)
+        self.undo_stack.push(cmd)
+        self.refresh_vehicle_list()
 
     def open_add_entry_dialog(self) -> None:
         if not self.storage.list_vehicles():
@@ -450,6 +507,10 @@ class MainController(QObject):
 
     def delete_entry(self, entry_id: int) -> None:
         cmd = DeleteEntryCommand(self.storage, entry_id, self.entry_changed)
+        self.undo_stack.push(cmd)
+
+    def delete_vehicle(self, vehicle_id: int) -> None:
+        cmd = DeleteVehicleCommand(self.storage, vehicle_id)
         self.undo_stack.push(cmd)
 
     def shutdown(self) -> None:
