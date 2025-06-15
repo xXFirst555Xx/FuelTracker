@@ -1,5 +1,4 @@
 # About
 
 FuelTracker is a demo application for tracking fuel usage.
-This version removes the Feather icon set entirely and displays
-sidebar navigation with plain Thai text labels.
+This version uses the Feather icon set in the sidebar alongside Thai text labels.
