@@ -19,7 +19,11 @@ pip install -r requirements.txt
 ## การตั้งค่า
 
 คัดลอก `.env.example` ไปเป็น `.env` แล้วปรับค่าตามต้องการ
-เมื่อรันโปรแกรม ตัวแปรจะถูกโหลดจากไฟล์นี้ผ่าน [`python-dotenv`](https://pypi.org/project/python-dotenv/) ตัวแปร `DB_PATH` ใช้กำหนดตำแหน่งฐานข้อมูล SQLite
+เมื่อรันโปรแกรม [`python-dotenv`](https://pypi.org/project/python-dotenv/) จะโหลดตัวแปรจากไฟล์นี้ให้โดยอัตโนมัติ
+
+- `DB_PATH` กำหนดตำแหน่งฐานข้อมูล SQLite
+- `FT_THEME` เลือกธีม `light`, `dark` หรือ `modern`
+- `FT_DB_PASSWORD` ตั้งรหัสผ่านเพื่อเปิดใช้ SQLCipher (ปล่อยว่างได้ถ้าไม่ต้องการ)
 
 ## ธีม
 
