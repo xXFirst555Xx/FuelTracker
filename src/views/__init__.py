@@ -3,8 +3,8 @@
 from pathlib import Path
 import sys
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox
-from PySide6.QtCore import QFile, QDir
+from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox, QListWidget
+from PySide6.QtCore import QFile, QDir, Qt
 
 BASE_PATH = Path(__file__).resolve().parent
 
@@ -34,11 +34,18 @@ def load_ui(name: str) -> QWidget:
     widget = loader.load(file)
     file.close()
 
+
     if isinstance(widget, QDialog):
         button_box = widget.findChild(QDialogButtonBox, "buttonBox")
         if button_box is not None:
             button_box.accepted.connect(widget.accept)
             button_box.rejected.connect(widget.reject)
+
+    # Ensure list widget items are selectable
+    for lw in widget.findChildren(QListWidget):
+        for i in range(lw.count()):
+            item = lw.item(i)
+            item.setFlags(item.flags() | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
 
     return widget
 
