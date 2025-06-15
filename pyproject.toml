@@ -16,7 +16,8 @@ dependencies = [
     "matplotlib",
     "python-dotenv",
     "reportlab",
-    "win10toast",
+    "win10toast; sys_platform == 'win32'",
+    "requests",
 ]
 [project.scripts]
 fueltracker = "fueltracker.main:run"
