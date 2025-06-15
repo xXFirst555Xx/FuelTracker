@@ -1,6 +1,6 @@
 /* Modern theme ------------------------------------------------------------ */
 * {
-    font-family: "Prompt", "Segoe UI", sans-serif;
+    font-family: "Tahoma", "Arial", sans-serif;
     font-size: 13pt;
     color: #222222;
 }

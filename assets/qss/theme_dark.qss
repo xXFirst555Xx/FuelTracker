@@ -1,6 +1,6 @@
 /* Dark theme -------------------------------------------------------------- */
 * {
-    font-family: "Prompt", "Segoe UI", sans-serif;
+    font-family: "Tahoma", "Arial", sans-serif;
     font-size: 11pt;
     color: #EEEEEE;
 }
