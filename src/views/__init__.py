@@ -1,11 +1,25 @@
 """Utilities for working with Qt Designer UI files."""
 
 from pathlib import Path
+import sys
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QWidget, QDialog
-from PySide6.QtCore import QFile
+from PySide6.QtCore import QFile, QDir
 
 BASE_PATH = Path(__file__).resolve().parent
+
+
+def asset_path(*parts: str) -> Path:
+    """Return absolute path to an asset file.
+
+    Works both from source and when packaged with PyInstaller.
+    """
+    root = Path(getattr(sys, "_MEIPASS", BASE_PATH.parents[1]))
+    return root.joinpath("assets", *parts)
+
+
+# Allow Qt to resolve ``icons:`` paths inside .ui files.
+QDir.addSearchPath("icons", str(asset_path("icons")))
 
 
 def load_ui(name: str) -> QWidget:

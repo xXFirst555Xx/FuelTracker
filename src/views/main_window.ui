@@ -32,20 +32,40 @@
         <property name="text">
          <string>หน้าหลัก</string>
         </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>icons:home.svg</normaloff>
+         </iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>บันทึกใหม่</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>icons:plus-square.svg</normaloff>
+         </iconset>
         </property>
        </item>
        <item>
         <property name="text">
          <string>รายงาน</string>
         </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>icons:bar-chart-2.svg</normaloff>
+         </iconset>
+        </property>
        </item>
        <item>
         <property name="text">
          <string>ตั้งค่า</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>icons:settings.svg</normaloff>
+         </iconset>
         </property>
        </item>
       </widget>
