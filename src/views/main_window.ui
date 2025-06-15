@@ -77,6 +77,11 @@
            <property name="text">
             <string>เพิ่มยานพาหนะ</string>
            </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:plus-circle.svg</normaloff>
+            </iconset>
+           </property>
           </widget>
          </item>
          <item>
@@ -84,12 +89,22 @@
            <property name="text">
             <string>แก้ไขยานพาหนะ</string>
            </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:edit-2.svg</normaloff>
+            </iconset>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="deleteVehicleButton">
            <property name="text">
             <string>ลบยานพาหนะ</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:trash-2.svg</normaloff>
+            </iconset>
            </property>
           </widget>
          </item>
@@ -104,6 +119,11 @@
           <widget class="QPushButton" name="addEntryButton">
            <property name="text">
             <string>เพิ่มข้อมูลการเติมน้ำมัน</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:plus-circle.svg</normaloff>
+            </iconset>
            </property>
           </widget>
          </item>
@@ -123,6 +143,11 @@
            <property name="text">
             <string>ย้อนกลับ</string>
            </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:arrow-left.svg</normaloff>
+            </iconset>
+           </property>
           </widget>
          </item>
         </layout>
@@ -140,6 +165,11 @@
           <widget class="QPushButton" name="aboutButton">
            <property name="text">
             <string>เกี่ยวกับ</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icons:info.svg</normaloff>
+            </iconset>
            </property>
           </widget>
          </item>
