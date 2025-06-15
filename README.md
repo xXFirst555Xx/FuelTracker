@@ -52,13 +52,7 @@ Launching via `-m` ensures the package is recognized, preventing the relative-im
 
 ## Building
 
-Run the provided scripts to create a standalone executable. On Linux or macOS run:
-
-```bash
-./build.sh
-```
-
-On Windows run either the batch or PowerShell script:
+Run the Windows build script to create a standalone executable. You can use the batch file or the PowerShell version:
 
 ```bat
 build.bat
