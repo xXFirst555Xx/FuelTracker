@@ -11,7 +11,7 @@ from pysqlcipher3 import dbapi2 as sqlcipher
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
 
-from ..models import FuelEntry, Vehicle, Budget, Maintenance
+from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
 
 
@@ -92,6 +92,7 @@ class StorageService:
                 Vehicle.__table__,
                 Budget.__table__,
                 Maintenance.__table__,
+                FuelPrice.__table__,
             ],
         )
 
