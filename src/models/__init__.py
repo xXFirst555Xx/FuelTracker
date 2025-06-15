@@ -2,5 +2,6 @@
 
 from .fuel_entry import FuelEntry
 from .vehicle import Vehicle
+from .budget import Budget
 
-__all__ = ["FuelEntry", "Vehicle"]
+__all__ = ["FuelEntry", "Vehicle", "Budget"]

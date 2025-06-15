@@ -8,7 +8,7 @@ import shutil
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
 
-from ..models import FuelEntry, Vehicle
+from ..models import FuelEntry, Vehicle, Budget
 from .validators import validate_entry
 
 
@@ -42,7 +42,8 @@ class StorageService:
             self._db_path = db_path
 
         SQLModel.metadata.create_all(
-            self.engine, tables=[FuelEntry.__table__, Vehicle.__table__]
+            self.engine,
+            tables=[FuelEntry.__table__, Vehicle.__table__, Budget.__table__],
         )
 
     def add_entry(self, entry: FuelEntry) -> None:
@@ -131,6 +132,42 @@ class StorageService:
                 session.commit()
 
     # ------------------------------------------------------------------
+    # Budget helpers
+    # ------------------------------------------------------------------
+
+    def set_budget(self, vehicle_id: int, amount: float) -> None:
+        """Set monthly budget for a vehicle."""
+        with Session(self.engine) as session:
+            budget = session.exec(
+                select(Budget).where(Budget.vehicle_id == vehicle_id)
+            ).first()
+            if budget is None:
+                budget = Budget(vehicle_id=vehicle_id, amount=amount)
+            else:
+                budget.amount = amount
+            session.add(budget)
+            session.commit()
+
+    def get_budget(self, vehicle_id: int) -> Optional[float]:
+        with Session(self.engine) as session:
+            budget = session.exec(
+                select(Budget.amount).where(Budget.vehicle_id == vehicle_id)
+            ).first()
+            return float(budget) if budget is not None else None
+
+    def get_total_spent(self, vehicle_id: int, year: int, month: int) -> float:
+        with Session(self.engine) as session:
+            statement = select(FuelEntry.amount_spent).where(
+                FuelEntry.vehicle_id == vehicle_id,
+                FuelEntry.entry_date.between(
+                    f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
+                ),
+                FuelEntry.amount_spent.is_not(None),
+            )
+            amounts = [a for a in session.exec(statement) if a is not None]
+            return float(sum(amounts))
+
+    # ------------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------------
 
@@ -161,3 +198,9 @@ class StorageService:
                 old.unlink()
 
         return backup_path
+
+    def sync_to_cloud(self, backup_dir: Path, cloud_dir: Path) -> None:
+        """Copy backup directory to a cloud-synced folder."""
+        cloud_dir.mkdir(parents=True, exist_ok=True)
+        for file in backup_dir.glob("*.db"):
+            shutil.copy2(file, cloud_dir / file.name)

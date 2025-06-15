@@ -15,6 +15,9 @@ dependencies = [
     "fpdf2",
     "matplotlib",
     "python-dotenv",
+    "qdarktheme",
+    "reportlab",
+    "win10toast",
 ]
 
 [tool.black]

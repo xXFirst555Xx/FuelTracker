@@ -34,7 +34,9 @@ class ReportService:
                 total_liters += e.liters
             total_price += e.amount_spent
 
-        avg_consumption = (total_liters / total_distance * 100) if total_distance else 0.0
+        avg_consumption = (
+            (total_liters / total_distance * 100) if total_distance else 0.0
+        )
         cost_per_km = (total_price / total_distance) if total_distance else 0.0
 
         return {
@@ -112,7 +114,9 @@ class ReportService:
         total_distance = float(df["distance"].fillna(0).sum())
         total_liters = float(df["liters"].fillna(0).sum())
         total_price = float(df["amount_spent"].sum())
-        avg_consumption = (total_liters / total_distance * 100) if total_distance else 0.0
+        avg_consumption = (
+            (total_liters / total_distance * 100) if total_distance else 0.0
+        )
         cost_per_km = (total_price / total_distance) if total_distance else 0.0
 
         return {
