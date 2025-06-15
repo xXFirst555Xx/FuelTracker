@@ -4,8 +4,9 @@ pandas
 fpdf2
 matplotlib
 python-dotenv
-reportlab
-win10toast
 pytest
+pytest-qt
 pytest-cov
 pyinstaller
+reportlab
+requests
