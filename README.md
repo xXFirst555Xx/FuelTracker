@@ -52,10 +52,20 @@ Launching via `-m` ensures the package is recognized, preventing the relative-im
 
 ## Building
 
-Run the included batch script on Windows to create a standalone executable:
+Run the provided scripts to create a standalone executable. On Linux or macOS run:
+
+```bash
+./build.sh
+```
+
+On Windows run either the batch or PowerShell script:
 
 ```bat
 build.bat
+```
+
+```powershell
+./build.ps1
 ```
 
 The resulting binary will be placed in the `dist` directory. Set the `SIGNTOOL` and `CERT_PATH` environment variables to automatically sign the executable.
