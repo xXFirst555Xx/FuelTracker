@@ -30,10 +30,12 @@ The `DB_PATH` variable controls where the SQLite database is stored.
 
 ## Themes
 
-Two Qt stylesheets are included: `theme.qss` (light) and `theme_dark.qss`.
-Set the `FT_THEME` environment variable to `dark` to enable the dark palette.
-Omitting the variable or setting it to `light` uses the default light theme.
-Simply restart the application after changing the variable to switch themes.
+Three Qt stylesheets are included: `theme.qss` (light), `theme_dark.qss` (dark)
+and `modern.qss`.
+Set the `FT_THEME` environment variable or pass `--theme` on the command line
+to select a theme. Valid values are `light`, `dark` and `modern`. Omitting the
+argument uses the default light theme. Simply restart the application after
+changing the variable or option to switch themes.
 
 ## Running
 
