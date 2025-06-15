@@ -27,6 +27,7 @@
 ```bash
 python -m venv .venv
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ## การตั้งค่า
