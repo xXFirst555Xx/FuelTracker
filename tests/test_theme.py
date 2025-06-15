@@ -16,3 +16,17 @@ def test_dark_theme_flag(qapp, tmp_path, monkeypatch):
     style = qapp.styleSheet()
     assert "#101010" in style or "#121212" in style
 
+
+def test_modern_theme_env(qapp, tmp_path, monkeypatch):
+    monkeypatch.setenv("FT_THEME", "modern")
+    qapp.setStyleSheet("")
+    MainController(db_path=tmp_path / "t.db")
+    assert "#f5f7fa" in qapp.styleSheet()
+
+
+def test_modern_theme_cli(qapp, tmp_path, monkeypatch):
+    monkeypatch.delenv("FT_THEME", raising=False)
+    monkeypatch.setattr(qapp, "arguments", lambda: ["prog", "--theme=modern"])
+    qapp.setStyleSheet("")
+    MainController(db_path=tmp_path / "t.db")
+    assert "#f5f7fa" in qapp.styleSheet()

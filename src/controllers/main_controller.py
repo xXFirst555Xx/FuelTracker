@@ -26,7 +26,9 @@ from ..views import (
 class MainController:
     """Glue code between Qt widgets and application services."""
 
-    def __init__(self, db_path: str | Path = "fuel.db", dark_mode: bool | None = None) -> None:
+    def __init__(
+        self, db_path: str | Path = "fuel.db", dark_mode: bool | None = None
+    ) -> None:
         self.storage = StorageService(db_path)
         self._dark_mode = dark_mode
         self.report_service = ReportService(self.storage)
@@ -64,13 +66,28 @@ class MainController:
         if not app:
             return
         if self._dark_mode is None:
-            theme = os.getenv("FT_THEME", "light").lower()
+            theme = None
         else:
             theme = "dark" if self._dark_mode else "light"
+
+        if theme is None:
+            args = app.arguments()
+            for i, arg in enumerate(args):
+                if arg.startswith("--theme="):
+                    theme = arg.split("=", 1)[1].lower()
+                    break
+                if arg == "--theme" and i + 1 < len(args):
+                    theme = args[i + 1].lower()
+                    break
+
+        if theme is None:
+            theme = os.getenv("FT_THEME", "light").lower()
 
         base = Path(__file__).resolve().parents[2] / "assets" / "qss"
         if theme == "dark":
             candidates = ["dark.qss", "theme_dark.qss"]
+        elif theme == "modern":
+            candidates = ["modern.qss"]
         else:
             candidates = ["theme.qss"]
 
@@ -79,7 +96,6 @@ class MainController:
             if css_path.exists():
                 app.setStyleSheet(css_path.read_text(encoding="utf-8"))
                 break
-
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
@@ -147,7 +163,11 @@ class MainController:
                     odo_before=float(dialog.odoBeforeEdit.text()),
                     odo_after=float(dialog.odoAfterEdit.text()),
                     amount_spent=float(dialog.amountEdit.text()),
-                    liters=float(dialog.litersEdit.text()) if dialog.litersEdit.text() else None,
+                    liters=(
+                        float(dialog.litersEdit.text())
+                        if dialog.litersEdit.text()
+                        else None
+                    ),
                 )
             except ValueError:
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
