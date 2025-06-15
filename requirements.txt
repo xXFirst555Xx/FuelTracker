@@ -3,8 +3,8 @@ SQLModel>=0.0.16
 pandas
 fpdf2
 matplotlib
+reportlab
 python-dotenv
 pytest
 pytest-cov
 pyinstaller
-pysqlcipher3
