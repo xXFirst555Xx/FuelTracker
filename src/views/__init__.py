@@ -51,3 +51,8 @@ def load_add_entry_dialog() -> QDialog:
 def load_add_vehicle_dialog() -> QDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มยานพาหนะ"""
     return load_ui("dialogs/add_vehicle_dialog")  # type: ignore
+
+
+def load_about_dialog() -> QDialog:
+    """ตัวช่วยโหลดกล่องโต้ตอบเกี่ยวกับโปรแกรม"""
+    return load_ui("dialogs/about_dialog")  # type: ignore

@@ -50,6 +50,7 @@ from ..views import (
     load_ui,
     load_add_entry_dialog,
     load_add_vehicle_dialog,
+    load_about_dialog,
 )
 
 DEFAULT_STATION = "ptt"
@@ -144,6 +145,8 @@ class MainController(QObject):
             w.deleteVehicleButton.clicked.connect(self.delete_selected_vehicle)
         if hasattr(w, "backButton"):
             w.backButton.clicked.connect(self.show_dashboard)
+        if hasattr(w, "aboutButton"):
+            w.aboutButton.clicked.connect(self.open_about_dialog)
         if hasattr(w, "vehicleListWidget"):
             w.vehicleListWidget.itemSelectionChanged.connect(self._vehicle_changed)
         if hasattr(w, "sidebarList"):
@@ -433,6 +436,10 @@ class MainController(QObject):
                 self._notify_due_maintenance(
                     entry.vehicle_id, entry.odo_after, entry.entry_date
                 )
+
+    def open_about_dialog(self) -> None:
+        dialog = load_about_dialog()
+        dialog.exec()
 
     # ------------------------------------------------------------------
     # Page switching
