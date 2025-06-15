@@ -7,6 +7,4 @@ python-dotenv
 pytest
 pytest-cov
 pyinstaller
-qdarktheme
-reportlab
-win10toast
+pysqlcipher3

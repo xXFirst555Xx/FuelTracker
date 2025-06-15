@@ -3,18 +3,52 @@
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
+import os
 import shutil
+from getpass import getpass
+from pysqlcipher3 import dbapi2 as sqlcipher
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
 
-from ..models import FuelEntry, Vehicle, Budget
+from ..models import FuelEntry, Vehicle, Budget, Maintenance
 from .validators import validate_entry
+
+
+def _is_plain_sqlite(path: Path) -> bool:
+    with open(path, "rb") as fh:
+        header = fh.read(16)
+    return header.startswith(b"SQLite format 3")
+
+
+def _migrate_plain_to_encrypted(path: Path, password: str) -> None:
+    tmp = path.with_suffix(".tmp")
+    conn = sqlcipher.connect(str(tmp))
+    conn.execute(f"PRAGMA key='{password}';")
+    conn.execute(f"ATTACH DATABASE '{path}' AS plaintext KEY '';")
+    conn.execute("SELECT sqlcipher_export('main', 'plaintext');")
+    conn.execute("DETACH DATABASE plaintext;")
+    conn.close()
+    os.replace(tmp, path)
+
+
+class _ConnProxy:
+    def __init__(self, conn: sqlcipher.Connection) -> None:
+        self._conn = conn
+
+    def __getattr__(self, name: str):
+        return getattr(self._conn, name)
+
+    def create_function(self, name, num_params, func, deterministic=None):
+        self._conn.create_function(name, num_params, func)
 
 
 class StorageService:
     def __init__(
-        self, db_path: str | Path = "fuel.db", engine: Engine | None = None
+        self,
+        db_path: str | Path = "fuel.db",
+        engine: Engine | None = None,
+        password: str | None = None,
     ) -> None:
         """เริ่มต้นบริการจัดเก็บข้อมูล
 
@@ -32,18 +66,33 @@ class StorageService:
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
-            # ``check_same_thread`` must be disabled so a single engine can be
-            # shared across threads during testing and normal application use.
+            if password is None:
+                password = os.environ.get("FT_DB_PASSWORD") or getpass("DB password: ")
+            self._password = password
+
+            if db_path.exists() and _is_plain_sqlite(db_path):
+                _migrate_plain_to_encrypted(db_path, password)
+
+            def _connect() -> sqlcipher.Connection:
+                raw = sqlcipher.connect(str(db_path))
+                raw.execute(f"PRAGMA key='{password}';")
+                return _ConnProxy(raw)
+
             self.engine = create_engine(
-                f"sqlite:///{db_path}",
-                echo=False,
+                "sqlite://",
+                creator=_connect,
                 connect_args={"check_same_thread": False},
             )
             self._db_path = db_path
 
         SQLModel.metadata.create_all(
             self.engine,
-            tables=[FuelEntry.__table__, Vehicle.__table__, Budget.__table__],
+            tables=[
+                FuelEntry.__table__,
+                Vehicle.__table__,
+                Budget.__table__,
+                Maintenance.__table__,
+            ],
         )
 
     def add_entry(self, entry: FuelEntry) -> None:
@@ -130,6 +179,57 @@ class StorageService:
             if obj:
                 session.delete(obj)
                 session.commit()
+
+    # ------------------------------------------------------------------
+    # Maintenance helpers
+    # ------------------------------------------------------------------
+
+    def add_maintenance(self, task: Maintenance) -> None:
+        with Session(self.engine) as session:
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+
+    def list_maintenances(self, vehicle_id: int | None = None) -> List[Maintenance]:
+        with Session(self.engine) as session:
+            stmt = select(Maintenance)
+            if vehicle_id is not None:
+                stmt = stmt.where(Maintenance.vehicle_id == vehicle_id)
+            return list(session.exec(stmt))
+
+    def update_maintenance(self, task: Maintenance) -> None:
+        with Session(self.engine) as session:
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+
+    def delete_maintenance(self, task_id: int) -> None:
+        with Session(self.engine) as session:
+            obj = session.get(Maintenance, task_id)
+            if obj:
+                session.delete(obj)
+                session.commit()
+
+    def list_due_maintenances(
+        self,
+        vehicle_id: int,
+        odo: float | None = None,
+        date_: datetime | None = None,
+    ) -> List[Maintenance]:
+        with Session(self.engine) as session:
+            stmt = select(Maintenance).where(
+                Maintenance.vehicle_id == vehicle_id,
+                Maintenance.is_done.is_(False),
+            )
+            res = []
+            for m in session.exec(stmt):
+                if m.due_odo is not None and odo is not None and odo >= m.due_odo:
+                    res.append(m)
+                elif (
+                    m.due_date is not None and date_ is not None and date_ >= m.due_date
+                ):
+                    res.append(m)
+            return res
 
     # ------------------------------------------------------------------
     # Budget helpers
