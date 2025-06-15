@@ -10,8 +10,7 @@ from PySide6.QtWidgets import QApplication
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.services import StorageService
-from src.models import FuelEntry, Vehicle
+from src.services import StorageService  # noqa: E402
 
 
 @pytest.fixture
@@ -30,6 +29,7 @@ def in_memory_storage():
 def qapp():
     """Provide a QApplication instance for UI tests."""
     import os
+
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     app = QApplication.instance()
     if app is None:

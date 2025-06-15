@@ -24,12 +24,12 @@ def test_calc_metrics_no_liters():
         vehicle_id=1,
         odo_before=200.0,
         odo_after=300.0,
-        amount_spent=25.0,
+        amount_spent=None,
         liters=None,
     )
     metrics = entry.calc_metrics()
     assert metrics["distance"] == pytest.approx(100.0)
-    assert metrics["cost_per_km"] == pytest.approx(0.25)
+    assert metrics["cost_per_km"] is None
     assert metrics["fuel_efficiency_km_l"] is None
 
 

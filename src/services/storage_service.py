@@ -1,16 +1,21 @@
 """บริการจัดการการบันทึกข้อมูลด้วย SQLModel"""
 
 from pathlib import Path
+from datetime import datetime
 from typing import List, Optional
+import shutil
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
 
 from ..models import FuelEntry, Vehicle
+from .validators import validate_entry
 
 
 class StorageService:
-    def __init__(self, db_path: str | Path = "fuel.db", engine: Engine | None = None) -> None:
+    def __init__(
+        self, db_path: str | Path = "fuel.db", engine: Engine | None = None
+    ) -> None:
         """เริ่มต้นบริการจัดเก็บข้อมูล
 
         พารามิเตอร์
@@ -23,6 +28,7 @@ class StorageService:
 
         if engine is not None:
             self.engine = engine
+            self._db_path = Path(engine.url.database) if engine.url.database else None
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -33,12 +39,14 @@ class StorageService:
                 echo=False,
                 connect_args={"check_same_thread": False},
             )
+            self._db_path = db_path
 
         SQLModel.metadata.create_all(
             self.engine, tables=[FuelEntry.__table__, Vehicle.__table__]
         )
 
     def add_entry(self, entry: FuelEntry) -> None:
+        validate_entry(entry)
         with Session(self.engine) as session:
             # If there is an older entry for the same vehicle without
             # ``odo_after`` set, fill it with the new ``odo_before`` value.
@@ -108,6 +116,7 @@ class StorageService:
 
     def update_entry(self, entry: FuelEntry) -> None:
         """บันทึกการแก้ไขข้อมูลการเติมน้ำมัน"""
+        validate_entry(entry)
         with Session(self.engine) as session:
             session.add(entry)
             session.commit()
@@ -120,3 +129,35 @@ class StorageService:
             if obj:
                 session.delete(obj)
                 session.commit()
+
+    # ------------------------------------------------------------------
+    # Utilities
+    # ------------------------------------------------------------------
+
+    def auto_backup(
+        self,
+        now: datetime | None = None,
+        backup_dir: Path | None = None,
+    ) -> Path:
+        """Copy the database file to a timestamped backup path.
+
+        Returns the created backup path.
+        """
+
+        if self._db_path is None:
+            raise RuntimeError("StorageService is not file-based")
+
+        now = now or datetime.now()
+        backup_dir = Path(backup_dir or Path.home() / ".fueltracker" / "backups")
+        backup_dir.mkdir(parents=True, exist_ok=True)
+
+        backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
+        shutil.copy2(self._db_path, backup_path)
+
+        backups = [p for p in backup_dir.glob("*.db") if p != self._db_path]
+        backups.sort()
+        if len(backups) > 30:
+            for old in backups[: len(backups) - 30]:
+                old.unlink()
+
+        return backup_path
