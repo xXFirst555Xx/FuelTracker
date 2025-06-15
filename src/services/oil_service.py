@@ -5,12 +5,12 @@ from decimal import Decimal
 from typing import Any, Dict, Optional
 
 import requests
-
-# Reusable HTTP session for API requests
-_HTTP_SESSION = requests.Session()
 from sqlmodel import Session, select
 
 from ..models import FuelPrice
+
+# Reusable HTTP session for API requests
+_HTTP_SESSION = requests.Session()
 
 API_BASE = "https://api.chnwt.dev/thai-oil-api"
 

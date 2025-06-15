@@ -1,5 +1,3 @@
-from datetime import date
-
 from PySide6.QtGui import QUndoStack
 
 from src.controllers.undo_commands import (
