@@ -29,7 +29,7 @@ def load_ui(name: str) -> QWidget:
         raise FileNotFoundError(ui_path)
 
     file = QFile(str(ui_path))
-    file.open(QFile.ReadOnly)
+    file.open(QFile.ReadOnly)  # type: ignore[attr-defined]
     loader = QUiLoader()
     widget = loader.load(file)
     file.close()

@@ -18,6 +18,8 @@ dependencies = [
     "reportlab",
     "win10toast",
 ]
+[project.scripts]
+fueltracker = "fueltracker.main:run"
 
 [tool.black]
 line-length = 88
