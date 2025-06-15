@@ -1,6 +1,7 @@
 """คอนโทรลเลอร์หลักเชื่อมต่อ GUI กับบริการและโมเดล"""
 
 from datetime import date
+from decimal import Decimal
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -16,19 +17,30 @@ from PySide6.QtWidgets import (
     QUndoStack,
 )
 from PySide6.QtGui import QDoubleValidator
-from PySide6.QtCore import Qt, QObject, Signal
+from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from win10toast import ToastNotifier
 from pathlib import Path
 import os
+from datetime import timedelta
 
-from ..models import FuelEntry, Vehicle
+from sqlmodel import Session, select
+
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
+from ..models import FuelEntry, Vehicle, FuelPrice
 from ..services import ReportService, StorageService
+from ..services.oil_service import fetch_latest, get_price
 from .undo_commands import AddEntryCommand, DeleteEntryCommand
 from ..views import (
     load_ui,
     load_add_entry_dialog,
     load_add_vehicle_dialog,
 )
+
+DEFAULT_STATION = "ptt"
+DEFAULT_FUEL_TYPE = "e20"
 
 
 class StatsDock(QDockWidget):
@@ -54,6 +66,22 @@ class MaintenanceDock(QDockWidget):
         self.setWidget(self.list_widget)
 
 
+class OilPricesDock(QDockWidget):
+    """Dock displaying stored oil prices."""
+
+    def __init__(self, parent: QMainWindow | None = None) -> None:
+        super().__init__("Oil Prices", parent)
+        self.table = QTableWidget(0, 3)
+        self.table.setHorizontalHeaderLabels(["date", "fuel_type", "price"])
+        self.figure = Figure(figsize=(4, 3))
+        self.canvas = FigureCanvasQTAgg(self.figure)
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(self.table)
+        layout.addWidget(self.canvas)
+        self.setWidget(widget)
+
+
 class MainController(QObject):
     entry_changed = Signal()
     """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
@@ -76,8 +104,13 @@ class MainController(QObject):
         self._selected_vehicle_id = None
         self.stats_dock = StatsDock(self.window)
         self.maint_dock = MaintenanceDock(self.window)
+        self.oil_dock = OilPricesDock(self.window)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
         self.window.addDockWidget(Qt.RightDockWidgetArea, self.maint_dock)
+        self.window.addDockWidget(Qt.RightDockWidgetArea, self.oil_dock)
+        self.thread_pool = QThreadPool.globalInstance()
+        self._price_timer_started = False
+        self.window.installEventFilter(self)
         self.entry_changed.connect(self._update_stats_panel)
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
@@ -267,6 +300,30 @@ class MainController(QObject):
         dialog.odoAfterEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.amountEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.litersEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
+
+        def _auto_calc() -> None:
+            if dialog.litersEdit.text():
+                return
+            amt_text = dialog.amountEdit.text()
+            if not amt_text:
+                return
+            with Session(self.storage.engine) as sess:
+                price = get_price(
+                    sess, DEFAULT_FUEL_TYPE, DEFAULT_STATION, date.today()
+                )
+                if price is None:
+                    price = get_price(
+                        sess,
+                        DEFAULT_FUEL_TYPE,
+                        DEFAULT_STATION,
+                        date.today() - timedelta(days=1),
+                    )
+            if price is None:
+                return
+            liters = Decimal(amt_text) / price
+            dialog.litersEdit.setText(f"{liters.quantize(Decimal('0.01'))}")
+
+        dialog.amountEdit.editingFinished.connect(_auto_calc)
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
         if dialog.exec() == QDialog.Accepted:
@@ -321,6 +378,50 @@ class MainController(QObject):
     def show_settings_page(self) -> None:
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.settingsPage)
+
+    # ------------------------------------------------------------------
+    # Oil price scheduler
+    # ------------------------------------------------------------------
+
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # type: ignore[override]
+        if (
+            obj is self.window
+            and event.type() == QEvent.Show
+            and not self._price_timer_started
+        ):
+            self._price_timer_started = True
+            self._schedule_price_update()
+        return super().eventFilter(obj, event)
+
+    def _schedule_price_update(self) -> None:
+        class Job(QRunnable):
+            def run(inner_self) -> None:  # type: ignore[override]
+                with Session(self.storage.engine) as sess:
+                    fetch_latest(sess)
+                    self._load_prices()
+
+        self.thread_pool.start(Job())
+        QTimer.singleShot(86_400_000, self._schedule_price_update)
+
+    def _load_prices(self) -> None:
+        with Session(self.storage.engine) as session:
+            rows = session.exec(
+                select(FuelPrice).order_by(FuelPrice.date.desc()).limit(90 * 6)
+            ).all()
+        self.oil_dock.table.setRowCount(len(rows))
+        self.oil_dock.figure.clear()
+        ax = self.oil_dock.figure.add_subplot(111)
+        by_type: dict[str, list[tuple[date, Decimal]]] = {}
+        for idx, r in enumerate(rows):
+            self.oil_dock.table.setItem(idx, 0, QTableWidgetItem(r.date.isoformat()))
+            self.oil_dock.table.setItem(idx, 1, QTableWidgetItem(r.fuel_type))
+            self.oil_dock.table.setItem(idx, 2, QTableWidgetItem(str(r.price)))
+            by_type.setdefault(r.fuel_type, []).append((r.date, r.price))
+        fuel = next(iter(by_type)) if by_type else None
+        if fuel:
+            points = sorted(by_type[fuel], key=lambda t: t[0])[-90:]
+            ax.plot([d for d, _ in points], [float(p) for _, p in points])
+        self.oil_dock.canvas.draw_idle()
 
     # ------------------------------------------------------------------
     # Data modification helpers
