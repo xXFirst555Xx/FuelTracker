@@ -27,10 +27,14 @@ class MainController:
     """Glue code between Qt widgets and application services."""
 
     def __init__(
-        self, db_path: str | Path = "fuel.db", dark_mode: bool | None = None
+        self,
+        db_path: str | Path = "fuel.db",
+        dark_mode: bool | None = None,
+        theme: str | None = None,
     ) -> None:
         self.storage = StorageService(db_path)
         self._dark_mode = dark_mode
+        self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self._selected_vehicle_id = None
@@ -65,7 +69,9 @@ class MainController:
         app = QApplication.instance()
         if not app:
             return
-        if self._dark_mode is None:
+        if self._theme_override is not None:
+            theme = self._theme_override
+        elif self._dark_mode is None:
             theme = None
         else:
             theme = "dark" if self._dark_mode else "light"

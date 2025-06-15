@@ -15,12 +15,25 @@ def main(argv: list[str] | None = None) -> None:
     default_db = Path(os.getenv("DB_PATH", "fuel.db"))
 
     parser = argparse.ArgumentParser(description="FuelTracker")
-    parser.add_argument("--db-path", default=default_db, type=Path, help="SQLite database file")
-    parser.add_argument("--dark", action="store_true", help="Use dark theme")
+    parser.add_argument(
+        "--db-path", default=default_db, type=Path, help="SQLite database file"
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--dark", action="store_true", help="Use dark theme")
+    group.add_argument(
+        "--theme",
+        choices=["light", "dark", "modern"],
+        help="Select theme (overrides FT_THEME)",
+    )
     args = parser.parse_args(argv)
 
     app = QApplication([])
-    controller = MainController(db_path=args.db_path, dark_mode=args.dark)
+    theme = args.theme
+    controller = MainController(
+        db_path=args.db_path,
+        dark_mode=args.dark if theme is None else None,
+        theme=theme,
+    )
     controller.window.show()
     app.exec()
 
