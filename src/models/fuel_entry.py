@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 
 
 class FuelEntry(SQLModel, table=True):
-    """Model representing a single refueling entry."""
+    """โมเดลแทนข้อมูลการเติมเชื้อเพลิงหนึ่งรายการ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
     entry_date: date
@@ -18,7 +18,7 @@ class FuelEntry(SQLModel, table=True):
     liters: Optional[float] = None
 
     def calc_metrics(self) -> Dict[str, Optional[float]]:
-        """Calculate metrics such as distance and efficiency."""
+        """คำนวณค่าต่าง ๆ เช่น ระยะทางและประสิทธิภาพ"""
 
         distance = self.odo_after - self.odo_before
         metrics: Dict[str, Optional[float]] = {

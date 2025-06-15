@@ -1,4 +1,4 @@
-"""FuelTracker application entry point."""
+"""จุดเริ่มต้นการทำงานของแอป FuelTracker"""
 
 from pathlib import Path
 import os
@@ -14,16 +14,16 @@ def main(argv: list[str] | None = None) -> None:
     load_dotenv()
     default_db = Path(os.getenv("DB_PATH", "fuel.db"))
 
-    parser = argparse.ArgumentParser(description="FuelTracker")
+    parser = argparse.ArgumentParser(description="FuelTracker – โปรแกรมติดตามการใช้น้ำมัน")
     parser.add_argument(
-        "--db-path", default=default_db, type=Path, help="SQLite database file"
+        "--db-path", default=default_db, type=Path, help="ไฟล์ฐานข้อมูล SQLite"
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--dark", action="store_true", help="Use dark theme")
+    group.add_argument("--dark", action="store_true", help="ใช้ธีมมืด")
     group.add_argument(
         "--theme",
         choices=["light", "dark", "modern"],
-        help="Select theme (overrides FT_THEME)",
+        help="เลือกธีม (มีผลเหนือค่า FT_THEME)",
     )
     args = parser.parse_args(argv)
 

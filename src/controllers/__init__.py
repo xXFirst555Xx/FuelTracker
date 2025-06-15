@@ -1,4 +1,4 @@
-"""Controller package for FuelTracker."""
+"""แพ็กเกจตัวควบคุมของ FuelTracker"""
 
 from .main_controller import MainController
 

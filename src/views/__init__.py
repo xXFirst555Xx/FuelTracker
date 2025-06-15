@@ -1,4 +1,4 @@
-"""Utilities for working with Qt Designer UI files."""
+"""ชุดเครื่องมือสำหรับทำงานกับไฟล์ UI ของ Qt Designer"""
 
 from pathlib import Path
 import sys
@@ -10,9 +10,9 @@ BASE_PATH = Path(__file__).resolve().parent
 
 
 def asset_path(*parts: str) -> Path:
-    """Return absolute path to an asset file.
+    """คืนเส้นทางไฟล์ asset แบบสมบูรณ์
 
-    Works both from source and when packaged with PyInstaller.
+    ใช้ได้ทั้งตอนรันจากโค้ดและแพ็กเกจด้วย PyInstaller
     """
     root = Path(getattr(sys, "_MEIPASS", BASE_PATH.parents[1]))
     return root.joinpath("assets", *parts)
@@ -23,7 +23,7 @@ QDir.addSearchPath("icons", str(asset_path("icons")))
 
 
 def load_ui(name: str) -> QWidget:
-    """Load a Qt Designer ``.ui`` file from the views directory."""
+    """โหลดไฟล์ ``.ui`` จากไดเรกทอรี views"""
     ui_path = BASE_PATH / f"{name}.ui"
     if not ui_path.exists():
         raise FileNotFoundError(ui_path)
@@ -44,10 +44,10 @@ def load_ui(name: str) -> QWidget:
 
 
 def load_add_entry_dialog() -> QDialog:
-    """Convenience loader for the Add Entry dialog."""
+    """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มข้อมูลการเติมน้ำมัน"""
     return load_ui("dialogs/add_entry_dialog")  # type: ignore
 
 
 def load_add_vehicle_dialog() -> QDialog:
-    """Convenience loader for the Add Vehicle dialog."""
+    """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มยานพาหนะ"""
     return load_ui("dialogs/add_vehicle_dialog")  # type: ignore

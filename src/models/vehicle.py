@@ -6,7 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 class Vehicle(SQLModel, table=True):
-    """Vehicle registered in the tracker."""
+    """ยานพาหนะที่ลงทะเบียนในระบบ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
