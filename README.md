@@ -37,6 +37,16 @@ to select a theme. Valid values are `light`, `dark` and `modern`. Omitting the
 argument uses the default light theme. Simply restart the application after
 changing the variable or option to switch themes.
 
+## Fonts
+
+The application now relies on widely available fonts rather than the
+previously required **Prompt** typeface. The QSS themes default to
+`Tahoma`, `Arial` and finally the system sans-serif. No additional font
+installation is needed.
+
+To use custom fonts, place the `.ttf` files under `assets/fonts` and
+update the `font-family` rules in the QSS files.
+
 ## Running
 
 ```bash

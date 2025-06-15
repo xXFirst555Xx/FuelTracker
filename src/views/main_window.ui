@@ -24,7 +24,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Prompt, Segoe UI, sans-serif</family>
+         <family>Tahoma, Arial, sans-serif</family>
          <pointsize>11</pointsize>
         </font>
        </property>
