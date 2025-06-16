@@ -40,7 +40,7 @@ class SummaryCard(QWidget):
 
 
 class _Worker(QThread):
-    data_ready = Signal(object, object, object, object)
+    data_ready = Signal(object, object, object, object, object)
 
     def __init__(self, service: ReportService, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -49,6 +49,7 @@ class _Worker(QThread):
     def run(self) -> None:  # type: ignore[override]
         yearly = self._service.last_year_summary()
         pie = self._service.liters_by_type()
+        monthly = self._service.monthly_summary()
         table = self._service._monthly_df(date.today(), 1)
         # Build charts
         fig1 = Figure(figsize=(4, 3))
@@ -68,7 +69,24 @@ class _Worker(QThread):
         if not pie.empty:
             ax3.pie(pie, labels=pie.index)
 
-        self.data_ready.emit(fig1, fig2, fig3, table)
+        fig4 = Figure(figsize=(6, 4))
+        ax4_1 = fig4.add_subplot(311)
+        if not monthly.empty:
+            ax4_1.bar(monthly["month"].astype(str), monthly["distance"])
+        ax4_1.set_ylabel("km")
+
+        ax4_2 = fig4.add_subplot(312)
+        if not monthly.empty:
+            ax4_2.bar(monthly["month"].astype(str), monthly["liters"])
+        ax4_2.set_ylabel("L")
+
+        ax4_3 = fig4.add_subplot(313)
+        if not monthly.empty:
+            ax4_3.plot(monthly["month"].astype(str), monthly["km_per_l"], marker="o")
+        ax4_3.set_ylabel("km/L")
+        fig4.tight_layout()
+
+        self.data_ready.emit(fig1, fig2, fig3, fig4, table)
 
 
 class ReportsPage(QWidget):
@@ -98,6 +116,9 @@ class ReportsPage(QWidget):
         self.tabs.addTab(self.chart_container, self.tr("กราฟ"))
         self.table_container = QWidget()
         self.tabs.addTab(self.table_container, self.tr("ตาราง"))
+        self.monthly_container = QWidget()
+        self.monthly_layout = QVBoxLayout(self.monthly_container)
+        self.tabs.addTab(self.monthly_container, self.tr("รายเดือน"))
         self.splitter.addWidget(self.tabs)
 
         layout = QVBoxLayout(self)
@@ -118,7 +139,7 @@ class ReportsPage(QWidget):
         self._worker.data_ready.connect(self._apply_data)
         self._worker.start()
 
-    def _apply_data(self, fig1: Figure, fig2: Figure, fig3: Figure, table) -> None:
+    def _apply_data(self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table) -> None:
         for i in reversed(range(self.charts_layout.count())):
             item = self.charts_layout.takeAt(i)
             w = item.widget()
@@ -127,6 +148,13 @@ class ReportsPage(QWidget):
         for fig in (fig1, fig2, fig3):
             canvas = FigureCanvasQTAgg(fig)
             self.charts_layout.addWidget(canvas)
+        for i in reversed(range(self.monthly_layout.count())):
+            item = self.monthly_layout.takeAt(i)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+        canvas = FigureCanvasQTAgg(fig4)
+        self.monthly_layout.addWidget(canvas)
         stats = self._service.calc_overall_stats()
         self.cards["distance"].set_value(f"{stats['total_distance']:.0f} km")
         self.cards["liters"].set_value(f"{stats['total_liters']:.0f} L")
