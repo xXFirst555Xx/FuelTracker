@@ -44,7 +44,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
-from ..services import ReportService, StorageService, Exporter
+from ..services import ReportService, StorageService, Exporter, Importer
 from ..services.oil_service import fetch_latest, get_price
 from .undo_commands import (
     AddEntryCommand,
@@ -59,6 +59,7 @@ from ..views import (
     load_add_vehicle_dialog,
     load_about_dialog,
     load_add_maintenance_dialog,
+    load_import_csv_dialog,
 )
 from ..views.reports_page import ReportsPage
 
@@ -132,6 +133,7 @@ class MainController(QObject):
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
         self.exporter = Exporter(self.storage)
+        self.importer = Importer(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
@@ -174,6 +176,8 @@ class MainController(QObject):
         w = self.window
         if hasattr(w, "addEntryButton"):
             w.addEntryButton.clicked.connect(self.open_add_entry_dialog)
+        if hasattr(w, "importCSVButton"):
+            w.importCSVButton.clicked.connect(self.open_import_csv_dialog)
         if hasattr(w, "addVehicleButton"):
             w.addVehicleButton.clicked.connect(self.open_add_vehicle_dialog)
         if hasattr(w, "editVehicleButton"):
@@ -536,6 +540,49 @@ class MainController(QObject):
                 self._notify_due_maintenance(
                     entry.vehicle_id, entry.odo_after, entry.entry_date
                 )
+
+    def open_import_csv_dialog(self) -> None:
+        if not self.storage.list_vehicles():
+            QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
+            return
+        dialog = load_import_csv_dialog()
+        for v in self.storage.list_vehicles():
+            dialog.vehicleComboBox.addItem(v.name, v.id)
+
+        entries: list[FuelEntry] = []
+
+        def _load_file() -> None:
+            path, _ = QFileDialog.getOpenFileName(dialog, self.tr("เลือกไฟล์ CSV"), "", "CSV Files (*.csv)")
+            if path:
+                dialog.fileLineEdit.setText(path)
+                entries.clear()
+                entries.extend(self.importer.read_csv(Path(path)))
+                table = dialog.previewTable
+                headers = ["date", "odo_before", "odo_after", "distance", "liters", "amount_spent"]
+                table.setColumnCount(len(headers))
+                table.setHorizontalHeaderLabels(headers)
+                table.setRowCount(len(entries))
+                for r, e in enumerate(entries):
+                    dist = e.odo_after - e.odo_before if e.odo_after is not None else ""
+                    values = [
+                        e.entry_date.isoformat(),
+                        str(e.odo_before),
+                        "" if e.odo_after is None else str(e.odo_after),
+                        "" if dist == "" else str(dist),
+                        "" if e.liters is None else str(e.liters),
+                        "" if e.amount_spent is None else str(e.amount_spent),
+                    ]
+                    for c, val in enumerate(values):
+                        table.setItem(r, c, QTableWidgetItem(val))
+
+        dialog.browseButton.clicked.connect(_load_file)
+
+        if dialog.exec() == QDialog.Accepted and entries:
+            vehicle_id = dialog.vehicleComboBox.currentData()
+            for e in entries:
+                e.vehicle_id = vehicle_id
+                self.storage.add_entry(e)
+            self.entry_changed.emit()
 
     def open_about_dialog(self) -> None:
         dialog = load_about_dialog()
