@@ -169,23 +169,61 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="aboutButton">
-           <property name="text">
-            <string>เกี่ยวกับ</string>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons:info.svg</normaloff>
-            </iconset>
-           </property>
-         </widget>
-        </item>
         <item>
-         <widget class="QCheckBox" name="syncCheckBox">
+         <widget class="QPushButton" name="aboutButton">
           <property name="text">
-           <string>สำรองข้อมูลขึ้นคลาวด์อัตโนมัติ</string>
+           <string>เกี่ยวกับ</string>
           </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>icons:info.svg</normaloff>
+           </iconset>
+          </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="stationLayout">
+         <item>
+          <widget class="QLabel" name="stationLabel">
+           <property name="text">
+            <string>สถานี</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="stationComboBox"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="priceUpdateLayout">
+         <item>
+          <widget class="QLabel" name="updateLabel">
+           <property name="text">
+            <string>อัปเดตราคา (ชั่วโมง)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="updateIntervalSpinBox">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>168</number>
+           </property>
+           <property name="value">
+            <number>24</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="syncCheckBox">
+         <property name="text">
+          <string>สำรองข้อมูลขึ้นคลาวด์อัตโนมัติ</string>
+         </property>
          </widget>
         </item>
         <item>

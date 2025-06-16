@@ -46,6 +46,7 @@ from matplotlib.figure import Figure
 from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
 from ..services import ReportService, StorageService, Exporter, Importer
 from ..services.oil_service import fetch_latest, get_price
+from ..config import AppConfig
 from .undo_commands import (
     AddEntryCommand,
     DeleteEntryCommand,
@@ -126,8 +127,11 @@ class MainController(QObject):
         db_path: str | Path = "fuel.db",
         dark_mode: bool | None = None,
         theme: str | None = None,
+        config_path: str | Path | None = None,
     ) -> None:
         super().__init__()
+        self.config_path = Path(config_path) if config_path else None
+        self.config = AppConfig.load(self.config_path)
         self.storage = StorageService(db_path)
         self._dark_mode = dark_mode
         self._theme_override = theme.lower() if theme else None
@@ -156,6 +160,16 @@ class MainController(QObject):
             self.window.syncCheckBox.setChecked(self.sync_enabled)
         if hasattr(self.window, "cloudPathEdit") and self.cloud_path:
             self.window.cloudPathEdit.setText(str(self.cloud_path))
+        if hasattr(self.window, "stationComboBox"):
+            self.window.stationComboBox.clear()
+            self.window.stationComboBox.addItems(["PTT", "BCP"])
+            idx = self.window.stationComboBox.findText(
+                self.config.default_station.upper()
+            )
+            if idx >= 0:
+                self.window.stationComboBox.setCurrentIndex(idx)
+        if hasattr(self.window, "updateIntervalSpinBox"):
+            self.window.updateIntervalSpinBox.setValue(self.config.update_hours)
         self.thread_pool = QThreadPool.globalInstance()
         self._price_timer_started = False
         self.window.installEventFilter(self)
@@ -192,6 +206,10 @@ class MainController(QObject):
             w.syncCheckBox.toggled.connect(self._toggle_sync)
         if hasattr(w, "browseCloudButton"):
             w.browseCloudButton.clicked.connect(self._browse_cloud_path)
+        if hasattr(w, "stationComboBox"):
+            w.stationComboBox.currentTextChanged.connect(self._station_changed)
+        if hasattr(w, "updateIntervalSpinBox"):
+            w.updateIntervalSpinBox.valueChanged.connect(self._interval_changed)
         if hasattr(w, "budgetVehicleComboBox"):
             w.budgetVehicleComboBox.currentIndexChanged.connect(
                 self._budget_vehicle_changed
@@ -218,6 +236,14 @@ class MainController(QObject):
             self.cloud_path = Path(path)
             if hasattr(self.window, "cloudPathEdit"):
                 self.window.cloudPathEdit.setText(path)
+
+    def _station_changed(self, name: str) -> None:
+        self.config.default_station = name.lower()
+        self.config.save(self.config_path)
+
+    def _interval_changed(self, hours: int) -> None:
+        self.config.update_hours = int(hours)
+        self.config.save(self.config_path)
 
     def _budget_vehicle_changed(self) -> None:
         if not hasattr(self.window, "budgetVehicleComboBox"):
@@ -492,15 +518,14 @@ class MainController(QObject):
             amt_text = dialog.amountEdit.text()
             if not amt_text:
                 return
+            station = self.config.default_station
             with Session(self.storage.engine) as sess:
-                price = get_price(
-                    sess, DEFAULT_FUEL_TYPE, DEFAULT_STATION, date.today()
-                )
+                price = get_price(sess, DEFAULT_FUEL_TYPE, station, date.today())
                 if price is None:
                     price = get_price(
                         sess,
                         DEFAULT_FUEL_TYPE,
-                        DEFAULT_STATION,
+                        station,
                         date.today() - timedelta(days=1),
                     )
             if price is None:
@@ -552,13 +577,22 @@ class MainController(QObject):
         entries: list[FuelEntry] = []
 
         def _load_file() -> None:
-            path, _ = QFileDialog.getOpenFileName(dialog, self.tr("เลือกไฟล์ CSV"), "", "CSV Files (*.csv)")
+            path, _ = QFileDialog.getOpenFileName(
+                dialog, self.tr("เลือกไฟล์ CSV"), "", "CSV Files (*.csv)"
+            )
             if path:
                 dialog.fileLineEdit.setText(path)
                 entries.clear()
                 entries.extend(self.importer.read_csv(Path(path)))
                 table = dialog.previewTable
-                headers = ["date", "odo_before", "odo_after", "distance", "liters", "amount_spent"]
+                headers = [
+                    "date",
+                    "odo_before",
+                    "odo_after",
+                    "distance",
+                    "liters",
+                    "amount_spent",
+                ]
                 table.setColumnCount(len(headers))
                 table.setHorizontalHeaderLabels(headers)
                 table.setRowCount(len(entries))
@@ -599,7 +633,11 @@ class MainController(QObject):
             dialog.vehicleComboBox.addItem(v.name, v.id)
         if dialog.exec() == QDialog.Accepted:
             try:
-                odo = int(dialog.odoLineEdit.text()) if dialog.odoLineEdit.text() else None
+                odo = (
+                    int(dialog.odoLineEdit.text())
+                    if dialog.odoLineEdit.text()
+                    else None
+                )
             except ValueError:
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
                 return
@@ -607,7 +645,11 @@ class MainController(QObject):
                 vehicle_id=dialog.vehicleComboBox.currentData(),
                 name=dialog.nameLineEdit.text().strip(),
                 due_odo=odo,
-                due_date=dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None,
+                due_date=(
+                    dialog.dateEdit.date().toPython()
+                    if dialog.dateEdit.date()
+                    else None
+                ),
                 note=dialog.noteLineEdit.text().strip() or None,
             )
             self.storage.add_maintenance(task)
@@ -627,22 +669,32 @@ class MainController(QObject):
         dialog.dateEdit.setDate(task.due_date or date.today())
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
         dialog.nameLineEdit.setText(task.name)
-        dialog.odoLineEdit.setText(str(task.due_odo) if task.due_odo is not None else "")
+        dialog.odoLineEdit.setText(
+            str(task.due_odo) if task.due_odo is not None else ""
+        )
         dialog.noteLineEdit.setText(task.note or "")
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
             if v.id == task.vehicle_id:
-                dialog.vehicleComboBox.setCurrentIndex(dialog.vehicleComboBox.count() - 1)
+                dialog.vehicleComboBox.setCurrentIndex(
+                    dialog.vehicleComboBox.count() - 1
+                )
         if dialog.exec() == QDialog.Accepted:
             try:
-                odo = int(dialog.odoLineEdit.text()) if dialog.odoLineEdit.text() else None
+                odo = (
+                    int(dialog.odoLineEdit.text())
+                    if dialog.odoLineEdit.text()
+                    else None
+                )
             except ValueError:
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
                 return
             task.vehicle_id = dialog.vehicleComboBox.currentData()
             task.name = dialog.nameLineEdit.text().strip()
             task.due_odo = odo
-            task.due_date = dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None
+            task.due_date = (
+                dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None
+            )
             task.note = dialog.noteLineEdit.text().strip() or None
             self.storage.update_maintenance(task)
             self._refresh_maintenance_panel()
@@ -707,11 +759,12 @@ class MainController(QObject):
 
             def run(self) -> None:  # type: ignore[override]
                 with Session(self.controller.storage.engine) as sess:
-                    fetch_latest(sess)
+                    fetch_latest(sess, self.controller.config.default_station)
                     self.controller._load_prices()
 
         self.thread_pool.start(Job(self))
-        QTimer.singleShot(86_400_000, self._schedule_price_update)
+        interval_ms = self.config.update_hours * 3_600_000
+        QTimer.singleShot(interval_ms, self._schedule_price_update)
 
     def _load_prices(self) -> None:
         with Session(self.storage.engine) as session:
