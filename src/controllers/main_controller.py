@@ -524,7 +524,7 @@ class MainController(QObject):
         by_type: dict[str, list[tuple[date, Decimal]]] = {}
         for idx, r in enumerate(rows):
             self.oil_dock.table.setItem(idx, 0, QTableWidgetItem(r.date.isoformat()))
-            self.oil_dock.table.setItem(idx, 1, QTableWidgetItem(r.fuel_type))
+            self.oil_dock.table.setItem(idx, 1, QTableWidgetItem(r.name_th))
             self.oil_dock.table.setItem(idx, 2, QTableWidgetItem(str(r.price)))
             by_type.setdefault(r.fuel_type, []).append((r.date, r.price))
         fuel = next(iter(by_type)) if by_type else None

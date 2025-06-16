@@ -58,7 +58,7 @@ def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
                     date=day,
                     station=station,
                     fuel_type=ftype,
-                    name_th=str(info.get("name_th", "")),
+                    name_th=str(info.get("name_th") or info.get("name", "")),
                     price=price,
                 )
             )
