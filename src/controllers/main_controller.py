@@ -376,18 +376,7 @@ class MainController(QObject):
             self.stats_dock.kml_label.setText("km/L: -")
             self.stats_dock.cost_label.setText("฿/km: -")
             return
-        entries = self.storage.get_entries_by_vehicle(vid)
-        total_distance = 0.0
-        total_liters = 0.0
-        total_price = 0.0
-        for e in entries:
-            if e.odo_after is None:
-                continue
-            total_distance += e.odo_after - e.odo_before
-            if e.liters:
-                total_liters += e.liters
-            if e.amount_spent:
-                total_price += e.amount_spent
+        total_distance, total_liters, total_price = self.storage.get_vehicle_stats(vid)
         kmpl = total_distance / total_liters if total_liters else 0.0
         cost = total_price / total_distance if total_distance else 0.0
         self.stats_dock.kml_label.setText(f"km/L: {kmpl:.2f}")

@@ -80,3 +80,53 @@ def test_init_nested_path(tmp_path) -> None:
     nested_path = tmp_path / "nested" / "dir" / "fuel.db"
     StorageService(db_path=nested_path)
     assert nested_path.exists()
+
+
+def test_get_vehicle_stats(in_memory_storage: StorageService) -> None:
+    storage = in_memory_storage
+    vehicle = Vehicle(
+        name="Stats Car",
+        vehicle_type="suv",
+        license_plate="STAT123",
+        tank_capacity_liters=60.0,
+    )
+    storage.add_vehicle(vehicle)
+
+    entries = [
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=vehicle.id,
+            odo_before=0,
+            odo_after=100,
+            amount_spent=50,
+            liters=20,
+        ),
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=vehicle.id,
+            odo_before=100,
+            odo_after=200,
+            amount_spent=40,
+            liters=15,
+        ),
+    ]
+    for e in entries:
+        storage.add_entry(e)
+
+    manual_distance = 0.0
+    manual_liters = 0.0
+    manual_price = 0.0
+    for e in storage.get_entries_by_vehicle(vehicle.id):
+        if e.odo_after is None:
+            continue
+        manual_distance += e.odo_after - e.odo_before
+        if e.liters:
+            manual_liters += e.liters
+        if e.amount_spent:
+            manual_price += e.amount_spent
+
+    dist, liters, price = storage.get_vehicle_stats(vehicle.id)
+
+    assert dist == manual_distance
+    assert liters == manual_liters
+    assert price == manual_price
