@@ -150,6 +150,24 @@ def test_export_pdf(tmp_path, in_memory_storage):
     assert pdf_path.stat().st_size > 0
 
 
+def test_export_excel(tmp_path, in_memory_storage):
+    storage = in_memory_storage
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 5, 1),
+            vehicle_id=1,
+            odo_before=0,
+            odo_after=100,
+            amount_spent=50,
+            liters=20,
+        )
+    )
+    service = ReportService(storage)
+    xls_path = tmp_path / "report.xlsx"
+    service.export_excel(date(2024, 5, 1), 1, xls_path)
+    assert xls_path.exists()
+
+
 def test_export_pdf_cleanup_on_error(tmp_path, in_memory_storage, monkeypatch):
     storage = in_memory_storage
     storage.add_entry(

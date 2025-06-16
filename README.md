@@ -16,7 +16,7 @@
   exceeded. Usage in [BUDGET.md](docs/BUDGET.md).
 - **Maintenance scheduler** highlights overdue tasks. Learn more in
   [MAINTENANCE.md](docs/MAINTENANCE.md).
-- **CSV/PDF exporting** creates monthly reports, described in
+- **CSV/PDF/Excel exporting** creates monthly reports, described in
   [EXPORTING.md](docs/EXPORTING.md).
 
 ## ความต้องการ

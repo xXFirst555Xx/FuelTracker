@@ -26,8 +26,11 @@ def test_exporter_creates_files(
     exporter = Exporter(storage)
     csv_path = tmp_path / "out.csv"
     pdf_path = tmp_path / "out.pdf"
+    xls_path = tmp_path / "out.xlsx"
     exporter.monthly_csv(5, 2024, csv_path)
     exporter.monthly_pdf(5, 2024, pdf_path)
+    exporter.monthly_excel(5, 2024, xls_path)
     assert csv_path.exists()
     assert pdf_path.exists()
+    assert xls_path.exists()
     assert pdf_path.stat().st_size > 0

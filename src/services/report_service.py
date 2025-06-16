@@ -184,6 +184,14 @@ class ReportService:
             if chart_file and chart_file.exists():
                 chart_file.unlink()
 
+    def export_excel(self, month: date, vehicle_id: int, path: Path) -> None:
+        """ส่งออกรายการประจำเดือนเป็นไฟล์ Excel พร้อมสรุปข้อมูล"""
+        df = self._monthly_df(month, vehicle_id)
+        stats = self.get_monthly_stats(month, vehicle_id)
+        with pd.ExcelWriter(path) as writer:
+            df.to_excel(writer, index=False, sheet_name="entries")
+            pd.DataFrame([stats]).to_excel(writer, index=False, sheet_name="summary")
+
     # ------------------------------------------------------------------
     # Data helpers for UI charts
     # ------------------------------------------------------------------
