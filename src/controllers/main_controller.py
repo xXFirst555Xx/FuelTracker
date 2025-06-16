@@ -224,6 +224,10 @@ class MainController(QObject):
             w.saveBudgetButton.clicked.connect(self._save_budget)
         if hasattr(w, "vehicleListWidget"):
             w.vehicleListWidget.itemSelectionChanged.connect(self._vehicle_changed)
+        if hasattr(w, "searchLineEdit"):
+            w.searchLineEdit.textChanged.connect(self.filter_entries)
+        if hasattr(w, "startDateEdit"):
+            w.startDateEdit.dateChanged.connect(self.filter_entries)
         if hasattr(w, "sidebarList"):
             w.sidebarList.currentRowChanged.connect(self._switch_page)
         if hasattr(self, "reports_page"):
@@ -796,6 +800,34 @@ class MainController(QObject):
             points = sorted(by_type[fuel], key=lambda t: t[0])[-90:]
             ax.plot([d for d, _ in points], [float(p) for _, p in points])
         self.oil_dock.canvas.draw_idle()
+
+    def filter_entries(self) -> list[FuelEntry]:
+        """Filter entries based on search text and start date."""
+        entries = self.storage.list_entries()
+        if hasattr(self.window, "searchLineEdit"):
+            text = self.window.searchLineEdit.text().strip().lower()
+            if text:
+                entries = [
+                    e
+                    for e in entries
+                    if text in (self.storage.get_vehicle(e.vehicle_id).name.lower())
+                ]
+        if hasattr(self.window, "startDateEdit"):
+            start = self.window.startDateEdit.date().toPython()
+            entries = [e for e in entries if e.entry_date >= start]
+        if hasattr(self.window, "vehicleListWidget"):
+            lw = self.window.vehicleListWidget
+            lw.clear()
+            for e in entries:
+                dist = (
+                    e.odo_after - e.odo_before if e.odo_after is not None else 0
+                )
+                item = QListWidgetItem(
+                    f"{e.entry_date} - {dist} km"
+                )
+                item.setData(Qt.UserRole, e.id)
+                lw.addItem(item)
+        return entries
 
     # ------------------------------------------------------------------
     # Data modification helpers
