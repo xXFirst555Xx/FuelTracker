@@ -10,6 +10,8 @@
   [USAGE.md](docs/USAGE.md) for details.
 - **Automatic backups** keep up to 30 daily copies under
   `~/.fueltracker/backups/` (see [USAGE.md](docs/USAGE.md)).
+- **Graceful exit** removes the main window's event filter when the
+  application is about to quit.
 - **Monthly budget alerts** display a toast notification when the limit is
   exceeded. Usage in [BUDGET.md](docs/BUDGET.md).
 - **Maintenance scheduler** highlights overdue tasks. Learn more in

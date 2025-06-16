@@ -137,6 +137,9 @@ class MainController(QObject):
         self.thread_pool = QThreadPool.globalInstance()
         self._price_timer_started = False
         self.window.installEventFilter(self)
+        app = QApplication.instance()
+        if app:
+            app.aboutToQuit.connect(self.cleanup)
         self.entry_changed.connect(self._update_stats_panel)
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
@@ -549,6 +552,13 @@ class MainController(QObject):
     def delete_vehicle(self, vehicle_id: int) -> None:
         cmd = DeleteVehicleCommand(self.storage, vehicle_id)
         self.undo_stack.push(cmd)
+
+    def cleanup(self) -> None:
+        if hasattr(self.window, "removeEventFilter"):
+            try:
+                self.window.removeEventFilter(self)
+            except RuntimeError:
+                pass
 
     def shutdown(self) -> None:
         backup = self.storage.auto_backup()
