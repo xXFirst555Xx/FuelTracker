@@ -505,7 +505,7 @@ class MainController(QObject):
 
     def _schedule_price_update(self) -> None:
         class Job(QRunnable):
-            def run(inner_self) -> None:  # type: ignore[override]
+            def run(self) -> None:  # type: ignore[override]
                 with Session(self.storage.engine) as sess:
                     fetch_latest(sess)
                     self._load_prices()
