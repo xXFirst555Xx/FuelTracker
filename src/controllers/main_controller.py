@@ -354,6 +354,28 @@ class MainController(QObject):
         cost = total_price / total_distance if total_distance else 0.0
         self.stats_dock.kml_label.setText(f"km/L: {kmpl:.2f}")
         self.stats_dock.cost_label.setText(f"฿/km: {cost:.2f}")
+        self._update_tray_tooltip()
+
+    def _update_tray_tooltip(self) -> None:
+        """Update system tray tooltip with a short summary of the last entry."""
+        if not getattr(self, "tray_icon", None):
+            return
+        vid = self._selected_vehicle_id
+        if vid is None:
+            self.tray_icon.setToolTip("")
+            return
+        entries = self.storage.get_entries_by_vehicle(vid)
+        if not entries:
+            self.tray_icon.setToolTip("")
+            return
+        last = sorted(entries, key=lambda e: (e.entry_date, e.id))[-1]
+        parts = [str(last.entry_date)]
+        if last.odo_after is not None:
+            dist = last.odo_after - last.odo_before
+            parts.append(f"{dist:g} km")
+        if last.amount_spent is not None:
+            parts.append(f"฿{last.amount_spent:g}")
+        self.tray_icon.setToolTip(" - ".join(parts))
 
     def _check_budget(self, vehicle_id: int, entry_date: date) -> None:
         budget = self.storage.get_budget(vehicle_id)
@@ -471,6 +493,7 @@ class MainController(QObject):
         menu.addAction(quit_act)
         self.tray_icon.setContextMenu(menu)
         self.tray_icon.activated.connect(self._on_tray_activated)
+        self._update_tray_tooltip()
         self.tray_icon.show()
 
     def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
@@ -748,6 +771,7 @@ class MainController(QObject):
                 e.vehicle_id = vehicle_id
                 self.storage.add_entry(e)
             self.entry_changed.emit()
+            self._update_tray_tooltip()
 
     def open_about_dialog(self) -> None:
         dialog = load_about_dialog()

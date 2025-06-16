@@ -1,8 +1,10 @@
 import os
 import sys
+from datetime import date
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
 from src.controllers import MainController
+from src.models import Vehicle, FuelEntry
 
 
 def test_mainwindow_launch(monkeypatch):
@@ -30,3 +32,26 @@ def test_close_hides_window(qapp, tmp_path, monkeypatch):
     window.closeEvent(event)
     assert not event.isAccepted()
     assert hidden.get("h")
+
+
+def test_tray_tooltip_updates(qapp, tmp_path, monkeypatch):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    storage = ctrl.storage
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=1,
+            odo_before=0.0,
+            odo_after=10.0,
+            amount_spent=50.0,
+            liters=5.0,
+        )
+    )
+    ctrl._selected_vehicle_id = 1
+    tip = {}
+    monkeypatch.setattr(ctrl.tray_icon, "setToolTip", lambda t: tip.setdefault("v", t))
+    ctrl._update_tray_tooltip()
+    assert tip.get("v")
