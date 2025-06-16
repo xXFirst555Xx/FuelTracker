@@ -288,9 +288,16 @@
           <string>สำรองข้อมูลขึ้นคลาวด์อัตโนมัติ</string>
          </property>
          </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="cloudPathLayout">
+       </item>
+       <item>
+        <widget class="QCheckBox" name="hotkeyCheckBox">
+         <property name="text">
+          <string>เปิดใช้ปุ่มลัดเพิ่มรายการ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="cloudPathLayout">
             <item>
              <widget class="QLineEdit" name="cloudPathEdit">
               <property name="placeholderText">
