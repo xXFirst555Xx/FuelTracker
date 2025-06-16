@@ -1,7 +1,7 @@
-# OilPriceService Usage
+# การใช้งาน OilPriceService
 
-`fetch_latest(session)` downloads the current fuel prices from the Thai-Oil-API and stores them in the `FuelPrice` table. It skips a day if prices already exist for that date.
+`fetch_latest(session)` จะดาวน์โหลดราคาน้ำมันล่าสุดจาก Thai-Oil-API และบันทึกลงตาราง `FuelPrice` โดยจะข้ามวันที่มีข้อมูลอยู่แล้ว
 
-Use `get_price(session, fuel_type, station, date)` to retrieve a `Decimal` price or `None` when no data is available.
+ใช้ `get_price(session, fuel_type, station, date)` เพื่อดึงราคาน้ำมันในรูป `Decimal` หรือ `None` หากไม่มีข้อมูล
 
-If network errors occur, ensure your environment allows outbound HTTPS requests to `api.chnwt.dev`.
+หากเกิดข้อผิดพลาดด้านเครือข่าย ตรวจสอบว่าระบบอนุญาตให้เชื่อมต่อ HTTPS ไปยัง `api.chnwt.dev`

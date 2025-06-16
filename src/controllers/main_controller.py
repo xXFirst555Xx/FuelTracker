@@ -86,12 +86,12 @@ class MaintenanceDock(QDockWidget):
 
 
 class OilPricesDock(QDockWidget):
-    """Dock displaying stored oil prices."""
+    """Dock แสดงราคาน้ำมันที่บันทึกไว้."""
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
-        super().__init__("Oil Prices", parent)
+        super().__init__("ราคาน้ำมัน", parent)
         self.table = QTableWidget(0, 3)
-        self.table.setHorizontalHeaderLabels(["date", "fuel_type", "price"])
+        self.table.setHorizontalHeaderLabels(["วันที่", "ประเภทเชื้อเพลิง", "ราคา"])
         self.figure = Figure(figsize=(4, 3))
         self.canvas = FigureCanvasQTAgg(self.figure)
         widget = QWidget()
@@ -490,7 +490,7 @@ class MainController(QObject):
             self.window.stackedWidget.setCurrentWidget(self.window.settingsPage)
 
     # ------------------------------------------------------------------
-    # Oil price scheduler
+    # ตัวจัดตารางราคาน้ำมัน
     # ------------------------------------------------------------------
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # type: ignore[override]
