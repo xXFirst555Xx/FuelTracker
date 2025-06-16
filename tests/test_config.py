@@ -10,6 +10,7 @@ def test_config_roundtrip(tmp_path):
         hide_on_close=False,
         global_hotkey_enabled=False,
         hotkey="Ctrl+Shift+N",
+        start_minimized=True,
     )
     cfg.save(path)
     loaded = AppConfig.load(path)
@@ -19,3 +20,4 @@ def test_config_roundtrip(tmp_path):
     assert loaded.hide_on_close is False
     assert loaded.global_hotkey_enabled is False
     assert loaded.hotkey == "Ctrl+Shift+N"
+    assert loaded.start_minimized is True

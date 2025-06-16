@@ -290,14 +290,21 @@
          </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="hotkeyCheckBox">
-         <property name="text">
-          <string>เปิดใช้ปุ่มลัดเพิ่มรายการ</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="cloudPathLayout">
+       <widget class="QCheckBox" name="hotkeyCheckBox">
+        <property name="text">
+         <string>เปิดใช้ปุ่มลัดเพิ่มรายการ</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="startupShortcutButton">
+        <property name="text">
+         <string>เริ่มพร้อมวินโดวส์</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="cloudPathLayout">
             <item>
              <widget class="QLineEdit" name="cloudPathEdit">
               <property name="placeholderText">

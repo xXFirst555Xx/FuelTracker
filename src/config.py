@@ -16,6 +16,7 @@ class AppConfig:
     hide_on_close: bool = os.name == "nt"
     global_hotkey_enabled: bool = True
     hotkey: str = "Ctrl+Shift+N"
+    start_minimized: bool = False
 
     @classmethod
     def load(cls, path: Path | None = None) -> "AppConfig":
@@ -30,6 +31,7 @@ class AppConfig:
                 hide_on_close=bool(data.get("hide_on_close", os.name == "nt")),
                 global_hotkey_enabled=bool(data.get("global_hotkey_enabled", True)),
                 hotkey=data.get("hotkey", "Ctrl+Shift+N"),
+                start_minimized=bool(data.get("start_minimized", False)),
             )
         except Exception:
             return cls()
