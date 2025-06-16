@@ -212,6 +212,7 @@ class ReportService:
             )
 
         df = pd.DataFrame(data)
+        df["date"] = pd.to_datetime(df["date"])  # ensure datetimelike for .dt
         df["month"] = df["date"].dt.to_period("M")
         grouped = (
             df.groupby("month")[["distance", "liters", "amount_spent"]]
