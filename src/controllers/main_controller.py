@@ -210,6 +210,8 @@ class MainController(QObject):
         if app:
             app.aboutToQuit.connect(self.cleanup)
             app.aboutToQuit.connect(self.shutdown)
+            if hasattr(app, "paletteChanged"):
+                app.paletteChanged.connect(self._on_palette_changed)
         self.entry_changed.connect(self._update_stats_panel)
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
@@ -449,6 +451,10 @@ class MainController(QObject):
                 )
             except Exception:
                 pass
+
+    def _on_palette_changed(self, *_: object) -> None:
+        """Refresh stylesheet when the application's palette changes."""
+        self._setup_style()
 
     def _setup_style(self) -> None:
         """ปรับสไตล์ชีตของแอปตามธีมที่เลือก"""
