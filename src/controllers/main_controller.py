@@ -440,6 +440,15 @@ class MainController(QObject):
             "ถึงกำหนดบำรุงรักษา",
             f"งานที่ถึงกำหนด: {names}",
         )
+        if os.name == "nt":
+            try:
+                ToastNotifier().show_toast(
+                    "FuelTracker",
+                    f"ถึงกำหนดบำรุงรักษา: {names}",
+                    threaded=True,
+                )
+            except Exception:
+                pass
 
     def _setup_style(self) -> None:
         """ปรับสไตล์ชีตของแอปตามธีมที่เลือก"""
