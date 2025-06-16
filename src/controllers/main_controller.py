@@ -21,7 +21,18 @@ from PySide6.QtWidgets import (
     QMenu,
 )
 from PySide6.QtGui import QDoubleValidator, QUndoStack, QIcon, QAction
-from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
+from PySide6.QtCore import (
+    Qt,
+    QObject,
+    Signal,
+    QEvent,
+    QRunnable,
+    QThreadPool,
+    QTimer,
+    QPropertyAnimation,
+    QPoint,
+    QParallelAnimationGroup,
+)
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
 try:
@@ -451,14 +462,42 @@ class MainController(QObject):
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
             return
-        if index == 0:
-            self.show_dashboard()
-        elif index == 1:
-            self.show_add_entry_page()
-        elif index == 2:
-            self.show_report_page()
-        elif index == 3:
-            self.show_settings_page()
+        stack = self.window.stackedWidget
+        if index < 0 or index >= stack.count():
+            return
+        current_idx = stack.currentIndex()
+        if current_idx == index:
+            return
+
+        current_widget = stack.currentWidget()
+        next_widget = stack.widget(index)
+        width = stack.frameRect().width()
+        direction = 1 if index > current_idx else -1
+
+        # Position the incoming widget just outside of view
+        next_widget.move(direction * width, 0)
+        next_widget.show()
+
+        anim_old = QPropertyAnimation(current_widget, b"pos", stack)
+        anim_old.setDuration(300)
+        anim_old.setStartValue(current_widget.pos())
+        anim_old.setEndValue(QPoint(-direction * width, 0))
+
+        anim_new = QPropertyAnimation(next_widget, b"pos", stack)
+        anim_new.setDuration(300)
+        anim_new.setStartValue(next_widget.pos())
+        anim_new.setEndValue(QPoint(0, 0))
+
+        group = QParallelAnimationGroup(stack)
+        group.addAnimation(anim_old)
+        group.addAnimation(anim_new)
+
+        def _finalize() -> None:
+            stack.setCurrentIndex(index)
+            current_widget.move(0, 0)
+
+        group.finished.connect(_finalize)
+        group.start()
 
     def refresh_vehicle_list(self) -> None:
         if hasattr(self.window, "vehicleListWidget"):
