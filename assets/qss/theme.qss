@@ -46,7 +46,7 @@ QListWidget {
     border: none;
 }
 QListWidget::item {
-    padding: 12px 16px;
+    padding: 16px 20px;
 }
 QListWidget::item:selected {
     background: #E3F2FD;

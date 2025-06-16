@@ -51,7 +51,7 @@ QListWidget {
 }
 
 QListWidget::item {
-    padding: 14px 18px;
+    padding: 18px 22px;
 }
 
 QListWidget::item:selected {

@@ -28,6 +28,15 @@
          <pointsize>11</pointsize>
         </font>
        </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="spacing">
+        <number>8</number>
+       </property>
        <item>
         <property name="text">
          <string>หน้าหลัก</string>
