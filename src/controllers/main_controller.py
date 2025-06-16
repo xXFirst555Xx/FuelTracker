@@ -1054,6 +1054,7 @@ class MainController(QObject):
                 pass
         self.settings.setValue("windowGeometry", self.window.saveGeometry())
         self.settings.setValue("windowState", self.window.saveState())
+        self._unregister_hotkey()
 
     def shutdown(self) -> None:
         backup = self.storage.auto_backup()

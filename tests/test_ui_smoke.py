@@ -68,3 +68,11 @@ def test_hotkey_invokes_dialog(qapp, tmp_path, monkeypatch):
     ctrl._on_hotkey()
     assert called.get("ok")
     assert visible.get("v")
+
+
+def test_cleanup_unregisters_hotkey(qapp, tmp_path):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    # Hotkeys are enabled by default, so a GlobalHotkey instance should exist
+    assert ctrl.global_hotkey is not None
+    ctrl.cleanup()
+    assert ctrl.global_hotkey is None
