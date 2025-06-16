@@ -1,0 +1,40 @@
+/* Vivid theme ------------------------------------------------------------ */
+* {
+    font-family: "Tahoma", "Arial", sans-serif;
+    font-size: 11pt;
+    color: #222222;
+}
+
+QMainWindow {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #FF9800, stop:1 #E91E63);
+}
+
+QDialog {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 #FFEB3B, stop:1 #E1BEE7);
+}
+
+QPushButton {
+    background-color: #2196F3;
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+
+QPushButton:hover {
+    background-color: #1976D2;
+}
+
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+QToolTip {
+    background-color: #555555;
+    color: #FFFFFF;
+    border: none;
+}

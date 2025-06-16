@@ -35,6 +35,13 @@ def test_modern_theme_cli(qapp, tmp_path, monkeypatch):
     assert "#f5f7fa" in qapp.styleSheet()
 
 
+def test_vivid_theme_env(qapp, tmp_path, monkeypatch):
+    monkeypatch.setenv("FT_THEME", "vivid")
+    qapp.setStyleSheet("")
+    MainController(db_path=tmp_path / "t.db")
+    assert "#FF9800" in qapp.styleSheet()
+
+
 def test_theme_persisted(qapp, tmp_path):
     cfg_path = tmp_path / "conf.json"
     AppConfig().save(cfg_path)

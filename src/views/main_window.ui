@@ -269,13 +269,18 @@
             </property>
            </item>
            <item>
-            <property name="text">
-             <string>modern</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-        </layout>
+           <property name="text">
+            <string>modern</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>vivid</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
        </item>
        <item>
         <widget class="QCheckBox" name="syncCheckBox">

@@ -419,6 +419,7 @@ class MainController(QObject):
             "light": "theme.qss",
             "dark": "theme_dark.qss",
             "modern": "modern.qss",
+            "vivid": "vivid.qss",
         }
         qss_file = qss_map.get(theme)
         if qss_file:
