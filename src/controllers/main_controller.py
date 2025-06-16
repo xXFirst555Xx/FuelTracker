@@ -504,13 +504,18 @@ class MainController(QObject):
         return super().eventFilter(obj, event)
 
     def _schedule_price_update(self) -> None:
-        class Job(QRunnable):
-            def run(self) -> None:  # type: ignore[override]
-                with Session(self.storage.engine) as sess:
-                    fetch_latest(sess)
-                    self._load_prices()
 
-        self.thread_pool.start(Job())
+        class Job(QRunnable):
+            def __init__(self, controller: "MainController") -> None:
+                super().__init__()
+                self.controller = controller
+
+            def run(self) -> None:  # type: ignore[override]
+                with Session(self.controller.storage.engine) as sess:
+                    fetch_latest(sess)
+                    self.controller._load_prices()
+
+        self.thread_pool.start(Job(self))
         QTimer.singleShot(86_400_000, self._schedule_price_update)
 
     def _load_prices(self) -> None:
