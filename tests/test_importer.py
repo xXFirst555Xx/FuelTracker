@@ -6,6 +6,9 @@ from sqlalchemy.pool import StaticPool
 from src.models import FuelEntry, Vehicle
 from src.services import StorageService, Exporter
 from src.services.importer import Importer
+from src.controllers.main_controller import MainController
+from src.views import load_add_entry_dialog
+from PySide6.QtWidgets import QDialog
 
 
 def _new_storage():
@@ -48,4 +51,40 @@ def test_importer_roundtrip(tmp_path: Path):
     assert len(saved) == len(entries) == 1
     assert saved[0].odo_after == 100
     assert saved[0].liters == 20
+
+
+def test_prefill_odometer(qapp, tmp_path, monkeypatch):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    storage = ctrl.storage
+    storage.add_vehicle(
+        Vehicle(name="Car", vehicle_type="sedan", license_plate="A", tank_capacity_liters=40)
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 6, 1),
+            vehicle_id=1,
+            odo_before=0,
+            odo_after=500,
+            liters=20,
+            amount_spent=50,
+        )
+    )
+
+    dialog = load_add_entry_dialog()
+
+    def fake_load():
+        return dialog
+
+    monkeypatch.setattr(
+        "src.controllers.main_controller.load_add_entry_dialog", fake_load
+    )
+
+    def fake_exec():
+        assert float(dialog.odoBeforeEdit.text()) == 500.0
+        assert float(dialog.odoAfterEdit.text()) == 500.0
+        return QDialog.Rejected
+
+    monkeypatch.setattr(dialog, "exec", fake_exec)
+
+    ctrl.open_add_entry_dialog()
 

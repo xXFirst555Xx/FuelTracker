@@ -644,8 +644,29 @@ class MainController(QObject):
             dialog.litersEdit.setText(f"{liters.quantize(Decimal('0.01'))}")
 
         dialog.amountEdit.editingFinished.connect(_auto_calc)
+
+        def _prefill() -> None:
+            vid = dialog.vehicleComboBox.currentData()
+            if vid is None:
+                return
+            with Session(self.storage.engine) as sess:
+                stmt = (
+                    select(FuelEntry)
+                    .where(FuelEntry.vehicle_id == vid)
+                    .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                )
+                last = sess.exec(stmt).first()
+            if last is not None and last.odo_after is not None:
+                dialog.odoBeforeEdit.setText(str(last.odo_after))
+                dialog.odoAfterEdit.setText(str(last.odo_after))
+            else:
+                dialog.odoBeforeEdit.clear()
+                dialog.odoAfterEdit.clear()
+
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
+        _prefill()
+        dialog.vehicleComboBox.currentIndexChanged.connect(_prefill)
         if dialog.exec() == QDialog.Accepted:
             vehicle_id = dialog.vehicleComboBox.currentData()
             try:
