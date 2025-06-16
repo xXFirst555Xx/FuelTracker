@@ -17,8 +17,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QFileDialog,
+    QSystemTrayIcon,
+    QMenu,
 )
-from PySide6.QtGui import QDoubleValidator, QUndoStack
+from PySide6.QtGui import QDoubleValidator, QUndoStack, QIcon, QAction
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
@@ -180,10 +182,12 @@ class MainController(QObject):
         app = QApplication.instance()
         if app:
             app.aboutToQuit.connect(self.cleanup)
+            app.aboutToQuit.connect(self.shutdown)
         self.entry_changed.connect(self._update_stats_panel)
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
         self._connect_signals()
+        self._setup_tray()
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
@@ -415,6 +419,34 @@ class MainController(QObject):
                     app.setStyleSheet(fh.read())
             except OSError:
                 pass
+
+    def _setup_tray(self) -> None:
+        """สร้างไอคอนใน system tray พร้อมเมนู"""
+        icon = QIcon("icons:home.svg")
+        self.tray_icon = QSystemTrayIcon(icon, self.window)
+        menu = QMenu(self.window)
+        add_act = QAction("เพิ่มรายการใหม่", self.window)
+        add_act.triggered.connect(self.open_add_entry_dialog)
+        menu.addAction(add_act)
+        show_act = QAction("เปิดหน้าต่างหลัก", self.window)
+        show_act.triggered.connect(self.window.show)
+        menu.addAction(show_act)
+        quit_act = QAction("ออก", self.window)
+        quit_act.triggered.connect(self._tray_quit)
+        menu.addAction(quit_act)
+        self.tray_icon.setContextMenu(menu)
+        self.tray_icon.activated.connect(self._on_tray_activated)
+        self.tray_icon.show()
+
+    def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
+        if reason == QSystemTrayIcon.Trigger:
+            self.window.show()
+
+    def _tray_quit(self) -> None:
+        self.shutdown()
+        app = QApplication.instance()
+        if app:
+            app.quit()
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):
