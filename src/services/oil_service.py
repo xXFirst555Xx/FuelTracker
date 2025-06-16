@@ -32,7 +32,7 @@ _THAI_MONTHS = {
 
 
 def _parse_thai_date(text: str) -> date:
-    """Convert Thai date string from the API to :class:`~datetime.date`."""
+    """แปลงวันที่ภาษาไทยจาก API เป็น :class:`~datetime.date`"""
 
     day_str, month_name, year_str = text.split()
     year = int(year_str) - 543  # convert Buddhist Era to Gregorian
@@ -66,7 +66,7 @@ def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
 
 
 def fetch_latest(session: Session, station: str = "ptt") -> None:
-    """Fetch and store the latest fuel prices from the Thai Oil API."""
+    """ดึงและบันทึกราคาน้ำมันล่าสุดจาก Thai Oil API"""
 
     resp = _HTTP_SESSION.get(f"{API_BASE}/latest", timeout=5)
     resp.raise_for_status()

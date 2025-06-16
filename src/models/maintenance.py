@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 
 
 class Maintenance(SQLModel, table=True):
-    """Scheduled maintenance task for a vehicle."""
+    """งานบำรุงรักษาที่กำหนดไว้ของยานพาหนะ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
     vehicle_id: int

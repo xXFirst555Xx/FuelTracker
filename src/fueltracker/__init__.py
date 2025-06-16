@@ -1,1 +1,1 @@
-"""FuelTracker package."""
+"""แพ็กเกจ FuelTracker"""

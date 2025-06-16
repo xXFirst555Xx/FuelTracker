@@ -259,7 +259,7 @@ class StorageService:
     # ------------------------------------------------------------------
 
     def set_budget(self, vehicle_id: int, amount: float) -> None:
-        """Set monthly budget for a vehicle."""
+        """ตั้งงบประมาณรายเดือนของยานพาหนะ"""
         with Session(self.engine) as session:
             budget = session.exec(
                 select(Budget).where(Budget.vehicle_id == vehicle_id)
@@ -299,9 +299,9 @@ class StorageService:
         now: datetime | None = None,
         backup_dir: Path | None = None,
     ) -> Path:
-        """Copy the database file to a timestamped backup path.
+        """คัดลอกไฟล์ฐานข้อมูลไปยังที่สำรองโดยมีเวลาในชื่อไฟล์
 
-        Returns the created backup path.
+        คืนค่าที่ตั้งไฟล์สำรองที่สร้างขึ้น
         """
 
         if self._db_path is None:
@@ -323,7 +323,7 @@ class StorageService:
         return backup_path
 
     def sync_to_cloud(self, backup_dir: Path, cloud_dir: Path) -> None:
-        """Copy backup directory to a cloud-synced folder."""
+        """คัดลอกโฟลเดอร์สำรองขึ้นพื้นที่ซิงก์คลาวด์"""
         cloud_dir.mkdir(parents=True, exist_ok=True)
         for file in backup_dir.glob("*.db"):
             shutil.copy2(file, cloud_dir / file.name)

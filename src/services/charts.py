@@ -30,18 +30,18 @@ def _monthly_data(entries: List[FuelEntry], year: int):
 
 
 def monthly_summary(storage: StorageService, year: int) -> Figure:
-    """Generate a matplotlib figure summarizing monthly data for a year."""
+    """สร้างกราฟสรุปข้อมูลรายเดือนของหนึ่งปี"""
     entries = storage.list_entries()
     months, distance, liters, kmpl = _monthly_data(entries, year)
 
     fig, axes = plt.subplots(3, 1, figsize=(8, 9), sharex=True)
     axes[0].bar(months, distance)
-    axes[0].set_ylabel("km")
+    axes[0].set_ylabel("กม.")
     axes[1].bar(months, liters)
-    axes[1].set_ylabel("L")
+    axes[1].set_ylabel("ลิตร")
     axes[2].bar(months, kmpl)
-    axes[2].set_ylabel("km/L")
-    axes[2].set_xlabel("month")
+    axes[2].set_ylabel("กม./ลิตร")
+    axes[2].set_xlabel("เดือน")
     fig.tight_layout()
     return fig
 

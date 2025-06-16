@@ -189,7 +189,7 @@ class ReportService:
     # ------------------------------------------------------------------
 
     def last_year_summary(self) -> pd.DataFrame:
-        """Return aggregated data for the last 12 months."""
+        """คืนข้อมูลสรุปรวมของ 12 เดือนล่าสุด"""
         entries = self.storage.list_entries()
         data = []
         for e in entries:
@@ -222,7 +222,7 @@ class ReportService:
         return grouped.tail(12).reset_index()
 
     def liters_by_type(self) -> pd.Series:
-        """Aggregate liters by fuel type."""
+        """รวมปริมาณเชื้อเพลิงตามประเภท"""
         entries = self.storage.list_entries()
         data: Dict[str, float] = {}
         for e in entries:
