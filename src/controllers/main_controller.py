@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
+    QFileDialog,
 )
 from PySide6.QtGui import QDoubleValidator, QUndoStack
 from PySide6.QtCore import Qt, QObject, Signal, QEvent, QRunnable, QThreadPool, QTimer
@@ -120,7 +121,8 @@ class MainController(QObject):
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
-        self.cloud_path: Path | None = None
+        env_cloud = os.getenv("FT_CLOUD_DIR")
+        self.cloud_path: Path | None = Path(env_cloud) if env_cloud else None
         self._selected_vehicle_id = None
         self.stats_dock = StatsDock(self.window)
         self.maint_dock = MaintenanceDock(self.window)
@@ -134,6 +136,10 @@ class MainController(QObject):
                 self.window.reportsContainer, self.reports_page
             )
             self.window.reportsContainer.deleteLater()
+        if hasattr(self.window, "syncCheckBox"):
+            self.window.syncCheckBox.setChecked(self.sync_enabled)
+        if hasattr(self.window, "cloudPathEdit") and self.cloud_path:
+            self.window.cloudPathEdit.setText(str(self.cloud_path))
         self.thread_pool = QThreadPool.globalInstance()
         self._price_timer_started = False
         self.window.installEventFilter(self)
@@ -162,6 +168,10 @@ class MainController(QObject):
             w.backButton.clicked.connect(self.show_dashboard)
         if hasattr(w, "aboutButton"):
             w.aboutButton.clicked.connect(self.open_about_dialog)
+        if hasattr(w, "syncCheckBox"):
+            w.syncCheckBox.toggled.connect(self._toggle_sync)
+        if hasattr(w, "browseCloudButton"):
+            w.browseCloudButton.clicked.connect(self._browse_cloud_path)
         if hasattr(w, "vehicleListWidget"):
             w.vehicleListWidget.itemSelectionChanged.connect(self._vehicle_changed)
         if hasattr(w, "sidebarList"):
@@ -169,6 +179,16 @@ class MainController(QObject):
         if hasattr(self, "reports_page"):
             self.reports_page.export_button.clicked.connect(self.export_report)
             self.reports_page.refresh_button.clicked.connect(self.reports_page.refresh)
+
+    def _toggle_sync(self, checked: bool) -> None:
+        self.sync_enabled = checked
+
+    def _browse_cloud_path(self) -> None:
+        path = QFileDialog.getExistingDirectory(self.window, self.tr("เลือกโฟลเดอร์ซิงก์"))
+        if path:
+            self.cloud_path = Path(path)
+            if hasattr(self.window, "cloudPathEdit"):
+                self.window.cloudPathEdit.setText(path)
 
     def _vehicle_changed(self) -> None:
         item = self.window.vehicleListWidget.currentItem()

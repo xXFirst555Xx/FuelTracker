@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 import csv
+import pandas as pd
 from reportlab.pdfgen import canvas
 
 from ..models import FuelEntry
@@ -59,3 +60,22 @@ class Exporter:
             c.drawString(50, y, line)
             y -= 20
         c.save()
+
+    def monthly_excel(self, month: int, year: int, path: Path) -> None:
+        entries = self._entries(month, year)
+        data = []
+        for e in entries:
+            dist = e.odo_after - e.odo_before if e.odo_after is not None else None
+            data.append(
+                {
+                    "date": e.entry_date,
+                    "odo_before": e.odo_before,
+                    "odo_after": e.odo_after,
+                    "distance": dist,
+                    "liters": e.liters,
+                    "amount_spent": e.amount_spent,
+                }
+            )
+        df = pd.DataFrame(data)
+        with pd.ExcelWriter(path) as writer:
+            df.to_excel(writer, index=False)
