@@ -22,6 +22,7 @@ def run(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("command", nargs="?")
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--start-minimized", action="store_true")
     args, _ = parser.parse_known_args(argv)
 
     if args.command == "migrate":
@@ -41,6 +42,7 @@ def run(argv: list[str] | None = None) -> None:
 
     # --- NEW: use MainController instead of bare MainWindow ---
     from src.controllers.main_controller import MainController
+
     global _controller
     _controller = MainController()
     window = _controller.window
@@ -52,4 +54,6 @@ def run(argv: list[str] | None = None) -> None:
         return
 
     window.show()
+    if args.start_minimized or _controller.config.start_minimized:
+        window.hide()
     sys.exit(app.exec())

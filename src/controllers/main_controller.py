@@ -58,6 +58,7 @@ except Exception:  # pragma: no cover - optional on non-Windows systems
 
 from pathlib import Path
 import os
+import sys
 from datetime import timedelta
 
 from sqlmodel import Session, select
@@ -202,7 +203,9 @@ class MainController(QObject):
         if hasattr(self.window, "updateIntervalSpinBox"):
             self.window.updateIntervalSpinBox.setValue(self.config.update_hours)
         if hasattr(self.window, "themeComboBox"):
-            idx = self.window.themeComboBox.findText(self.config.theme, Qt.MatchFixedString)
+            idx = self.window.themeComboBox.findText(
+                self.config.theme, Qt.MatchFixedString
+            )
             if idx >= 0:
                 self.window.themeComboBox.setCurrentIndex(idx)
         self.thread_pool = QThreadPool.globalInstance()
@@ -281,6 +284,8 @@ class MainController(QObject):
         self.shortcut_about.activated.connect(self.open_about_dialog)
         if hasattr(w, "hotkeyCheckBox"):
             w.hotkeyCheckBox.toggled.connect(self._toggle_hotkey)
+        if hasattr(w, "startupShortcutButton"):
+            w.startupShortcutButton.clicked.connect(self._toggle_startup_shortcut)
 
     def _toggle_sync(self, checked: bool) -> None:
         self.sync_enabled = checked
@@ -304,6 +309,32 @@ class MainController(QObject):
         self.config.theme = name.lower()
         self.config.save(self.config_path)
         self._setup_style()
+
+    def _toggle_startup_shortcut(self) -> None:
+        if os.name != "nt":
+            QMessageBox.information(self.window, "ไม่รองรับ", "ใช้ได้เฉพาะบน Windows")
+            return
+        startup = (
+            Path(os.getenv("APPDATA", ""))
+            / "Microsoft"
+            / "Windows"
+            / "Start Menu"
+            / "Programs"
+            / "Startup"
+        )
+        shortcut = startup / "FuelTracker.cmd"
+        if shortcut.exists():
+            shortcut.unlink()
+            QMessageBox.information(
+                self.window, "ปิดการทำงานอัตโนมัติ", "ลบทางลัดเริ่มอัตโนมัติแล้ว"
+            )
+        else:
+            startup.mkdir(parents=True, exist_ok=True)
+            cmd = (
+                f'@echo off\r\n"{sys.executable}" -m fueltracker --start-minimized\r\n'
+            )
+            shortcut.write_text(cmd, encoding="utf-8")
+            QMessageBox.information(self.window, "ตั้งค่าเรียบร้อย", "สร้างทางลัดเริ่มอัตโนมัติแล้ว")
 
     def _budget_vehicle_changed(self) -> None:
         if not hasattr(self.window, "budgetVehicleComboBox"):
@@ -473,7 +504,9 @@ class MainController(QObject):
                 if arg.startswith("--theme="):
                     theme = arg.split("=", 1)[1]
                     break
-        theme = (theme or os.getenv("FT_THEME") or self.config.theme or "system").lower()
+        theme = (
+            theme or os.getenv("FT_THEME") or self.config.theme or "system"
+        ).lower()
         if self._dark_mode is not None:
             theme = "dark" if self._dark_mode else "light"
         if theme == "system":
@@ -1011,12 +1044,8 @@ class MainController(QObject):
             lw = self.window.vehicleListWidget
             lw.clear()
             for e in entries:
-                dist = (
-                    e.odo_after - e.odo_before if e.odo_after is not None else 0
-                )
-                item = QListWidgetItem(
-                    f"{e.entry_date} - {dist} km"
-                )
+                dist = e.odo_after - e.odo_before if e.odo_after is not None else 0
+                item = QListWidgetItem(f"{e.entry_date} - {dist} km")
                 item.setData(Qt.UserRole, e.id)
                 lw.addItem(item)
         return entries
