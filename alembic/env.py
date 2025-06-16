@@ -12,7 +12,11 @@ from src import models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    try:
+        fileConfig(config.config_file_name)
+    except Exception:
+        # Fallback if logging configuration is not defined in alembic.ini
+        pass
 
 target_metadata = SQLModel.metadata
 

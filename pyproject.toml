@@ -15,6 +15,7 @@ dependencies = [
     "fpdf2",
     "matplotlib",
     "python-dotenv",
+    "alembic",
     "reportlab",
     "win10toast; sys_platform == 'win32'",
     "requests",
