@@ -5,7 +5,7 @@ from PySide6.QtCore import QTimer
 
 def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
     cfg_path = tmp_path / "conf.json"
-    AppConfig(default_station="bcp", update_hours=6).save(cfg_path)
+    AppConfig(default_station="bcp", update_hours=6, theme="dark").save(cfg_path)
     calls = {}
 
     def fake_single_shot(ms, cb):
@@ -24,3 +24,4 @@ def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
 
     assert calls["ms"] == 6 * 3_600_000
     assert calls["station"] == "bcp"
+    assert ctrl.config.theme == "dark"

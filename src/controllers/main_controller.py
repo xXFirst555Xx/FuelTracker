@@ -170,6 +170,10 @@ class MainController(QObject):
                 self.window.stationComboBox.setCurrentIndex(idx)
         if hasattr(self.window, "updateIntervalSpinBox"):
             self.window.updateIntervalSpinBox.setValue(self.config.update_hours)
+        if hasattr(self.window, "themeComboBox"):
+            idx = self.window.themeComboBox.findText(self.config.theme, Qt.MatchFixedString)
+            if idx >= 0:
+                self.window.themeComboBox.setCurrentIndex(idx)
         self.thread_pool = QThreadPool.globalInstance()
         self._price_timer_started = False
         self.window.installEventFilter(self)
@@ -210,6 +214,8 @@ class MainController(QObject):
             w.stationComboBox.currentTextChanged.connect(self._station_changed)
         if hasattr(w, "updateIntervalSpinBox"):
             w.updateIntervalSpinBox.valueChanged.connect(self._interval_changed)
+        if hasattr(w, "themeComboBox"):
+            w.themeComboBox.currentTextChanged.connect(self._theme_changed)
         if hasattr(w, "budgetVehicleComboBox"):
             w.budgetVehicleComboBox.currentIndexChanged.connect(
                 self._budget_vehicle_changed
@@ -243,6 +249,11 @@ class MainController(QObject):
 
     def _interval_changed(self, hours: int) -> None:
         self.config.update_hours = int(hours)
+        self.config.save(self.config_path)
+
+    def _theme_changed(self, name: str) -> None:
+        self.config.theme = name.lower()
+        self._setup_style()
         self.config.save(self.config_path)
 
     def _budget_vehicle_changed(self) -> None:
@@ -378,7 +389,7 @@ class MainController(QObject):
                 if arg.startswith("--theme="):
                     theme = arg.split("=", 1)[1]
                     break
-        theme = (theme or os.getenv("FT_THEME", "system")).lower()
+        theme = (theme or os.getenv("FT_THEME") or self.config.theme or "system").lower()
         if self._dark_mode is not None:
             theme = "dark" if self._dark_mode else "light"
         if theme == "system":
