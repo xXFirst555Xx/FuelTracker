@@ -58,6 +58,12 @@ pip install -e .
 python -m fueltracker
 ```
 
+รันคำสั่งด้านล่างเพื่ออัปเกรดฐานข้อมูล:
+
+```bash
+python -m fueltracker migrate
+```
+
 การรันด้วย `-m` ช่วยให้โมดูลถูกค้นพบถูกต้อง ป้องกันปัญหาการนำเข้าแบบ relative
 
 ## การสร้างแพ็กเกจ

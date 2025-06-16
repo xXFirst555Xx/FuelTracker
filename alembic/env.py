@@ -1,7 +1,14 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
+from typing import Any
 from alembic import context
 from sqlmodel import SQLModel
+from pathlib import Path
+import sys
+
+# Ensure models are imported so SQLModel metadata is populated
+sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
+from src import models  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
@@ -18,8 +25,9 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    section: dict[str, Any] = config.get_section(config.config_ini_section) or {}
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
