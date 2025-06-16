@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AddMaintenanceDialog</class>
+ <widget class="QDialog" name="AddMaintenanceDialog">
+  <property name="windowTitle">
+   <string>กำหนดงานบำรุงรักษา</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="vehicleLabel">
+       <property name="text">
+        <string>รถ</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="vehicleComboBox"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="nameLabel">
+       <property name="text">
+        <string>รายการ</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="nameLineEdit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="odoLabel">
+       <property name="text">
+        <string>เลขไมล์ครบกำหนด</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="odoLineEdit"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="dateLabel">
+       <property name="text">
+        <string>วันครบกำหนด</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDateEdit" name="dateEdit">
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="noteLabel">
+       <property name="text">
+        <string>หมายเหตุ</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="noteLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
