@@ -32,6 +32,7 @@ from PySide6.QtCore import (
     QPropertyAnimation,
     QPoint,
     QParallelAnimationGroup,
+    QSettings,
 )
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
@@ -152,6 +153,13 @@ class MainController(QObject):
         self.exporter = Exporter(self.storage)
         self.importer = Importer(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
+        self.settings = QSettings("FuelTracker", "MainWindow")
+        geom = self.settings.value("windowGeometry")
+        if geom:
+            self.window.restoreGeometry(geom)
+        state = self.settings.value("windowState")
+        if state:
+            self.window.restoreState(state)
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
         env_cloud = os.getenv("FT_CLOUD_DIR")
@@ -919,6 +927,8 @@ class MainController(QObject):
                 self.window.removeEventFilter(self)
             except RuntimeError:
                 pass
+        self.settings.setValue("windowGeometry", self.window.saveGeometry())
+        self.settings.setValue("windowState", self.window.saveState())
 
     def shutdown(self) -> None:
         backup = self.storage.auto_backup()
