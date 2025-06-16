@@ -1,6 +1,8 @@
 import os
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QCloseEvent
+from src.controllers import MainController
 
 
 def test_mainwindow_launch(monkeypatch):
@@ -15,3 +17,16 @@ def test_mainwindow_launch(monkeypatch):
 
     run()
     assert shown
+
+
+def test_close_hides_window(qapp, tmp_path, monkeypatch):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    window = ctrl.window
+    monkeypatch.setattr(ctrl.tray_icon, "isVisible", lambda: True)
+    ctrl.config.hide_on_close = True
+    hidden = {}
+    monkeypatch.setattr(window, "hide", lambda: hidden.setdefault("h", True))
+    event = QCloseEvent()
+    window.closeEvent(event)
+    assert not event.isAccepted()
+    assert hidden.get("h")
