@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTabWidget,
     QGraphicsDropShadowEffect,
+    QComboBox,
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -42,15 +43,18 @@ class SummaryCard(QWidget):
 class _Worker(QThread):
     data_ready = Signal(object, object, object, object, object)
 
-    def __init__(self, service: ReportService, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, service: ReportService, vehicle_id: int, parent: QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self._service = service
+        self._vehicle_id = vehicle_id
 
     def run(self) -> None:  # type: ignore[override]
         yearly = self._service.last_year_summary()
         pie = self._service.liters_by_type()
         monthly = self._service.monthly_summary()
-        table = self._service._monthly_df(date.today(), 1)
+        table = self._service._monthly_df(date.today(), self._vehicle_id)
         # Build charts
         fig1 = Figure(figsize=(4, 3))
         ax1 = fig1.add_subplot(111)
@@ -124,18 +128,27 @@ class ReportsPage(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(self.splitter)
         btn_layout = QHBoxLayout()
+        self.vehicle_combo = QComboBox()
+        for v in self._service.storage.list_vehicles():
+            self.vehicle_combo.addItem(v.name, v.id)
+        btn_layout.addWidget(self.vehicle_combo)
         self.export_button = QPushButton(self.tr("ส่งออก PDF/CSV"))
         self.refresh_button = QPushButton(self.tr("รีเฟรชข้อมูล"))
         btn_layout.addWidget(self.export_button)
         btn_layout.addWidget(self.refresh_button)
         layout.addLayout(btn_layout)
 
+        self.vehicle_combo.currentIndexChanged.connect(self.refresh)
+
         self.refresh_button.clicked.connect(self.refresh)
 
     def refresh(self) -> None:
         if self._worker and self._worker.isRunning():
             return
-        self._worker = _Worker(self._service, self)
+        vid = self.vehicle_combo.currentData()
+        if vid is None:
+            vid = 1
+        self._worker = _Worker(self._service, int(vid), self)
         self._worker.data_ready.connect(self._apply_data)
         self._worker.start()
 
