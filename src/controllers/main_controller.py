@@ -25,6 +25,7 @@ from PySide6.QtGui import (
     QUndoStack,
     QIcon,
     QAction,
+    QCloseEvent,
     QShortcut,
     QKeySequence,
 )
@@ -214,6 +215,7 @@ class MainController(QObject):
         self._setup_style()
         self._connect_signals()
         self._setup_tray()
+        self.window.closeEvent = self._close_event  # type: ignore[assignment]
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
@@ -850,7 +852,8 @@ class MainController(QObject):
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # type: ignore[override]
         if (
-            obj is self.window
+            getattr(self, "window", None) is not None
+            and obj is self.window
             and event.type() == QEvent.Show
             and not self._price_timer_started
         ):
@@ -947,3 +950,14 @@ class MainController(QObject):
         backup = self.storage.auto_backup()
         if self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
+
+    def _close_event(self, event: QCloseEvent) -> None:
+        if (
+            getattr(self, "tray_icon", None)
+            and self.tray_icon.isVisible()
+            and self.config.hide_on_close
+        ):
+            event.ignore()
+            self.window.hide()
+        else:
+            event.accept()

@@ -1,4 +1,5 @@
 import json
+import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -12,6 +13,7 @@ class AppConfig:
     default_station: str = "ptt"
     update_hours: int = 24
     theme: str = "system"
+    hide_on_close: bool = os.name == "nt"
 
     @classmethod
     def load(cls, path: Path | None = None) -> "AppConfig":
@@ -23,6 +25,7 @@ class AppConfig:
                 default_station=data.get("default_station", "ptt"),
                 update_hours=int(data.get("update_hours", 24)),
                 theme=data.get("theme", "system"),
+                hide_on_close=bool(data.get("hide_on_close", os.name == "nt")),
             )
         except Exception:
             return cls()
