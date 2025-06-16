@@ -178,17 +178,38 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="cloudPathLayout">
+            <item>
+             <widget class="QLineEdit" name="cloudPathEdit">
+              <property name="placeholderText">
+               <string>โฟลเดอร์คลาวด์</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browseCloudButton">
+              <property name="text">
+               <string>เลือก...</string>
+              </property>
+             </widget>
+            </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="budgetLayout">
           <item>
-           <widget class="QLineEdit" name="cloudPathEdit">
+           <widget class="QComboBox" name="budgetVehicleComboBox"/>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="budgetEdit">
             <property name="placeholderText">
-             <string>โฟลเดอร์คลาวด์</string>
+             <string>งบต่อเดือน (บาท)</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="browseCloudButton">
+           <widget class="QPushButton" name="saveBudgetButton">
             <property name="text">
-             <string>เลือก...</string>
+             <string>บันทึกงบ</string>
             </property>
            </widget>
           </item>
