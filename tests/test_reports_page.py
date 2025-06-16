@@ -8,3 +8,12 @@ def test_refresh_updates_summary(qtbot, tmp_path):
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
         page.refresh_button.click()
     assert "km" in page.cards["distance"].value_label.text()
+
+
+def test_monthly_tab_populates(qtbot, tmp_path):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    page = ctrl.reports_page
+    qtbot.addWidget(page)
+    with qtbot.waitSignal(page.refresh_requested, timeout=2000):
+        page.refresh_button.click()
+    assert page.monthly_layout.count() > 0

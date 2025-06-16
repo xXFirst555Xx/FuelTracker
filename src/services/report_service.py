@@ -230,6 +230,32 @@ class ReportService:
         grouped["km_per_l"] = grouped["distance"] / grouped["liters"]
         return grouped.tail(12).reset_index()
 
+    def monthly_summary(self) -> pd.DataFrame:
+        """คืนข้อมูลสรุปรวมต่อเดือนจากทุกข้อมูลที่มี"""
+        entries = self.storage.list_entries()
+        data = []
+        for e in entries:
+            if e.odo_after is None or e.liters is None:
+                continue
+            dist = e.odo_after - e.odo_before
+            data.append(
+                {
+                    "date": e.entry_date,
+                    "distance": dist,
+                    "liters": e.liters,
+                }
+            )
+
+        if not data:
+            return pd.DataFrame(columns=["month", "distance", "liters", "km_per_l"])
+
+        df = pd.DataFrame(data)
+        df["date"] = pd.to_datetime(df["date"])
+        df["month"] = df["date"].dt.to_period("M")
+        grouped = df.groupby("month")[["distance", "liters"]].sum().sort_index()
+        grouped["km_per_l"] = grouped["distance"] / grouped["liters"]
+        return grouped.reset_index()
+
     def liters_by_type(self) -> pd.Series:
         """รวมปริมาณเชื้อเพลิงตามประเภท"""
         entries = self.storage.list_entries()
