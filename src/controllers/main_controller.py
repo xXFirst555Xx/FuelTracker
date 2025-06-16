@@ -20,7 +20,14 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
     QMenu,
 )
-from PySide6.QtGui import QDoubleValidator, QUndoStack, QIcon, QAction
+from PySide6.QtGui import (
+    QDoubleValidator,
+    QUndoStack,
+    QIcon,
+    QAction,
+    QShortcut,
+    QKeySequence,
+)
 from PySide6.QtCore import (
     Qt,
     QObject,
@@ -259,6 +266,12 @@ class MainController(QObject):
         self.maint_dock.add_button.clicked.connect(self.open_add_maintenance_dialog)
         self.maint_dock.edit_button.clicked.connect(self.open_edit_maintenance_dialog)
         self.maint_dock.done_button.clicked.connect(self.mark_selected_maintenance_done)
+        self.shortcut_new = QShortcut(QKeySequence("Ctrl+N"), w)
+        self.shortcut_new.setContext(Qt.ApplicationShortcut)
+        self.shortcut_new.activated.connect(self.open_add_entry_dialog)
+        self.shortcut_about = QShortcut(QKeySequence("F1"), w)
+        self.shortcut_about.setContext(Qt.ApplicationShortcut)
+        self.shortcut_about.activated.connect(self.open_about_dialog)
 
     def _toggle_sync(self, checked: bool) -> None:
         self.sync_enabled = checked
