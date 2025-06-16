@@ -220,6 +220,36 @@
         </layout>
        </item>
        <item>
+        <layout class="QHBoxLayout" name="themeLayout">
+         <item>
+          <widget class="QLabel" name="themeLabel">
+           <property name="text">
+            <string>ธีม</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="themeComboBox">
+           <item>
+            <property name="text">
+             <string>light</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>dark</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>modern</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QCheckBox" name="syncCheckBox">
          <property name="text">
           <string>สำรองข้อมูลขึ้นคลาวด์อัตโนมัติ</string>

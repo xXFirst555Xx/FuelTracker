@@ -11,6 +11,7 @@ class AppConfig:
 
     default_station: str = "ptt"
     update_hours: int = 24
+    theme: str = "light"
 
     @classmethod
     def load(cls, path: Path | None = None) -> "AppConfig":
@@ -21,6 +22,7 @@ class AppConfig:
             return cls(
                 default_station=data.get("default_station", "ptt"),
                 update_hours=int(data.get("update_hours", 24)),
+                theme=data.get("theme", "light"),
             )
         except Exception:
             return cls()
