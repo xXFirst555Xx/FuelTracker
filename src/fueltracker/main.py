@@ -6,8 +6,13 @@ import sys
 import logging
 import argparse
 import os
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QCoreApplication, Qt
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
+
+if TYPE_CHECKING:  # pragma: no cover - for type checkers only
+    from src.controllers.main_controller import MainController
 
 _controller: "MainController | None" = None
 
@@ -15,12 +20,23 @@ _controller: "MainController | None" = None
 def run(argv: list[str] | None = None) -> None:
     """Launch the FuelTracker UI."""
     parser = argparse.ArgumentParser()
+    parser.add_argument("command", nargs="?")
     parser.add_argument("--check", action="store_true")
     args, _ = parser.parse_known_args(argv)
+
+    if args.command == "migrate":
+        from alembic.config import Config
+        from alembic.command import upgrade
+
+        upgrade(Config(ALEMBIC_INI), "head")
+        return
 
     logging.basicConfig(level=logging.INFO)
     if args.check:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QCoreApplication, Qt
+
     app = QApplication.instance() or QApplication(sys.argv[:1])
 
     # --- NEW: use MainController instead of bare MainWindow ---

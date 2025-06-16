@@ -26,6 +26,12 @@ def main() -> None:
     if res.returncode != 0:
         errors.append("pip install")
 
+    # Install alembic for migrations
+    res = run([sys.executable, "-m", "pip", "install", "alembic"])
+    (REPORTS / "alembic_install.log").write_text(res.stdout + res.stderr)
+    if res.returncode != 0:
+        errors.append("alembic install")
+
     # 2. Import graph
     res = run(
         [
@@ -69,6 +75,12 @@ def main() -> None:
     summary.append("Mypy exit: " + str(res.returncode))
     if res.returncode != 0:
         errors.append("mypy")
+
+    # Apply database migrations
+    res = run([sys.executable, "-m", "fueltracker", "migrate"])
+    (REPORTS / "migrate.log").write_text(res.stdout + res.stderr)
+    if res.returncode != 0:
+        errors.append("migrate")
 
     # 5. Pytest
     res = run(["pytest", "-q"])
