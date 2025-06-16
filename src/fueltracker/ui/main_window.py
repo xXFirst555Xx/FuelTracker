@@ -1,4 +1,4 @@
-"""Qt MainWindow loader."""
+"""ตัวโหลด Qt MainWindow"""
 
 from __future__ import annotations
 
@@ -8,5 +8,5 @@ from src.views import load_ui
 
 
 def MainWindow() -> QMainWindow:
-    """Return the loaded main window."""
+    """คืนค่าหน้าต่างหลักที่โหลดแล้ว"""
     return load_ui("main_window")  # type: ignore[return-value]

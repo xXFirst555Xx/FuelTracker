@@ -1,4 +1,4 @@
-"""Application entry points."""
+"""จุดเริ่มต้นของโปรแกรม"""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ _controller: "MainController | None" = None
 
 
 def run(argv: list[str] | None = None) -> None:
-    """Launch the FuelTracker UI."""
+    """เปิดหน้าต่าง FuelTracker"""
     parser = argparse.ArgumentParser()
     parser.add_argument("command", nargs="?")
     parser.add_argument("--check", action="store_true")

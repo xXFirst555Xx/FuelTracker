@@ -1,12 +1,8 @@
-# FuelTracker Usage
+# การใช้งาน FuelTracker
 
-## Statistics Panel
-The main window now contains a dockable **Statistics** panel on the right. It
-shows the average kilometres per litre (`km/L`) and the cost per kilometre
-(`฿/km`) for the currently selected vehicle. The panel updates automatically
-whenever an entry is added or deleted.
+## แผงสถิติ
+หน้าต่างหลักมีแผง **สถิติ** ที่ย่อ/ขยายได้ทางขวา แสดงค่าเฉลี่ยกิโลเมตรต่อลิตร (`km/L`) และค่าใช้จ่ายต่อกิโลเมตร (`฿/km`) ของยานพาหนะที่เลือก แผงนี้จะอัปเดตอัตโนมัติเมื่อมีการเพิ่มหรือลบรายการ
 
-## Automatic Backups
-On application exit the database is copied to
-`~/.fueltracker/backups/YY-MM-DD_HHMM.db`. Up to 30 recent backups are kept and
-older files are removed automatically.
+## การสำรองข้อมูลอัตโนมัติ
+เมื่อปิดโปรแกรม ระบบจะคัดลอกฐานข้อมูลไปไว้ที่
+`~/.fueltracker/backups/YY-MM-DD_HHMM.db` เก็บไว้สูงสุด 30 ชุด และลบไฟล์เก่ากว่านั้นให้เอง

@@ -1,9 +1,9 @@
-# Exporting Reports
+# การส่งออกรายงาน
 
-The `Exporter` service can create monthly reports for all entries in a given
-month. Two formats are supported:
+บริการ `Exporter` สามารถสร้างรายงานประจำเดือนจากข้อมูลที่บันทึกไว้
+รองรับสองรูปแบบคือ
 
-* **CSV** via `Exporter.monthly_csv(month, year, path)`
-* **PDF** via `Exporter.monthly_pdf(month, year, path)`
+* **CSV** ด้วย `Exporter.monthly_csv(month, year, path)`
+* **PDF** ด้วย `Exporter.monthly_pdf(month, year, path)`
 
-Both methods take the month and year numbers plus a destination `Path` object.
+ทั้งสองเมทอดรับค่าเดือน ปี และเส้นทางปลายทางแบบ `Path`

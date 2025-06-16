@@ -63,10 +63,10 @@ DEFAULT_FUEL_TYPE = "e20"
 
 
 class StatsDock(QDockWidget):
-    """Dockable widget showing live statistics for a vehicle."""
+    """วิดเจ็ตแบบ Dock แสดงสถิติแบบเรียลไทม์ของยานพาหนะ"""
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
-        super().__init__("Statistics", parent)
+        super().__init__("สถิติ", parent)
         self.kml_label = QLabel("km/L: -")
         self.cost_label = QLabel("฿/km: -")
         widget = QWidget()
@@ -77,10 +77,10 @@ class StatsDock(QDockWidget):
 
 
 class MaintenanceDock(QDockWidget):
-    """Dockable widget listing upcoming maintenance tasks."""
+    """วิดเจ็ตแบบ Dock แสดงรายการงานบำรุงรักษาที่จะมาถึง"""
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
-        super().__init__("Maintenance", parent)
+        super().__init__("บำรุงรักษา", parent)
         self.list_widget = QListWidget()
         self.setWidget(self.list_widget)
 
@@ -208,14 +208,14 @@ class MainController(QObject):
         if total > budget:
             QMessageBox.warning(
                 self.window,
-                "Budget exceeded",
-                "This month's fuel spending exceeded the set budget.",
+                "เกินงบประมาณ",
+                "ค่าใช้จ่ายค่าน้ำมันเดือนนี้เกินงบที่ตั้งไว้",
             )
             if os.name == "nt":
                 try:
                     ToastNotifier().show_toast(
                         "FuelTracker",
-                        "Budget exceeded",
+                        "เกินงบประมาณ",
                         threaded=True,
                     )
                 except Exception:
@@ -257,12 +257,12 @@ class MainController(QObject):
         names = ", ".join(d.name for d in due)
         QMessageBox.information(
             self.window,
-            "Maintenance due",
-            f"Tasks due: {names}",
+            "ถึงกำหนดบำรุงรักษา",
+            f"งานที่ถึงกำหนด: {names}",
         )
 
     def _setup_style(self) -> None:
-        """Apply application stylesheet based on the selected theme."""
+        """ปรับสไตล์ชีตของแอปตามธีมที่เลือก"""
         app = QApplication.instance()
         if not app:
             return

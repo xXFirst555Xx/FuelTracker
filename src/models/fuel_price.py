@@ -8,7 +8,7 @@ from sqlmodel import Field, SQLModel
 
 
 class FuelPrice(SQLModel, table=True):
-    """Daily fuel price for a given station and fuel type."""
+    """ราคาน้ำมันรายวันของสถานีและประเภทเชื้อเพลิง"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
     date: date
