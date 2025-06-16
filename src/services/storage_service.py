@@ -18,6 +18,7 @@ except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missi
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
+from sqlalchemy import func
 
 from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
@@ -181,6 +182,23 @@ class StorageService:
         with Session(self.engine) as session:
             statement = select(FuelEntry).where(FuelEntry.vehicle_id == vehicle_id)
             return list(session.exec(statement))
+
+    def get_vehicle_stats(self, vehicle_id: int) -> tuple[float, float, float]:
+        """Calculate aggregate stats for a vehicle."""
+        with Session(self.engine) as session:
+            stmt = select(
+                func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                func.sum(FuelEntry.liters),
+                func.sum(FuelEntry.amount_spent),
+            ).where(
+                FuelEntry.vehicle_id == vehicle_id,
+                FuelEntry.odo_after.is_not(None),
+            )
+            totals = session.exec(stmt).one()
+            dist = float(totals[0] or 0.0)
+            liters = float(totals[1] or 0.0)
+            price = float(totals[2] or 0.0)
+            return dist, liters, price
 
     def get_entry(self, entry_id: int) -> Optional[FuelEntry]:
         """ดึงข้อมูลการเติมน้ำมันตามรหัส"""
