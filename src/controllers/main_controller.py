@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QDialog,
     QDockWidget,
+    QPushButton,
+    QHBoxLayout,
     QLabel,
     QVBoxLayout,
     QWidget,
@@ -41,7 +43,7 @@ from sqlmodel import Session, select
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
-from ..models import FuelEntry, Vehicle, FuelPrice
+from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
 from ..services import ReportService, StorageService, Exporter
 from ..services.oil_service import fetch_latest, get_price
 from .undo_commands import (
@@ -56,6 +58,7 @@ from ..views import (
     load_add_entry_dialog,
     load_add_vehicle_dialog,
     load_about_dialog,
+    load_add_maintenance_dialog,
 )
 from ..views.reports_page import ReportsPage
 
@@ -83,7 +86,18 @@ class MaintenanceDock(QDockWidget):
     def __init__(self, parent: QMainWindow | None = None) -> None:
         super().__init__("บำรุงรักษา", parent)
         self.list_widget = QListWidget()
-        self.setWidget(self.list_widget)
+        self.add_button = QPushButton("เพิ่ม")
+        self.edit_button = QPushButton("แก้ไข")
+        self.done_button = QPushButton("เสร็จ")
+        widget = QWidget()
+        layout = QVBoxLayout(widget)
+        layout.addWidget(self.list_widget)
+        row = QHBoxLayout()
+        row.addWidget(self.add_button)
+        row.addWidget(self.edit_button)
+        row.addWidget(self.done_button)
+        layout.addLayout(row)
+        self.setWidget(widget)
 
 
 class OilPricesDock(QDockWidget):
@@ -187,6 +201,9 @@ class MainController(QObject):
         if hasattr(self, "reports_page"):
             self.reports_page.export_button.clicked.connect(self.export_report)
             self.reports_page.refresh_button.clicked.connect(self.reports_page.refresh)
+        self.maint_dock.add_button.clicked.connect(self.open_add_maintenance_dialog)
+        self.maint_dock.edit_button.clicked.connect(self.open_edit_maintenance_dialog)
+        self.maint_dock.done_button.clicked.connect(self.mark_selected_maintenance_done)
 
     def _toggle_sync(self, checked: bool) -> None:
         self.sync_enabled = checked
@@ -299,6 +316,7 @@ class MainController(QObject):
                 if t.due_date is not None:
                     text += f" by {t.due_date}"
             item = QListWidgetItem(text)
+            item.setData(Qt.UserRole, t.id)
             if (
                 current_odo is not None
                 and t.due_odo is not None
@@ -522,6 +540,74 @@ class MainController(QObject):
     def open_about_dialog(self) -> None:
         dialog = load_about_dialog()
         dialog.exec()
+
+    def open_add_maintenance_dialog(self) -> None:
+        if not self.storage.list_vehicles():
+            QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
+            return
+        dialog = load_add_maintenance_dialog()
+        dialog.dateEdit.setDate(date.today())
+        dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
+        for v in self.storage.list_vehicles():
+            dialog.vehicleComboBox.addItem(v.name, v.id)
+        if dialog.exec() == QDialog.Accepted:
+            try:
+                odo = int(dialog.odoLineEdit.text()) if dialog.odoLineEdit.text() else None
+            except ValueError:
+                QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
+                return
+            task = Maintenance(
+                vehicle_id=dialog.vehicleComboBox.currentData(),
+                name=dialog.nameLineEdit.text().strip(),
+                due_odo=odo,
+                due_date=dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None,
+                note=dialog.noteLineEdit.text().strip() or None,
+            )
+            self.storage.add_maintenance(task)
+            self._refresh_maintenance_panel()
+
+    def open_edit_maintenance_dialog(self) -> None:
+        item = self.maint_dock.list_widget.currentItem()
+        if item is None:
+            QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
+            return
+        task_id = item.data(Qt.UserRole)
+        task = self.storage.get_maintenance(task_id)
+        if task is None:
+            return
+        dialog = load_add_maintenance_dialog()
+        dialog.setWindowTitle("แก้ไขงานบำรุงรักษา")
+        dialog.dateEdit.setDate(task.due_date or date.today())
+        dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
+        dialog.nameLineEdit.setText(task.name)
+        dialog.odoLineEdit.setText(str(task.due_odo) if task.due_odo is not None else "")
+        dialog.noteLineEdit.setText(task.note or "")
+        for v in self.storage.list_vehicles():
+            dialog.vehicleComboBox.addItem(v.name, v.id)
+            if v.id == task.vehicle_id:
+                dialog.vehicleComboBox.setCurrentIndex(dialog.vehicleComboBox.count() - 1)
+        if dialog.exec() == QDialog.Accepted:
+            try:
+                odo = int(dialog.odoLineEdit.text()) if dialog.odoLineEdit.text() else None
+            except ValueError:
+                QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
+                return
+            task.vehicle_id = dialog.vehicleComboBox.currentData()
+            task.name = dialog.nameLineEdit.text().strip()
+            task.due_odo = odo
+            task.due_date = dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None
+            task.note = dialog.noteLineEdit.text().strip() or None
+            self.storage.update_maintenance(task)
+            self._refresh_maintenance_panel()
+
+    def mark_selected_maintenance_done(self) -> None:
+        item = self.maint_dock.list_widget.currentItem()
+        if item is None:
+            QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
+            return
+        task_id = item.data(Qt.UserRole)
+        self.storage.mark_maintenance_done(task_id, True)
+        self._refresh_maintenance_panel()
 
     def export_report(self) -> None:
         out_csv = Path("report.csv")

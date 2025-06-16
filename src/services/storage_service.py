@@ -220,8 +220,22 @@ class StorageService:
                 stmt = stmt.where(Maintenance.vehicle_id == vehicle_id)
             return list(session.exec(stmt))
 
+    def get_maintenance(self, task_id: int) -> Maintenance | None:
+        with Session(self.engine) as session:
+            return session.get(Maintenance, task_id)
+
     def update_maintenance(self, task: Maintenance) -> None:
         with Session(self.engine) as session:
+            session.add(task)
+            session.commit()
+            session.refresh(task)
+
+    def mark_maintenance_done(self, task_id: int, done: bool = True) -> None:
+        with Session(self.engine) as session:
+            task = session.get(Maintenance, task_id)
+            if task is None:
+                return
+            task.is_done = done
             session.add(task)
             session.commit()
             session.refresh(task)
