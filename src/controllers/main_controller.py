@@ -150,6 +150,8 @@ class MainController(QObject):
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
         self._connect_signals()
+        if hasattr(self.window, "budgetEdit"):
+            self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.dashboardPage)
@@ -172,6 +174,12 @@ class MainController(QObject):
             w.syncCheckBox.toggled.connect(self._toggle_sync)
         if hasattr(w, "browseCloudButton"):
             w.browseCloudButton.clicked.connect(self._browse_cloud_path)
+        if hasattr(w, "budgetVehicleComboBox"):
+            w.budgetVehicleComboBox.currentIndexChanged.connect(
+                self._budget_vehicle_changed
+            )
+        if hasattr(w, "saveBudgetButton"):
+            w.saveBudgetButton.clicked.connect(self._save_budget)
         if hasattr(w, "vehicleListWidget"):
             w.vehicleListWidget.itemSelectionChanged.connect(self._vehicle_changed)
         if hasattr(w, "sidebarList"):
@@ -189,6 +197,32 @@ class MainController(QObject):
             self.cloud_path = Path(path)
             if hasattr(self.window, "cloudPathEdit"):
                 self.window.cloudPathEdit.setText(path)
+
+    def _budget_vehicle_changed(self) -> None:
+        if not hasattr(self.window, "budgetVehicleComboBox"):
+            return
+        vid = self.window.budgetVehicleComboBox.currentData()
+        if vid is None or not hasattr(self.window, "budgetEdit"):
+            return
+        budget = self.storage.get_budget(vid)
+        self.window.budgetEdit.setText("" if budget is None else str(budget))
+
+    def _save_budget(self) -> None:
+        if not (
+            hasattr(self.window, "budgetVehicleComboBox")
+            and hasattr(self.window, "budgetEdit")
+        ):
+            return
+        vid = self.window.budgetVehicleComboBox.currentData()
+        if vid is None:
+            return
+        try:
+            amount = float(self.window.budgetEdit.text())
+        except ValueError:
+            QMessageBox.warning(self.window, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
+            return
+        self.storage.set_budget(vid, amount)
+        self._check_budget(vid, date.today())
 
     def _vehicle_changed(self) -> None:
         item = self.window.vehicleListWidget.currentItem()
@@ -332,14 +366,19 @@ class MainController(QObject):
             self.show_settings_page()
 
     def refresh_vehicle_list(self) -> None:
-        if not hasattr(self.window, "vehicleListWidget"):
-            return
-        list_widget = self.window.vehicleListWidget
-        list_widget.clear()
-        for vehicle in self.storage.list_vehicles():
-            item = QListWidgetItem(vehicle.name)
-            item.setData(Qt.UserRole, vehicle.id)
-            list_widget.addItem(item)
+        if hasattr(self.window, "vehicleListWidget"):
+            list_widget = self.window.vehicleListWidget
+            list_widget.clear()
+            for vehicle in self.storage.list_vehicles():
+                item = QListWidgetItem(vehicle.name)
+                item.setData(Qt.UserRole, vehicle.id)
+                list_widget.addItem(item)
+        if hasattr(self.window, "budgetVehicleComboBox"):
+            combo = self.window.budgetVehicleComboBox
+            combo.clear()
+            for v in self.storage.list_vehicles():
+                combo.addItem(v.name, v.id)
+            self._budget_vehicle_changed()
 
     # ------------------------------------------------------------------
     # Dialog handlers
