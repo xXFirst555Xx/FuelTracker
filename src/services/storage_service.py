@@ -51,7 +51,12 @@ class _ConnProxy:
         return getattr(self._conn, name)
 
     def create_function(self, name, num_params, func, deterministic=None):
-        self._conn.create_function(name, num_params, func)
+        if deterministic is not None:
+            self._conn.create_function(
+                name, num_params, func, deterministic=deterministic
+            )
+        else:
+            self._conn.create_function(name, num_params, func)
 
 
 class StorageService:
