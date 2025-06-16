@@ -14,6 +14,8 @@ class AppConfig:
     update_hours: int = 24
     theme: str = "system"
     hide_on_close: bool = os.name == "nt"
+    global_hotkey_enabled: bool = True
+    hotkey: str = "Ctrl+Shift+N"
 
     @classmethod
     def load(cls, path: Path | None = None) -> "AppConfig":
@@ -26,6 +28,8 @@ class AppConfig:
                 update_hours=int(data.get("update_hours", 24)),
                 theme=data.get("theme", "system"),
                 hide_on_close=bool(data.get("hide_on_close", os.name == "nt")),
+                global_hotkey_enabled=bool(data.get("global_hotkey_enabled", True)),
+                hotkey=data.get("hotkey", "Ctrl+Shift+N"),
             )
         except Exception:
             return cls()

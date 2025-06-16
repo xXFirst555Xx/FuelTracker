@@ -85,6 +85,7 @@ from ..views import (
     load_import_csv_dialog,
 )
 from ..views.reports_page import ReportsPage
+from ..hotkey import GlobalHotkey
 
 DEFAULT_STATION = "ptt"
 DEFAULT_FUEL_TYPE = "e20"
@@ -161,6 +162,7 @@ class MainController(QObject):
         self.exporter = Exporter(self.storage)
         self.importer = Importer(self.storage)
         self.window: QMainWindow = load_ui("main_window")  # type: ignore
+        self.global_hotkey: GlobalHotkey | None = None
         self.settings = QSettings("FuelTracker", "MainWindow")
         geom = self.settings.value("windowGeometry")
         if geom:
@@ -217,6 +219,7 @@ class MainController(QObject):
         self._setup_style()
         self._connect_signals()
         self._setup_tray()
+        self._setup_hotkey()
         self.window.closeEvent = self._close_event  # type: ignore[assignment]
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
@@ -276,6 +279,8 @@ class MainController(QObject):
         self.shortcut_about = QShortcut(QKeySequence("F1"), w)
         self.shortcut_about.setContext(Qt.ApplicationShortcut)
         self.shortcut_about.activated.connect(self.open_about_dialog)
+        if hasattr(w, "hotkeyCheckBox"):
+            w.hotkeyCheckBox.toggled.connect(self._toggle_hotkey)
 
     def _toggle_sync(self, checked: bool) -> None:
         self.sync_enabled = checked
@@ -520,6 +525,37 @@ class MainController(QObject):
         app = QApplication.instance()
         if app:
             app.quit()
+
+    def _setup_hotkey(self) -> None:
+        if not hasattr(self.window, "hotkeyCheckBox"):
+            return
+        self.window.hotkeyCheckBox.setChecked(self.config.global_hotkey_enabled)
+        if self.config.global_hotkey_enabled:
+            self._register_hotkey()
+
+    def _register_hotkey(self) -> None:
+        self._unregister_hotkey()
+        self.global_hotkey = GlobalHotkey(self.config.hotkey)
+        self.global_hotkey.triggered.connect(self._on_hotkey)
+        self.global_hotkey.start()
+
+    def _unregister_hotkey(self) -> None:
+        if self.global_hotkey:
+            self.global_hotkey.stop()
+            self.global_hotkey = None
+
+    def _toggle_hotkey(self, checked: bool) -> None:
+        self.config.global_hotkey_enabled = checked
+        self.config.save(self.config_path)
+        if checked:
+            self._register_hotkey()
+        else:
+            self._unregister_hotkey()
+
+    def _on_hotkey(self) -> None:
+        if not self.window.isVisible():
+            self.window.show()
+        self.open_add_entry_dialog()
 
     def _switch_page(self, index: int) -> None:
         if not hasattr(self.window, "stackedWidget"):

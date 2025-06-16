@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
 from src.controllers import MainController
 from src.models import Vehicle, FuelEntry
+from PySide6.QtWidgets import QDialog
 
 
 def test_mainwindow_launch(monkeypatch):
@@ -55,3 +56,15 @@ def test_tray_tooltip_updates(qapp, tmp_path, monkeypatch):
     monkeypatch.setattr(ctrl.tray_icon, "setToolTip", lambda t: tip.setdefault("v", t))
     ctrl._update_tray_tooltip()
     assert tip.get("v")
+
+
+def test_hotkey_invokes_dialog(qapp, tmp_path, monkeypatch):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    called = {}
+    monkeypatch.setattr(ctrl, "open_add_entry_dialog", lambda: called.setdefault("ok", True))
+    ctrl.window.hide()
+    visible = {}
+    monkeypatch.setattr(ctrl.window, "show", lambda: visible.setdefault("v", True))
+    ctrl._on_hotkey()
+    assert called.get("ok")
+    assert visible.get("v")
