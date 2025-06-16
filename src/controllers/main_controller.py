@@ -391,11 +391,10 @@ class MainController(QObject):
         if vid is None:
             self.tray_icon.setToolTip("")
             return
-        entries = self.storage.get_entries_by_vehicle(vid)
-        if not entries:
+        last = self.storage.get_last_entry(vid)
+        if not last:
             self.tray_icon.setToolTip("")
             return
-        last = sorted(entries, key=lambda e: (e.entry_date, e.id))[-1]
         parts = [str(last.entry_date)]
         if last.odo_after is not None:
             dist = last.odo_after - last.odo_before
@@ -434,12 +433,8 @@ class MainController(QObject):
             return
         tasks = self.storage.list_maintenances(vid)
         self.maint_dock.list_widget.clear()
-        entries = self.storage.get_entries_by_vehicle(vid)
-        current_odo = (
-            entries[-1].odo_after
-            if entries and entries[-1].odo_after is not None
-            else None
-        )
+        last = self.storage.get_last_entry(vid)
+        current_odo = last.odo_after if last and last.odo_after is not None else None
         for t in tasks:
             text = t.name
             if not t.is_done:

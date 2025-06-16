@@ -183,6 +183,16 @@ class StorageService:
             statement = select(FuelEntry).where(FuelEntry.vehicle_id == vehicle_id)
             return list(session.exec(statement))
 
+    def get_last_entry(self, vehicle_id: int) -> FuelEntry | None:
+        """Return the most recent entry for the given vehicle."""
+        with Session(self.engine) as session:
+            stmt = (
+                select(FuelEntry)
+                .where(FuelEntry.vehicle_id == vehicle_id)
+                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+            )
+            return session.exec(stmt).first()
+
     def get_vehicle_stats(self, vehicle_id: int) -> tuple[float, float, float]:
         """Calculate aggregate stats for a vehicle."""
         with Session(self.engine) as session:
