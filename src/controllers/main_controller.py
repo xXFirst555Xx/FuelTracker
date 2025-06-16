@@ -261,8 +261,8 @@ class MainController(QObject):
 
     def _theme_changed(self, name: str) -> None:
         self.config.theme = name.lower()
-        self._setup_style()
         self.config.save(self.config_path)
+        self._setup_style()
 
     def _budget_vehicle_changed(self) -> None:
         if not hasattr(self.window, "budgetVehicleComboBox"):

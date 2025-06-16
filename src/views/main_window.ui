@@ -246,6 +246,11 @@
           <widget class="QComboBox" name="themeComboBox">
            <item>
             <property name="text">
+             <string>system</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>light</string>
             </property>
            </item>

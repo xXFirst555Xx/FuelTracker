@@ -1,3 +1,6 @@
+import pytest
+from PySide6.QtCore import Qt
+
 from src.controllers import MainController
 from src.config import AppConfig
 
@@ -44,3 +47,27 @@ def test_theme_persisted(qapp, tmp_path):
 
     ctrl2 = MainController(db_path=tmp_path / "t2.db", config_path=cfg_path)
     assert ctrl2.config.theme == "dark"
+
+
+@pytest.mark.parametrize(
+    "scheme,expected_colors",
+    [
+        (Qt.ColorScheme.Light, ["#FAFAFA"]),
+        (Qt.ColorScheme.Dark, ["#101010", "#121212"]),
+    ],
+)
+def test_system_theme(qapp, tmp_path, monkeypatch, scheme, expected_colors):
+    monkeypatch.delenv("FT_THEME", raising=False)
+
+    class DummyHints:
+        def colorScheme(self):
+            return scheme
+
+    monkeypatch.setattr(qapp, "styleHints", lambda: DummyHints())
+    qapp.setStyleSheet("")
+
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    ctrl._theme_changed("system")
+
+    style = qapp.styleSheet()
+    assert any(c in style for c in expected_colors)
