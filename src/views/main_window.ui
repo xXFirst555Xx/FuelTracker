@@ -115,8 +115,8 @@
        </widget>
        <widget class="QWidget" name="addEntryPage">
         <layout class="QVBoxLayout" name="entryLayout">
-         <item>
-          <widget class="QPushButton" name="addEntryButton">
+        <item>
+         <widget class="QPushButton" name="addEntryButton">
            <property name="text">
             <string>เพิ่มข้อมูลการเติมน้ำมัน</string>
            </property>
@@ -125,10 +125,22 @@
              <normaloff>icons:plus-circle.svg</normaloff>
             </iconset>
            </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="importCSVButton">
+          <property name="text">
+           <string>นำเข้าจาก CSV</string>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>icons:plus-square.svg</normaloff>
+           </iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
        <widget class="QWidget" name="reportsPage">
         <layout class="QVBoxLayout" name="reportsLayout">
          <item>

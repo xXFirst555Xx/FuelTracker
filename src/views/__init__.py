@@ -68,3 +68,8 @@ def load_about_dialog() -> QDialog:
 def load_add_maintenance_dialog() -> QDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มงานบำรุงรักษา"""
     return load_ui("dialogs/add_maintenance_dialog")  # type: ignore
+
+
+def load_import_csv_dialog() -> QDialog:
+    """ตัวช่วยโหลดกล่องโต้ตอบนำเข้าข้อมูลจาก CSV"""
+    return load_ui("dialogs/import_csv_dialog")  # type: ignore
