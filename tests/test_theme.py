@@ -78,3 +78,21 @@ def test_system_theme(qapp, tmp_path, monkeypatch, scheme, expected_colors):
 
     style = qapp.styleSheet()
     assert any(c in style for c in expected_colors)
+
+
+def test_palette_signal_updates_stylesheet(qapp, tmp_path, monkeypatch):
+    monkeypatch.delenv("FT_THEME", raising=False)
+    orig_setup = MainController._setup_style
+    calls: list[MainController] = []
+
+    def wrapper(self: MainController) -> None:
+        calls.append(self)
+        orig_setup(self)
+
+    monkeypatch.setattr(MainController, "_setup_style", wrapper)
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    qapp.setStyleSheet("dummy")
+    calls.clear()
+    qapp.paletteChanged.emit(qapp.palette())
+    assert ctrl in calls
+    assert qapp.styleSheet() != "dummy"
