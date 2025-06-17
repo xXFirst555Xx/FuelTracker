@@ -210,6 +210,68 @@ class StorageService:
             price = float(totals[2] or 0.0)
             return dist, liters, price
 
+    def get_overall_totals(self) -> tuple[float, float, float]:
+        """Return overall distance, liters and amount spent across all vehicles."""
+        with Session(self.engine) as session:
+            dist, liters = session.exec(
+                select(
+                    func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                    func.sum(FuelEntry.liters),
+                ).where(FuelEntry.odo_after.is_not(None))
+            ).one()
+            price = session.exec(select(func.sum(FuelEntry.amount_spent))).one()
+            return (
+                float(dist or 0.0),
+                float(liters or 0.0),
+                float(price or 0.0),
+            )
+
+    def list_entries_for_month(
+        self, vehicle_id: int, year: int, month: int
+    ) -> List[FuelEntry]:
+        """Return entries for a vehicle within the given month."""
+        with Session(self.engine) as session:
+            stmt = select(FuelEntry).where(
+                FuelEntry.vehicle_id == vehicle_id,
+                FuelEntry.entry_date.between(
+                    f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
+                ),
+            )
+            return list(session.exec(stmt))
+
+    def monthly_totals(self) -> list[tuple[str, float, float, float]]:
+        """Return aggregated totals grouped by month."""
+        month = func.strftime("%Y-%m", FuelEntry.entry_date)
+        with Session(self.engine) as session:
+            stmt = (
+                select(
+                    month.label("month"),
+                    func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                    func.sum(FuelEntry.liters),
+                    func.sum(FuelEntry.amount_spent),
+                )
+                .where(
+                    FuelEntry.odo_after.is_not(None),
+                    FuelEntry.liters.is_not(None),
+                )
+                .group_by(month)
+                .order_by(month)
+            )
+            res = []
+            for m, d, l, a in session.exec(stmt):
+                res.append((m, float(d or 0.0), float(l or 0.0), float(a or 0.0)))
+            return res
+
+    def liters_by_fuel_type(self) -> dict[str | None, float]:
+        """Return total liters grouped by fuel type."""
+        with Session(self.engine) as session:
+            stmt = (
+                select(FuelEntry.fuel_type, func.sum(FuelEntry.liters))
+                .where(FuelEntry.liters.is_not(None))
+                .group_by(FuelEntry.fuel_type)
+            )
+            return {ft: float(l or 0.0) for ft, l in session.exec(stmt)}
+
     def get_entry(self, entry_id: int) -> Optional[FuelEntry]:
         """ดึงข้อมูลการเติมน้ำมันตามรหัส"""
         with Session(self.engine) as session:

@@ -20,20 +20,7 @@ class ReportService:
         self.storage = storage
 
     def calc_overall_stats(self) -> Dict[str, float]:
-        entries = self.storage.list_entries()
-        total_distance = 0.0
-        total_liters = 0.0
-        total_price = 0.0
-
-        for e in entries:
-            if e.odo_after is None:
-                total_price += e.amount_spent
-                continue
-            distance = e.odo_after - e.odo_before
-            total_distance += distance
-            if e.liters:
-                total_liters += e.liters
-            total_price += e.amount_spent
+        total_distance, total_liters, total_price = self.storage.get_overall_totals()
 
         avg_consumption = (
             (total_liters / total_distance * 100) if total_distance else 0.0
@@ -60,12 +47,7 @@ class ReportService:
 
     def _filter_entries(self, month: date, vehicle_id: int) -> List[FuelEntry]:
         """ดึงรายการของยานพาหนะในเดือนที่กำหนด"""
-        entries = self.storage.get_entries_by_vehicle(vehicle_id)
-        return [
-            e
-            for e in entries
-            if e.entry_date.year == month.year and e.entry_date.month == month.month
-        ]
+        return self.storage.list_entries_for_month(vehicle_id, month.year, month.month)
 
     def _monthly_df(self, month: date, vehicle_id: int) -> pd.DataFrame:
         """คืนค่า DataFrame ของรายการประจำเดือน"""
@@ -198,71 +180,33 @@ class ReportService:
 
     def last_year_summary(self) -> pd.DataFrame:
         """คืนข้อมูลสรุปรวมของ 12 เดือนล่าสุด"""
-        entries = self.storage.list_entries()
-        data = []
-        for e in entries:
-            if e.odo_after is None or e.liters is None:
-                continue
-            dist = e.odo_after - e.odo_before
-            data.append(
-                {
-                    "date": e.entry_date,
-                    "fuel_type": FUEL_TYPE_TH.get(e.fuel_type or "", e.fuel_type or ""),
-                    "distance": dist,
-                    "liters": e.liters,
-                    "amount_spent": e.amount_spent or 0.0,
-                }
-            )
-
-        if not data:
+        rows = self.storage.monthly_totals()
+        if not rows:
             return pd.DataFrame(
                 columns=["month", "distance", "liters", "amount_spent", "km_per_l"]
             )
 
-        df = pd.DataFrame(data)
-        df["date"] = pd.to_datetime(df["date"])  # ensure datetimelike for .dt
-        df["month"] = df["date"].dt.to_period("M")
-        grouped = (
-            df.groupby("month")[["distance", "liters", "amount_spent"]]
-            .sum()
-            .sort_index()
-        )
-        grouped["km_per_l"] = grouped["distance"] / grouped["liters"]
-        return grouped.tail(12).reset_index()
+        df = pd.DataFrame(rows, columns=["month", "distance", "liters", "amount_spent"])
+        df["month"] = pd.PeriodIndex(df["month"], freq="M")
+        df["km_per_l"] = df["distance"] / df["liters"]
+        return df.tail(12).reset_index(drop=True)
 
     def monthly_summary(self) -> pd.DataFrame:
         """คืนข้อมูลสรุปรวมต่อเดือนจากทุกข้อมูลที่มี"""
-        entries = self.storage.list_entries()
-        data = []
-        for e in entries:
-            if e.odo_after is None or e.liters is None:
-                continue
-            dist = e.odo_after - e.odo_before
-            data.append(
-                {
-                    "date": e.entry_date,
-                    "distance": dist,
-                    "liters": e.liters,
-                }
-            )
-
-        if not data:
+        rows = self.storage.monthly_totals()
+        if not rows:
             return pd.DataFrame(columns=["month", "distance", "liters", "km_per_l"])
 
-        df = pd.DataFrame(data)
-        df["date"] = pd.to_datetime(df["date"])
-        df["month"] = df["date"].dt.to_period("M")
-        grouped = df.groupby("month")[["distance", "liters"]].sum().sort_index()
-        grouped["km_per_l"] = grouped["distance"] / grouped["liters"]
-        return grouped.reset_index()
+        df = pd.DataFrame(rows, columns=["month", "distance", "liters", "amount_spent"])
+        df["month"] = pd.PeriodIndex(df["month"], freq="M")
+        df = df[["month", "distance", "liters"]]
+        df["km_per_l"] = df["distance"] / df["liters"]
+        return df.reset_index(drop=True)
 
     def liters_by_type(self) -> pd.Series:
         """รวมปริมาณเชื้อเพลิงตามประเภท"""
-        entries = self.storage.list_entries()
-        data: Dict[str, float] = {}
-        for e in entries:
-            if not e.liters:
-                continue
-            key = FUEL_TYPE_TH.get(e.fuel_type or "", e.fuel_type or "")
-            data[key] = data.get(key, 0.0) + e.liters
+        data = {
+            FUEL_TYPE_TH.get(ft or "", ft or ""): liters
+            for ft, liters in self.storage.liters_by_fuel_type().items()
+        }
         return pd.Series(data)
