@@ -31,7 +31,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtCore import (
     Qt,
-    QMetaObject,
+    QMetaObject,  # noqa: F401 - used for monkeypatching in tests
     QObject,
     Signal,
     QEvent,
