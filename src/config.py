@@ -3,6 +3,8 @@ import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
+from .settings import Settings
+
 CONFIG_PATH = Path.home() / ".fueltracker" / "config.json"
 
 
@@ -27,14 +29,14 @@ class AppConfig:
             return cls(
                 default_station=data.get("default_station", "ptt"),
                 update_hours=int(data.get("update_hours", 24)),
-                theme=data.get("theme", "system"),
+                theme=data.get("theme", Settings().ft_theme),
                 hide_on_close=bool(data.get("hide_on_close", os.name == "nt")),
                 global_hotkey_enabled=bool(data.get("global_hotkey_enabled", True)),
                 hotkey=data.get("hotkey", "Ctrl+Shift+N"),
                 start_minimized=bool(data.get("start_minimized", False)),
             )
         except Exception:
-            return cls()
+            return cls(theme=Settings().ft_theme)
 
     def save(self, path: Path | None = None) -> None:
         path = path or CONFIG_PATH

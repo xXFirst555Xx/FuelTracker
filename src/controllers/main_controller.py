@@ -328,8 +328,9 @@ class MainController(QObject):
         if os.name != "nt":
             QMessageBox.information(self.window, "ไม่รองรับ", "ใช้ได้เฉพาะบน Windows")
             return
+        startup_base = self.env.appdata or ""
         startup = (
-            Path(os.getenv("APPDATA", ""))
+            Path(startup_base)
             / "Microsoft"
             / "Windows"
             / "Start Menu"
