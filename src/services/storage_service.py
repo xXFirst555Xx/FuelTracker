@@ -399,15 +399,17 @@ class StorageService:
 
     def get_total_spent(self, vehicle_id: int, year: int, month: int) -> float:
         with Session(self.engine) as session:
-            statement = select(FuelEntry.amount_spent).where(
+            stmt = select(
+                func.sum(FuelEntry.amount_spent)
+            ).where(
                 FuelEntry.vehicle_id == vehicle_id,
                 FuelEntry.entry_date.between(
                     f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
                 ),
                 FuelEntry.amount_spent.is_not(None),
             )
-            amounts = [a for a in session.exec(statement) if a is not None]
-            return float(sum(amounts))
+            total = session.exec(stmt).first()
+            return float(total or 0.0)
 
     # ------------------------------------------------------------------
     # Utilities
