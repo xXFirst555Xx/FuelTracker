@@ -5,7 +5,6 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
 from src.controllers import MainController
 from src.models import Vehicle, FuelEntry
-from PySide6.QtWidgets import QDialog
 
 
 def test_mainwindow_launch(monkeypatch):
