@@ -1026,18 +1026,15 @@ class MainController(QObject):
 
     def filter_entries(self) -> list[FuelEntry]:
         """Filter entries based on search text and start date."""
-        entries = self.storage.list_entries()
+        text = None
+        start = None
         if hasattr(self.window, "searchLineEdit"):
-            text = self.window.searchLineEdit.text().strip().lower()
-            if text:
-                entries = [
-                    e
-                    for e in entries
-                    if text in (self.storage.get_vehicle(e.vehicle_id).name.lower())
-                ]
+            t = self.window.searchLineEdit.text().strip()
+            if t:
+                text = t
         if hasattr(self.window, "startDateEdit"):
             start = self.window.startDateEdit.date().toPython()
-            entries = [e for e in entries if e.entry_date >= start]
+        entries = self.storage.list_entries_filtered(text, start)
         if hasattr(self.window, "vehicleListWidget"):
             lw = self.window.vehicleListWidget
             lw.clear()
