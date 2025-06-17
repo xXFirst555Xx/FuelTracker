@@ -189,9 +189,15 @@ class MainController(QObject):
         self.stats_dock = StatsDock(self.window)
         self.maint_dock = MaintenanceDock(self.window)
         self.oil_dock = OilPricesDock(self.window)
-        self.window.addDockWidget(Qt.RightDockWidgetArea, self.stats_dock)
-        self.window.addDockWidget(Qt.RightDockWidgetArea, self.maint_dock)
-        self.window.addDockWidget(Qt.RightDockWidgetArea, self.oil_dock)
+        self.window.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.stats_dock
+        )
+        self.window.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.maint_dock
+        )
+        self.window.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.oil_dock
+        )
         if hasattr(self.window, "reportsContainer"):
             self.reports_page = ReportsPage(self.report_service, self.window)
             self.window.reportsLayout.replaceWidget(
@@ -214,7 +220,7 @@ class MainController(QObject):
             self.window.updateIntervalSpinBox.setValue(self.config.update_hours)
         if hasattr(self.window, "themeComboBox"):
             idx = self.window.themeComboBox.findText(
-                self.config.theme, Qt.MatchFixedString
+                self.config.theme, Qt.MatchFlag.MatchFixedString
             )
             if idx >= 0:
                 self.window.themeComboBox.setCurrentIndex(idx)
@@ -293,10 +299,10 @@ class MainController(QObject):
         self.maint_dock.edit_button.clicked.connect(self.open_edit_maintenance_dialog)
         self.maint_dock.done_button.clicked.connect(self.mark_selected_maintenance_done)
         self.shortcut_new = QShortcut(QKeySequence("Ctrl+N"), w)
-        self.shortcut_new.setContext(Qt.ApplicationShortcut)
+        self.shortcut_new.setContext(Qt.ShortcutContext.ApplicationShortcut)
         self.shortcut_new.activated.connect(self.open_add_entry_dialog)
         self.shortcut_about = QShortcut(QKeySequence("F1"), w)
-        self.shortcut_about.setContext(Qt.ApplicationShortcut)
+        self.shortcut_about.setContext(Qt.ShortcutContext.ApplicationShortcut)
         self.shortcut_about.activated.connect(self.open_about_dialog)
         if hasattr(w, "hotkeyCheckBox"):
             w.hotkeyCheckBox.toggled.connect(self._toggle_hotkey)
@@ -382,7 +388,7 @@ class MainController(QObject):
     def _vehicle_changed(self) -> None:
         item = self.window.vehicleListWidget.currentItem()
         if item:
-            self._selected_vehicle_id = item.data(Qt.UserRole)
+            self._selected_vehicle_id = item.data(Qt.ItemDataRole.UserRole)
         else:
             self._selected_vehicle_id = None
         self._update_stats_panel()
@@ -453,7 +459,7 @@ class MainController(QObject):
                 if t.due_date is not None:
                     text += f" by {t.due_date}"
             item = QListWidgetItem(text)
-            item.setData(Qt.UserRole, t.id)
+            item.setData(Qt.ItemDataRole.UserRole, t.id)
             if (
                 current_odo is not None
                 and t.due_odo is not None
@@ -628,7 +634,7 @@ class MainController(QObject):
             list_widget.clear()
             for vehicle in self.storage.list_vehicles():
                 item = QListWidgetItem(vehicle.name)
-                item.setData(Qt.UserRole, vehicle.id)
+                item.setData(Qt.ItemDataRole.UserRole, vehicle.id)
                 list_widget.addItem(item)
         if hasattr(self.window, "budgetVehicleComboBox"):
             combo = self.window.budgetVehicleComboBox
@@ -666,7 +672,7 @@ class MainController(QObject):
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกยานพาหนะ")
             return
-        vid = item.data(Qt.UserRole)
+        vid = item.data(Qt.ItemDataRole.UserRole)
         vehicle = self.storage.get_vehicle(vid)
         if vehicle is None:
             return
@@ -696,7 +702,7 @@ class MainController(QObject):
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกรายการ")
             return
-        vid = item.data(Qt.UserRole)
+        vid = item.data(Qt.ItemDataRole.UserRole)
         if (
             QMessageBox.question(
                 self.window,
@@ -987,7 +993,7 @@ class MainController(QObject):
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
             return
-        task_id = item.data(Qt.UserRole)
+        task_id = item.data(Qt.ItemDataRole.UserRole)
         task = self.storage.get_maintenance(task_id)
         if task is None:
             return
@@ -1031,7 +1037,7 @@ class MainController(QObject):
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
             return
-        task_id = item.data(Qt.UserRole)
+        task_id = item.data(Qt.ItemDataRole.UserRole)
         self.storage.mark_maintenance_done(task_id, True)
         self._refresh_maintenance_panel()
 
@@ -1076,7 +1082,7 @@ class MainController(QObject):
         if (
             getattr(self, "window", None) is not None
             and obj is self.window
-            and event.type() == QEvent.Show
+            and event.type() == QEvent.Type.Show
             and not self._price_timer_started
         ):
             self._price_timer_started = True
@@ -1097,7 +1103,7 @@ class MainController(QObject):
                         QMetaObject.invokeMethod(
                             self.controller,
                             self.controller._load_prices,
-                            Qt.QueuedConnection,
+                            Qt.ConnectionType.QueuedConnection,
                         )
                 except requests.RequestException as exc:  # pragma: no cover - network
                     logging.error("Failed to update oil prices: %s", exc)
@@ -1152,7 +1158,7 @@ class MainController(QObject):
             for e in entries:
                 dist = e.odo_after - e.odo_before if e.odo_after is not None else 0
                 item = QListWidgetItem(f"{e.entry_date} - {dist} km")
-                item.setData(Qt.UserRole, e.id)
+                item.setData(Qt.ItemDataRole.UserRole, e.id)
                 lw.addItem(item)
         return entries
 

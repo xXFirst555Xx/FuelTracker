@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+import pandas as pd
 
 from ..services import ReportService
 
@@ -50,7 +51,7 @@ class _Worker(QThread):
         self._service = service
         self._vehicle_id = vehicle_id
 
-    def run(self) -> None:  # type: ignore[override]
+    def run(self) -> None:
         yearly = self._service.last_year_summary()
         pie = self._service.liters_by_type()
         monthly = self._service.monthly_summary()
@@ -71,7 +72,7 @@ class _Worker(QThread):
         fig3 = Figure(figsize=(4, 3))
         ax3 = fig3.add_subplot(111)
         if not pie.empty:
-            ax3.pie(pie, labels=pie.index)
+            ax3.pie(pie, labels=pie.index.tolist())
 
         fig4 = Figure(figsize=(6, 4))
         ax4_1 = fig4.add_subplot(311)
@@ -101,7 +102,7 @@ class ReportsPage(QWidget):
         self._service = service
         self._worker: _Worker | None = None
 
-        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
         left = QWidget()
         left_layout = QVBoxLayout(left)
         self.cards = {
@@ -159,7 +160,7 @@ class ReportsPage(QWidget):
         self._worker.start()
 
     def _apply_data(
-        self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table
+        self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table: pd.DataFrame
     ) -> None:
         for i in reversed(range(self.charts_layout.count())):
             item = self.charts_layout.takeAt(i)
@@ -167,14 +168,14 @@ class ReportsPage(QWidget):
             if w:
                 w.deleteLater()
         for fig in (fig1, fig2, fig3):
-            canvas = FigureCanvasQTAgg(fig)
+            canvas = FigureCanvasQTAgg(fig)  # type: ignore[misc]
             self.charts_layout.addWidget(canvas)
         for i in reversed(range(self.monthly_layout.count())):
             item = self.monthly_layout.takeAt(i)
             w = item.widget()
             if w:
                 w.deleteLater()
-        canvas = FigureCanvasQTAgg(fig4)
+        canvas = FigureCanvasQTAgg(fig4)  # type: ignore[misc]
         self.monthly_layout.addWidget(canvas)
         stats = self._service.calc_overall_stats()
         self.cards["distance"].set_value(f"{stats['total_distance']:.0f} km")
