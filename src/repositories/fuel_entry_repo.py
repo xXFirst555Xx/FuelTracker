@@ -21,6 +21,17 @@ class FuelEntryRepository:
             )
             return sess.exec(stmt).first()
 
+    def last_entries(self, vehicle_id: int, limit: int = 3) -> list[FuelEntry]:
+        """Return up to ``limit`` most recent entries for a vehicle."""
+        with Session(self.engine) as sess:
+            stmt = (
+                select(FuelEntry)
+                .where(FuelEntry.vehicle_id == vehicle_id)
+                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                .limit(limit)
+            )
+            return list(sess.exec(stmt))
+
     def add(self, entry: FuelEntry) -> FuelEntry:
         with Session(self.engine) as sess:
             sess.add(entry)

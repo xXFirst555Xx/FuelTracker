@@ -33,6 +33,10 @@ class AddEntryCommand(QUndoCommand):
         if self.entry.id is not None:
             data = self.entry.model_dump(exclude={"id"})
             self.entry = FuelEntry(**data)
+        assert (
+            self.entry.odo_after is None
+            or self.entry.odo_after >= self.entry.odo_before
+        ), "odo_after must be >= odo_before"
         self.storage.add_entry(self.entry)
         if self.signal is not None:
             try:
