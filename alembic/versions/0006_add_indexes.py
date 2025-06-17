@@ -1,7 +1,6 @@
 """add indexes to improve lookup speed"""
 
 from alembic import op
-import sqlalchemy as sa
 
 revision = "0006"
 down_revision = "0005"
