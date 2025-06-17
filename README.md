@@ -89,4 +89,26 @@ build.bat
 
 สเปกของ PyInstaller ฝังไอคอนโปรแกรมเป็น base64 จึงไม่ต้องเก็บไฟล์แยกในคลัง
 
+## การทดสอบบน Windows
+
+หลังจากติดตั้งโปรเจ็กต์ตามขั้นตอนด้านบน สามารถรันทดสอบทั้งหมดได้ด้วย `pytest`
+โดยทำงานภายใน virtual environment:
+
+```bat
+python -m venv .venv
+\.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .
+pytest
+```
+
+ต้องการตรวจสอบแบบครบถ้วนยิ่งขึ้นสามารถรันสคริปต์
+`scripts/validate_connectivity.py` ซึ่งจะติดตั้งแพ็กเกจแบบ editable,
+รัน `pytest` และทดสอบการเปิดโปรแกรมแบบ offscreen ผลลัพธ์จะถูกบันทึกไว้ในโฟลเดอร์
+`reports/` ทั้งหมด
+
+```bat
+python scripts/validate_connectivity.py
+```
+
 โปรเจ็กต์นี้ใช้สัญญาอนุญาต MIT ดูรายละเอียดได้ที่ไฟล์ [LICENSE](LICENSE)
