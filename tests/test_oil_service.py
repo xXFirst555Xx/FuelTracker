@@ -1,6 +1,8 @@
 from decimal import Decimal
+import requests
 
 from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import QTimer
 from sqlmodel import Session, select
 
 from src.services import oil_service
@@ -82,3 +84,24 @@ def test_autofill_liters(qapp, monkeypatch, tmp_path):
 
     ctrl.open_add_entry_dialog()
     assert dialog.litersEdit.text() == "2.00"
+
+
+def test_price_update_handles_error(qapp, monkeypatch, tmp_path):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+
+    monkeypatch.setattr(ctrl.thread_pool, "start", lambda job: job.run())
+    called = {}
+
+    def fake_single_shot(*a, **k):
+        called["scheduled"] = True
+
+    monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
+    monkeypatch.setattr(MainController, "_load_prices", lambda self: None)
+
+    def raise_error(*_a, **_k):
+        raise requests.RequestException("fail")
+
+    monkeypatch.setattr(oil_service._HTTP_SESSION, "get", lambda *a, **k: raise_error())
+
+    ctrl._schedule_price_update()
+    assert called.get("scheduled")
