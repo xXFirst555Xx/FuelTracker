@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -11,8 +12,6 @@ class Settings(BaseSettings):
     ft_theme: str = Field(default="system")
     ft_db_password: str | None = None
     ft_cloud_dir: Path | None = None
+    appdata: Path | None = Field(default=None, validation_alias="APPDATA")
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-        env_prefix = ""
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, env_prefix="")
