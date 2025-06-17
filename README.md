@@ -18,6 +18,7 @@
   [MAINTENANCE.md](docs/MAINTENANCE.md).
 - **CSV/PDF/Excel exporting** creates monthly reports, described in
   [EXPORTING.md](docs/EXPORTING.md).
+- Excel export requires the `openpyxl` library.
 
 ## ความต้องการ
 
