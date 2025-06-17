@@ -718,6 +718,7 @@ class MainController(QObject):
         dialog.odoAfterEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.amountEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.litersEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
+        dialog.autoFillCheckBox.setChecked(True)
 
         def _auto_calc() -> None:
             if dialog.litersEdit.text():
@@ -742,6 +743,56 @@ class MainController(QObject):
 
         dialog.amountEdit.editingFinished.connect(_auto_calc)
 
+        def _auto_fill() -> None:
+            if not dialog.autoFillCheckBox.isChecked():
+                return
+            vid = dialog.vehicleComboBox.currentData()
+            odo_text = dialog.odoBeforeEdit.text()
+            if vid is None or not odo_text:
+                return
+            with Session(self.storage.engine) as sess:
+                stmt = (
+                    select(FuelEntry)
+                    .where(
+                        FuelEntry.vehicle_id == vid,
+                        FuelEntry.odo_after.is_not(None),
+                    )
+                    .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                    .limit(3)
+                )
+                entries = list(sess.exec(stmt))
+            if not entries:
+                QMessageBox.information(dialog, "Insufficient data", "ไม่มีข้อมูลเพียงพอ")
+                return
+            dists = [e.odo_after - e.odo_before for e in entries]
+            dist_avg = sum(dists[:3]) / len(dists[:3]) if len(dists) >= 3 else dists[0]
+            kml_vals = [
+                (e.odo_after - e.odo_before) / e.liters
+                for e in entries
+                if e.liters and e.liters > 0
+            ]
+            if not kml_vals:
+                QMessageBox.information(dialog, "Insufficient data", "ไม่มีข้อมูลเพียงพอ")
+                return
+            kml_avg = sum(kml_vals[:3]) / len(kml_vals[:3]) if len(kml_vals) >= 3 else kml_vals[0]
+            price_vals = [
+                e.amount_spent / e.liters
+                for e in entries
+                if e.liters and e.amount_spent is not None and e.liters > 0
+            ]
+            if not price_vals:
+                QMessageBox.information(dialog, "Insufficient data", "ไม่มีข้อมูลเพียงพอ")
+                return
+            price_avg = sum(price_vals[:3]) / len(price_vals[:3]) if len(price_vals) >= 3 else price_vals[0]
+
+            odo_before = float(odo_text)
+            odo_after = odo_before + dist_avg
+            liters = dist_avg / kml_avg
+            price = liters * price_avg
+            dialog.odoAfterEdit.setText(f"{odo_after:.2f}")
+            dialog.litersEdit.setText(f"{liters:.2f}")
+            dialog.amountEdit.setText(f"{price:.2f}")
+
         def _prefill() -> None:
             vid = dialog.vehicleComboBox.currentData()
             if vid is None:
@@ -755,15 +806,19 @@ class MainController(QObject):
                 last = sess.exec(stmt).first()
             if last is not None and last.odo_after is not None:
                 dialog.odoBeforeEdit.setText(str(last.odo_after))
-                dialog.odoAfterEdit.setText(str(last.odo_after))
             else:
                 dialog.odoBeforeEdit.clear()
-                dialog.odoAfterEdit.clear()
+            dialog.odoAfterEdit.clear()
+            dialog.amountEdit.clear()
+            dialog.litersEdit.clear()
+            _auto_fill()
 
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
         _prefill()
         dialog.vehicleComboBox.currentIndexChanged.connect(_prefill)
+        dialog.odoBeforeEdit.editingFinished.connect(_auto_fill)
+        dialog.autoFillCheckBox.toggled.connect(_auto_fill)
         if dialog.exec() == QDialog.Accepted:
             vehicle_id = dialog.vehicleComboBox.currentData()
             try:
