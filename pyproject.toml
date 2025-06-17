@@ -19,7 +19,7 @@ dependencies = [
     "reportlab",
     "win10toast; sys_platform == 'win32'",
     "requests",
-    "pynput",
+    "keyboard; sys_platform == 'win32'",
 ]
 [project.scripts]
 fueltracker = "fueltracker.main:run"

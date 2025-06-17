@@ -9,6 +9,11 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from alembic.config import Config
+from alembic.command import upgrade
+
+from src.settings import Settings
+
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 
 if TYPE_CHECKING:  # pragma: no cover - for type checkers only
@@ -26,11 +31,13 @@ def run(argv: list[str] | None = None) -> None:
     args, _ = parser.parse_known_args(argv)
 
     if args.command == "migrate":
-        from alembic.config import Config
-        from alembic.command import upgrade
-
         upgrade(Config(ALEMBIC_INI), "head")
         return
+
+    settings = Settings()
+    cfg = Config(ALEMBIC_INI)
+    cfg.set_main_option("sqlalchemy.url", f"sqlite:///{settings.db_path}")
+    upgrade(cfg, "head")
 
     logging.basicConfig(level=logging.INFO)
     if args.check:
