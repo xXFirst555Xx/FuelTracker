@@ -150,9 +150,17 @@ class ReportsPage(QWidget):
             vid = 1
         self._worker = _Worker(self._service, int(vid), self)
         self._worker.data_ready.connect(self._apply_data)
+
+        def _cleanup() -> None:
+            self._worker = None
+
+        self._worker.finished.connect(self._worker.deleteLater)
+        self._worker.finished.connect(_cleanup)
         self._worker.start()
 
-    def _apply_data(self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table) -> None:
+    def _apply_data(
+        self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table
+    ) -> None:
         for i in reversed(range(self.charts_layout.count())):
             item = self.charts_layout.takeAt(i)
             w = item.widget()

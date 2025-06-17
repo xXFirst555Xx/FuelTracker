@@ -22,6 +22,15 @@ def test_monthly_tab_populates(qtbot, tmp_path):
     assert page.monthly_layout.count() > 0
 
 
+def test_refresh_clears_worker(qtbot, tmp_path):
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    page = ctrl.reports_page
+    qtbot.addWidget(page)
+    with qtbot.waitSignal(page.refresh_requested, timeout=2000):
+        page.refresh_button.click()
+    qtbot.waitUntil(lambda: page._worker is None, timeout=2000)
+
+
 def test_vehicle_selection_updates_monthly(qtbot, tmp_path, monkeypatch):
     ctrl = MainController(db_path=tmp_path / "t.db")
     storage = ctrl.storage
@@ -55,4 +64,3 @@ def test_vehicle_selection_updates_monthly(qtbot, tmp_path, monkeypatch):
         page.vehicle_combo.setCurrentIndex(1)
 
     assert called.get("vid") == 2
-
