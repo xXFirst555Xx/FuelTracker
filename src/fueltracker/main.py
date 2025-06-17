@@ -29,6 +29,8 @@ def run(argv: list[str] | None = None) -> None:
     parser.add_argument("--start-minimized", action="store_true")
     args, _ = parser.parse_known_args(argv)
 
+    os.environ.setdefault("QT_QPA_FONTDIR", str(Path(__file__).resolve().parents[2] / "fonts"))
+
     if args.command == "migrate":
         upgrade(Config(ALEMBIC_INI), "head")
         return
@@ -41,8 +43,18 @@ def run(argv: list[str] | None = None) -> None:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from PySide6.QtWidgets import QApplication
     from PySide6.QtCore import QCoreApplication, Qt
+    from PySide6.QtGui import QFont, QFontDatabase
 
     app = QApplication.instance() or QApplication(sys.argv[:1])
+
+    # FIX: set Thai-compatible font
+    font_dir = os.environ.get("QT_QPA_FONTDIR")
+    if font_dir:
+        for ttf in Path(font_dir).glob("*.ttf"):
+            QFontDatabase.addApplicationFont(str(ttf))
+    db = QFontDatabase()
+    font_family = "Noto Sans Thai" if "Noto Sans Thai" in db.families() else "Tahoma"
+    app.setFont(QFont(font_family, 10))
 
     # --- NEW: use MainController instead of bare MainWindow ---
     from src.controllers.main_controller import MainController
