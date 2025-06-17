@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from alembic.config import Config
 from alembic.command import upgrade
 
-from src.settings import Settings
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 
@@ -34,10 +33,8 @@ def run(argv: list[str] | None = None) -> None:
         upgrade(Config(ALEMBIC_INI), "head")
         return
 
-    settings = Settings()
-    cfg = Config(ALEMBIC_INI)
-    cfg.set_main_option("sqlalchemy.url", f"sqlite:///{settings.db_path}")
-    upgrade(cfg, "head")
+    if not args.check:
+        upgrade(Config(ALEMBIC_INI), "head")
 
     logging.basicConfig(level=logging.INFO)
     if args.check:
