@@ -11,8 +11,15 @@ def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
     def fake_single_shot(ms, cb):
         calls["ms"] = ms
 
+    def fake_invoke(obj, func, conn):
+        calls["invoked"] = True
+
     monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
     monkeypatch.setattr(MainController, "_load_prices", lambda self: None)
+    monkeypatch.setattr(
+        "src.controllers.main_controller.QMetaObject.invokeMethod",
+        lambda obj, func, conn: fake_invoke(obj, func, conn),
+    )
 
     ctrl = MainController(db_path=tmp_path / "t.db", config_path=cfg_path)
     monkeypatch.setattr(ctrl.thread_pool, "start", lambda job: job.run())
@@ -24,4 +31,5 @@ def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
 
     assert calls["ms"] == 6 * 3_600_000
     assert calls["station"] == "bcp"
+    assert calls.get("invoked")
     assert ctrl.config.theme == "dark"

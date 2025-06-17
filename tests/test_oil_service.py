@@ -97,6 +97,10 @@ def test_price_update_handles_error(qapp, monkeypatch, tmp_path):
 
     monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
     monkeypatch.setattr(MainController, "_load_prices", lambda self: None)
+    monkeypatch.setattr(
+        "src.controllers.main_controller.QMetaObject.invokeMethod",
+        lambda *a, **k: called.setdefault("invoked", True),
+    )
 
     def raise_error(*_a, **_k):
         raise requests.RequestException("fail")

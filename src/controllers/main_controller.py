@@ -31,6 +31,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtCore import (
     Qt,
+    QMetaObject,
     QObject,
     Signal,
     QEvent,
@@ -1093,7 +1094,11 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        self.controller._load_prices()
+                        QMetaObject.invokeMethod(
+                            self.controller,
+                            self.controller._load_prices,
+                            Qt.QueuedConnection,
+                        )
                 except requests.RequestException as exc:  # pragma: no cover - network
                     logging.error("Failed to update oil prices: %s", exc)
                     if os.name == "nt":
