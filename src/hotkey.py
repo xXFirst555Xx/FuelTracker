@@ -3,7 +3,7 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Signal
 
 try:
-    from pynput import keyboard
+    import keyboard
 except Exception:  # pragma: no cover - optional dependency
     keyboard = None  # type: ignore
 
@@ -14,30 +14,21 @@ class GlobalHotkey(QObject):
     def __init__(self, sequence: str) -> None:
         super().__init__()
         self.sequence = sequence
-        self._listener: keyboard.GlobalHotKeys | None = None  # type: ignore
+        self._registered = False
 
     def start(self) -> None:
-        if keyboard is None:
+        if keyboard is None or self._registered:
             return
-        self._listener = keyboard.GlobalHotKeys({self._format(self.sequence): self.triggered.emit})
-        self._listener.start()
+        keyboard.add_hotkey(self._format(self.sequence), lambda: self.triggered.emit())
+        self._registered = True
 
     def stop(self) -> None:
-        if self._listener is not None:
-            self._listener.stop()
-            self._listener = None
+        if keyboard is not None and self._registered:
+            keyboard.remove_hotkey(self._format(self.sequence))
+            self._registered = False
 
     @staticmethod
     def _format(seq: str) -> str:
-        """Convert a Qt style hotkey string to pynput format."""
-        mapping = {
-            "ctrl": "<ctrl>",
-            "control": "<ctrl>",
-            "shift": "<shift>",
-            "alt": "<alt>",
-            "win": "<cmd>",
-            "cmd": "<cmd>",
-            "meta": "<cmd>",
-        }
+        """Normalize Qt style hotkey string to keyboard module format."""
         tokens = [t.strip().lower() for t in seq.split("+") if t.strip()]
-        return "+".join(mapping.get(t, t) for t in tokens)
+        return "+".join(tokens)

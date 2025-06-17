@@ -63,6 +63,8 @@ import sys
 from datetime import timedelta
 import requests
 
+from ..settings import Settings
+
 from sqlmodel import Session, select
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -146,19 +148,21 @@ class OilPricesDock(QDockWidget):
 
 class MainController(QObject):
     entry_changed = Signal()
+    export_finished = Signal(Path, Path)
     """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
 
     def __init__(
         self,
-        db_path: str | Path = "fuel.db",
+        db_path: str | Path | None = None,
         dark_mode: bool | None = None,
         theme: str | None = None,
         config_path: str | Path | None = None,
     ) -> None:
         super().__init__()
+        self.env = Settings()
         self.config_path = Path(config_path) if config_path else None
         self.config = AppConfig.load(self.config_path)
-        self.storage = StorageService(db_path)
+        self.storage = StorageService(db_path or self.env.db_path)
         self._dark_mode = dark_mode
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
@@ -175,8 +179,9 @@ class MainController(QObject):
             self.window.restoreState(state)
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
-        env_cloud = os.getenv("FT_CLOUD_DIR")
-        self.cloud_path: Path | None = Path(env_cloud) if env_cloud else None
+        self.cloud_path: Path | None = (
+            Path(self.env.ft_cloud_dir) if self.env.ft_cloud_dir else None
+        )
         self._selected_vehicle_id = None
         self.stats_dock = StatsDock(self.window)
         self.maint_dock = MaintenanceDock(self.window)
@@ -275,6 +280,11 @@ class MainController(QObject):
         if hasattr(self, "reports_page"):
             self.reports_page.export_button.clicked.connect(self.export_report)
             self.reports_page.refresh_button.clicked.connect(self.reports_page.refresh)
+            self.export_finished.connect(
+                lambda c, p: QMessageBox.information(
+                    self.window, self.tr("เสร็จสิ้น"), self.tr("ส่งออกรายงานแล้ว")
+                )
+            )
         self.maint_dock.add_button.clicked.connect(self.open_add_maintenance_dialog)
         self.maint_dock.edit_button.clicked.connect(self.open_edit_maintenance_dialog)
         self.maint_dock.done_button.clicked.connect(self.mark_selected_maintenance_done)
@@ -418,15 +428,8 @@ class MainController(QObject):
                 "เกินงบประมาณ",
                 "ค่าใช้จ่ายค่าน้ำมันเดือนนี้เกินงบที่ตั้งไว้",
             )
-            if os.name == "nt":
-                try:
-                    ToastNotifier().show_toast(
-                        "FuelTracker",
-                        "เกินงบประมาณ",
-                        threaded=True,
-                    )
-                except Exception:
-                    pass
+            if getattr(self, "tray_icon", None):
+                self.tray_icon.showMessage("FuelTracker", "เกินงบประมาณ")
 
     def _refresh_maintenance_panel(self) -> None:
         vid = self._selected_vehicle_id
@@ -490,9 +493,7 @@ class MainController(QObject):
                 if arg.startswith("--theme="):
                     theme = arg.split("=", 1)[1]
                     break
-        theme = (
-            theme or os.getenv("FT_THEME") or self.config.theme or "system"
-        ).lower()
+        theme = (theme or self.env.ft_theme or self.config.theme or "system").lower()
         if self._dark_mode is not None:
             theme = "dark" if self._dark_mode else "light"
         if theme == "system":
@@ -500,8 +501,8 @@ class MainController(QObject):
             theme = "dark" if scheme == Qt.ColorScheme.Dark else "light"
 
         qss_map = {
-            "light": "theme.qss",
-            "dark": "theme_dark.qss",
+            "light": "light.qss",
+            "dark": "dark.qss",
             "modern": "modern.qss",
             "vivid": "vivid.qss",
         }
@@ -937,8 +938,14 @@ class MainController(QObject):
         out_csv = Path("report.csv")
         out_pdf = Path("report.pdf")
         today = date.today()
-        self.exporter.monthly_csv(today.month, today.year, out_csv)
-        self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+
+        class Job(QRunnable):
+            def run(inner_self) -> None:  # type: ignore[override]
+                self.exporter.monthly_csv(today.month, today.year, out_csv)
+                self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+                self.export_finished.emit(out_csv, out_pdf)
+
+        self.thread_pool.start(Job())
 
     # ------------------------------------------------------------------
     # Page switching

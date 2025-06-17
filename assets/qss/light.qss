@@ -1,0 +1,57 @@
+/* Light theme ------------------------------------------------------------- */
+* {
+    font-family: "Tahoma", "Arial", sans-serif;
+    font-size: 11pt;
+    color: #222222;
+}
+
+QMainWindow {
+    background: #FAFAFA;
+}
+
+QDialog {
+    background: #FFFFFF;
+}
+
+QPushButton {
+    background-color: #2962FF;
+    color: #FFFFFF;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+QPushButton:hover {
+    background-color: #3d74ff;
+}
+QPushButton:pressed {
+    background-color: #1c4fd9;
+}
+
+QLineEdit, QComboBox {
+    background: #FFFFFF;
+    border: 1px solid #BDBDBD;
+    border-radius: 4px;
+    padding: 4px;
+}
+QLineEdit:focus, QComboBox:focus {
+    border-color: #2962FF;
+}
+
+QLabel {
+    color: #333333;
+}
+
+/* Sidebar QListWidget */
+QListWidget {
+    background: #FFFFFF;
+    border: none;
+}
+QListWidget::item {
+    padding: 16px 20px;
+}
+QListWidget::item:selected {
+    background: #E3F2FD;
+    color: #2962FF;
+    border-left: 4px solid #2962FF;
+}
+
+/* ------------------------------------------------------------------------- */

@@ -7,6 +7,8 @@ import os
 import shutil
 from getpass import getpass
 
+from ..settings import Settings
+
 try:
     from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore
 
@@ -85,9 +87,8 @@ class StorageService:
             db_path.parent.mkdir(parents=True, exist_ok=True)
             if password is None:
                 if _SQLCIPHER_AVAILABLE:
-                    password = os.environ.get("FT_DB_PASSWORD") or getpass(
-                        "DB password: "
-                    )
+                    env = Settings()
+                    password = env.ft_db_password or getpass("DB password: ")
                 else:
                     password = ""
             self._password = password
