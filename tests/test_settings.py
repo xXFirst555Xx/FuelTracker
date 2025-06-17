@@ -1,4 +1,4 @@
-from pathlib import Path
+# FIX: remove unused import
 from src.settings import Settings
 
 

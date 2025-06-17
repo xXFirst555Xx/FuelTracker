@@ -9,13 +9,16 @@ branch_labels = None
 depends_on = None
 
 
+# FIX: skip creation when table already exists
 def upgrade() -> None:
-    op.create_table(
-        "budget",
-        sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("vehicle_id", sa.Integer, nullable=False),
-        sa.Column("amount", sa.Float, nullable=False),
-    )
+    conn = op.get_bind()
+    if "budget" not in sa.inspect(conn).get_table_names():
+        op.create_table(
+            "budget",
+            sa.Column("id", sa.Integer, primary_key=True),
+            sa.Column("vehicle_id", sa.Integer, nullable=False),
+            sa.Column("amount", sa.Float, nullable=False),
+        )
 
 
 def downgrade() -> None:

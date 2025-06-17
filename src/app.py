@@ -1,3 +1,4 @@
+# FIX: remove unused import
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
 
 def main() -> None:

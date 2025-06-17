@@ -20,6 +20,9 @@ dependencies = [
     "win10toast; sys_platform == 'win32'",
     "requests",
     "keyboard",
+    "pytest-qt>=4.4",
+    "openpyxl>=3.1",
+    "pydantic-settings",
 ]
 [project.scripts]
 fueltracker = "fueltracker.main:run"
@@ -29,3 +32,7 @@ line-length = 88
 
 [tool.ruff]
 line-length = 88
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true

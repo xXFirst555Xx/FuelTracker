@@ -13,7 +13,8 @@ class GlobalHotkey(QObject):
 
     def __init__(self, sequence: str) -> None:
         super().__init__()
-        self.sequence = sequence
+        # FIX: validate hotkey sequence on creation
+        self.sequence = self._format(sequence)
         self._registered = False
 
     def start(self) -> None:
@@ -31,4 +32,6 @@ class GlobalHotkey(QObject):
     def _format(seq: str) -> str:
         """Normalize Qt style hotkey string to keyboard module format."""
         tokens = [t.strip().lower() for t in seq.split("+") if t.strip()]
+        if len(tokens) < 2:
+            raise ValueError("Hotkey must include a non-modifier key")
         return "+".join(tokens)

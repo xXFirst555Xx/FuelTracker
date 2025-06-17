@@ -559,7 +559,9 @@ class MainController(QObject):
 
     def _register_hotkey(self) -> None:
         self._unregister_hotkey()
-        self.global_hotkey = GlobalHotkey(self.config.hotkey)
+        # FIX: use default if config not set
+        hotkey = self.config.hotkey or "ctrl+shift+h"
+        self.global_hotkey = GlobalHotkey(hotkey)
         self.global_hotkey.triggered.connect(self._on_hotkey)
         self.global_hotkey.start()
 
@@ -1080,7 +1082,10 @@ class MainController(QObject):
         ):
             self._price_timer_started = True
             self._schedule_price_update()
-        return super().eventFilter(obj, event)
+        try:
+            return super().eventFilter(obj, event)
+        except RuntimeError:  # FIX: Qt object might be deleted
+            return False
 
     def _schedule_price_update(self) -> None:
 
@@ -1180,6 +1185,11 @@ class MainController(QObject):
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
 
     def _close_event(self, event: QCloseEvent) -> None:
+        # FIX: ensure event filter is removed on close
+        try:
+            self.window.removeEventFilter(self)
+        except RuntimeError:
+            pass
         if (
             getattr(self, "tray_icon", None)
             and self.tray_icon.isVisible()
