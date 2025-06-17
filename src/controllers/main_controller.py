@@ -1100,11 +1100,7 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        QMetaObject.invokeMethod(
-                            self.controller,
-                            self.controller._load_prices,
-                            Qt.ConnectionType.QueuedConnection,
-                        )
+                        QTimer.singleShot(0, self.controller._load_prices)
                 except requests.RequestException as exc:  # pragma: no cover - network
                     logging.error("Failed to update oil prices: %s", exc)
                     if os.name == "nt":
