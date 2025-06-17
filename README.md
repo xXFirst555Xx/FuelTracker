@@ -99,6 +99,7 @@ build.bat
 python -m venv .venv
 \.venv\Scripts\activate
 pip install -r requirements.txt
+rem requirements.txt รวม `pytest-qt` ซึ่งให้ฟิกซ์เจอร์ `qtbot` สำหรับทดสอบ Qt
 pip install -e .
 pytest
 ```
