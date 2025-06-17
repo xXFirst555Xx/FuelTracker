@@ -7,6 +7,8 @@ import csv
 
 from ..models import FuelEntry
 from .storage_service import StorageService
+from .validators import validate_entry
+from sqlmodel import Session
 
 
 class Importer:
@@ -57,5 +59,12 @@ class Importer:
         entries = self.read_csv(path)
         for e in entries:
             e.vehicle_id = vehicle_id
-            self.storage.add_entry(e)
+            validate_entry(e)
+
+        with Session(self.storage.engine) as session:
+            session.add_all(entries)
+            session.commit()
+            for e in entries:
+                session.refresh(e)
+
         return entries
