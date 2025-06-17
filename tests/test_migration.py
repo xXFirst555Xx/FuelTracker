@@ -19,3 +19,12 @@ def engine(tmp_path: Path) -> Engine:
 def test_fuel_type_column(engine: Engine) -> None:
     insp = sqlalchemy.inspect(engine)
     assert "fuel_type" in [c["name"] for c in insp.get_columns("fuelentry")]
+
+
+def test_indexes_created(engine: Engine) -> None:
+    insp = sqlalchemy.inspect(engine)
+    fuel_indexes = {idx["name"] for idx in insp.get_indexes("fuelentry")}
+    maint_indexes = {idx["name"] for idx in insp.get_indexes("maintenance")}
+    assert "ix_fuelentry_vehicle_id" in fuel_indexes
+    assert "ix_fuelentry_entry_date" in fuel_indexes
+    assert "ix_maintenance_vehicle_id" in maint_indexes
