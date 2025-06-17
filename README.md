@@ -65,6 +65,8 @@ python -m fueltracker
 ```bash
 python -m fueltracker migrate
 ```
+หากอัปเดตจากเวอร์ชันก่อนหน้า ให้รันคำสั่งนี้อีกครั้งเพื่อสร้างดัชนีใหม่ใน
+ตาราง `fuelentry` และ `maintenance`
 
 การรันด้วย `-m` ช่วยให้โมดูลถูกค้นพบถูกต้อง ป้องกันปัญหาการนำเข้าแบบ relative
 
