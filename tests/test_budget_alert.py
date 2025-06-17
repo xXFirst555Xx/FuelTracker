@@ -38,4 +38,6 @@ def test_budget_warning(qapp, tmp_path, monkeypatch):
     )
     monkeypatch.setattr("src.controllers.main_controller.ToastNotifier", lambda: None)
     ctrl._check_budget(1, date.today())
+    today = date.today()
+    assert storage.get_total_spent(1, today.year, today.month) == 55.0
     assert warned.get("w")
