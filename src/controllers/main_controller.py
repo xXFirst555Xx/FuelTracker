@@ -61,6 +61,7 @@ import logging
 import os
 import sys
 from datetime import timedelta
+import requests
 
 from sqlmodel import Session, select
 
