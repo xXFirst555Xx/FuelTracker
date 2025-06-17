@@ -82,6 +82,16 @@ class StorageService:
         if engine is not None:
             self.engine = engine
             self._db_path = Path(engine.url.database) if engine.url.database else None
+            SQLModel.metadata.create_all(
+                self.engine,
+                tables=[
+                    FuelEntry.__table__,
+                    Vehicle.__table__,
+                    Budget.__table__,
+                    Maintenance.__table__,
+                    FuelPrice.__table__,
+                ],
+            )
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -102,6 +112,7 @@ class StorageService:
                     raw.execute(f"PRAGMA key='{password}';")
                 return _ConnProxy(raw)
 
+            exists_before = db_path.exists()
             self.engine = create_engine(
                 "sqlite://",
                 creator=_connect,
@@ -109,16 +120,17 @@ class StorageService:
             )
             self._db_path = db_path
 
-        SQLModel.metadata.create_all(
-            self.engine,
-            tables=[
-                FuelEntry.__table__,
-                Vehicle.__table__,
-                Budget.__table__,
-                Maintenance.__table__,
-                FuelPrice.__table__,
-            ],
-        )
+            if not exists_before:
+                SQLModel.metadata.create_all(
+                    self.engine,
+                    tables=[
+                        FuelEntry.__table__,
+                        Vehicle.__table__,
+                        Budget.__table__,
+                        Maintenance.__table__,
+                        FuelPrice.__table__,
+                    ],
+                )
 
     def add_entry(self, entry: FuelEntry) -> None:
         validate_entry(entry)
