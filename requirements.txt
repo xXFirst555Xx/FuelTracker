@@ -12,3 +12,8 @@ keyboard
 pydantic-settings
 types-keyboard
 types-reportlab
+alembic
+mypy
+pydeps
+ruff
+vulture
