@@ -274,8 +274,10 @@ class StorageService:
                 .order_by(month)
             )
             res = []
-            for m, d, l, a in session.exec(stmt):
-                res.append((m, float(d or 0.0), float(l or 0.0), float(a or 0.0)))
+            for m, d, liters_val, amount_val in session.exec(stmt):
+                res.append(
+                    (m, float(d or 0.0), float(liters_val or 0.0), float(amount_val or 0.0))
+                )
             return res
 
     def liters_by_fuel_type(self) -> dict[str | None, float]:
@@ -286,7 +288,10 @@ class StorageService:
                 .where(FuelEntry.liters.is_not(None))
                 .group_by(FuelEntry.fuel_type)
             )
-            return {ft: float(l or 0.0) for ft, l in session.exec(stmt)}
+            return {
+                fuel_type: float(total_liters or 0.0)
+                for fuel_type, total_liters in session.exec(stmt)
+            }
 
     def get_entry(self, entry_id: int) -> Optional[FuelEntry]:
         """ดึงข้อมูลการเติมน้ำมันตามรหัส"""
