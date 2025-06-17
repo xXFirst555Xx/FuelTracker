@@ -105,7 +105,11 @@ pytest
 ต้องการตรวจสอบแบบครบถ้วนยิ่งขึ้นสามารถรันสคริปต์
 `scripts/validate_connectivity.py` ซึ่งจะติดตั้งแพ็กเกจแบบ editable,
 รัน `pytest` และทดสอบการเปิดโปรแกรมแบบ offscreen ผลลัพธ์จะถูกบันทึกไว้ในโฟลเดอร์
-`reports/` ทั้งหมด
+`reports/` ทั้งหมด ก่อนใช้งานให้ติดตั้งเครื่องมือสำหรับนักพัฒนาดังนี้
+
+```bash
+pip install pydeps ruff vulture mypy
+```
 
 ```bat
 python scripts/validate_connectivity.py
