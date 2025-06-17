@@ -11,22 +11,9 @@ REPORTS = Path("reports")
 REPORTS.mkdir(exist_ok=True)
 
 
-def run(cmd: list[str], *, capture: bool = True, **kwargs) -> subprocess.CompletedProcess[str]:
-    """Run *cmd* and optionally capture output.
-
-    Parameters
-    ----------
-    cmd: list[str]
-        Command and arguments to run.
-    capture: bool, optional
-        Capture stdout/stderr if ``True`` (default) or inherit the current
-        process streams if ``False``.
-    """
-
+def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
     print("$", " ".join(cmd))
-    if capture:
-        return subprocess.run(cmd, text=True, capture_output=True, **kwargs)
-    return subprocess.run(cmd, text=True, **kwargs)
+    return subprocess.run(cmd, text=True, capture_output=True, **kwargs)
 
 
 def main() -> None:
@@ -96,8 +83,8 @@ def main() -> None:
         errors.append("migrate")
 
     # 5. Pytest
-    res = run(["pytest", "-q"], capture=False)
-    (REPORTS / "pytest.txt").write_text((res.stdout or "") + (res.stderr or ""))
+    res = run(["pytest", "-q"])
+    (REPORTS / "pytest.txt").write_text(res.stdout + res.stderr)
     summary.append("Pytest exit: " + str(res.returncode))
     if res.returncode != 0:
         errors.append("pytest")
