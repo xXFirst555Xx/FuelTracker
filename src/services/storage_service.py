@@ -1,7 +1,7 @@
 """บริการจัดการการบันทึกข้อมูลด้วย SQLModel"""
 
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 import os
 import shutil
@@ -151,6 +151,21 @@ class StorageService:
         with Session(self.engine) as session:
             statement = select(FuelEntry)
             return list(session.exec(statement))
+
+    def list_entries_filtered(
+        self, text: str | None = None, start: date | None = None
+    ) -> list[FuelEntry]:
+        """Return entries filtered by vehicle name and start date."""
+        with Session(self.engine) as session:
+            stmt = select(FuelEntry)
+            if text:
+                stmt = (
+                    stmt.join(Vehicle, FuelEntry.vehicle_id == Vehicle.id)
+                    .where(func.lower(Vehicle.name).contains(text.lower()))
+                )
+            if start:
+                stmt = stmt.where(FuelEntry.entry_date >= start)
+            return list(session.exec(stmt))
 
     def list_vehicles(self) -> List[Vehicle]:
         with Session(self.engine) as session:
