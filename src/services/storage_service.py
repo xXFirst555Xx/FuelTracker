@@ -18,7 +18,7 @@ except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missi
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
@@ -359,19 +359,31 @@ class StorageService:
         date_: datetime | None = None,
     ) -> List[Maintenance]:
         with Session(self.engine) as session:
-            stmt = select(Maintenance).where(
+            if odo is None and date_ is None:
+                return []
+
+            conditions = [
                 Maintenance.vehicle_id == vehicle_id,
                 Maintenance.is_done.is_(False),
-            )
-            res = []
-            for m in session.exec(stmt):
-                if m.due_odo is not None and odo is not None and odo >= m.due_odo:
-                    res.append(m)
-                elif (
-                    m.due_date is not None and date_ is not None and date_ >= m.due_date
-                ):
-                    res.append(m)
-            return res
+            ]
+
+            odo_cond = (
+                Maintenance.due_odo.is_not(None) & (Maintenance.due_odo <= odo)
+            ) if odo is not None else None
+
+            date_cond = (
+                Maintenance.due_date.is_not(None) & (Maintenance.due_date <= date_)
+            ) if date_ is not None else None
+
+            if odo_cond is not None and date_cond is not None:
+                conditions.append(or_(odo_cond, date_cond))
+            elif odo_cond is not None:
+                conditions.append(odo_cond)
+            elif date_cond is not None:
+                conditions.append(date_cond)
+
+            stmt = select(Maintenance).where(*conditions)
+            return list(session.exec(stmt))
 
     # ------------------------------------------------------------------
     # Budget helpers
