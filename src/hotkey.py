@@ -29,4 +29,15 @@ class GlobalHotkey(QObject):
 
     @staticmethod
     def _format(seq: str) -> str:
-        return seq.lower().replace("+", "+")
+        """Convert a Qt style hotkey string to pynput format."""
+        mapping = {
+            "ctrl": "<ctrl>",
+            "control": "<ctrl>",
+            "shift": "<shift>",
+            "alt": "<alt>",
+            "win": "<cmd>",
+            "cmd": "<cmd>",
+            "meta": "<cmd>",
+        }
+        tokens = [t.strip().lower() for t in seq.split("+") if t.strip()]
+        return "+".join(mapping.get(t, t) for t in tokens)
