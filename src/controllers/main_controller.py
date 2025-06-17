@@ -42,6 +42,7 @@ from PySide6.QtCore import (
     QParallelAnimationGroup,
     QSettings,
 )
+from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
 try:
@@ -216,6 +217,7 @@ class MainController(QObject):
             if idx >= 0:
                 self.window.themeComboBox.setCurrentIndex(idx)
         self.thread_pool = QThreadPool.globalInstance()
+        self.executor = ThreadPoolExecutor(max_workers=1)
         self._price_timer_started = False
         self.window.installEventFilter(self)
         app = QApplication.instance()
@@ -939,13 +941,12 @@ class MainController(QObject):
         out_pdf = Path("report.pdf")
         today = date.today()
 
-        class Job(QRunnable):
-            def run(inner_self) -> None:  # type: ignore[override]
-                self.exporter.monthly_csv(today.month, today.year, out_csv)
-                self.exporter.monthly_pdf(today.month, today.year, out_pdf)
-                self.export_finished.emit(out_csv, out_pdf)
+        def job() -> None:
+            self.exporter.monthly_csv(today.month, today.year, out_csv)
+            self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+            self.export_finished.emit(out_csv, out_pdf)
 
-        self.thread_pool.start(Job())
+        self.executor.submit(job)
 
     # ------------------------------------------------------------------
     # Page switching
@@ -1073,6 +1074,7 @@ class MainController(QObject):
         self.settings.setValue("windowGeometry", self.window.saveGeometry())
         self.settings.setValue("windowState", self.window.saveState())
         self._unregister_hotkey()
+        self.executor.shutdown(wait=False)
 
     def shutdown(self) -> None:
         backup = self.storage.auto_backup()
