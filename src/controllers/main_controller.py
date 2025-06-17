@@ -57,6 +57,7 @@ except Exception:  # pragma: no cover - optional on non-Windows systems
 
 
 from pathlib import Path
+import logging
 import os
 import sys
 from datetime import timedelta
@@ -982,9 +983,21 @@ class MainController(QObject):
                 self.controller = controller
 
             def run(self) -> None:  # type: ignore[override]
-                with Session(self.controller.storage.engine) as sess:
-                    fetch_latest(sess, self.controller.config.default_station)
-                    self.controller._load_prices()
+                try:
+                    with Session(self.controller.storage.engine) as sess:
+                        fetch_latest(sess, self.controller.config.default_station)
+                        self.controller._load_prices()
+                except requests.RequestException as exc:  # pragma: no cover - network
+                    logging.error("Failed to update oil prices: %s", exc)
+                    if os.name == "nt":
+                        try:
+                            ToastNotifier().show_toast(
+                                "FuelTracker",
+                                "ไม่สามารถอัปเดตราคาน้ำมันได้",
+                                threaded=True,
+                            )
+                        except Exception:
+                            pass
 
         self.thread_pool.start(Job(self))
         interval_ms = self.config.update_hours * 3_600_000
