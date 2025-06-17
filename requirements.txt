@@ -7,4 +7,8 @@ python-dotenv
 pytest
 pytest-cov
 pyinstaller
-pytest-qt
+requests
+keyboard
+pydantic-settings
+types-keyboard
+types-reportlab

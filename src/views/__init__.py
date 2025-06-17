@@ -45,7 +45,11 @@ def load_ui(name: str) -> QWidget:
     for lw in widget.findChildren(QListWidget):
         for i in range(lw.count()):
             item = lw.item(i)
-            item.setFlags(item.flags() | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+            item.setFlags(
+                item.flags()
+                | Qt.ItemFlag.ItemIsEnabled
+                | Qt.ItemFlag.ItemIsSelectable
+            )
 
     return widget
 
