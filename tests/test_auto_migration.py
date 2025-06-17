@@ -1,7 +1,6 @@
 from alembic.config import Config
 from alembic import command
 from fueltracker.main import ALEMBIC_INI, run
-from pathlib import Path
 
 
 def test_auto_migration(tmp_path, monkeypatch):

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
 
 def main() -> None:
     app = QApplication([])
