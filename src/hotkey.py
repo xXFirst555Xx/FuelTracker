@@ -19,7 +19,13 @@ class GlobalHotkey(QObject):
     def start(self) -> None:
         if keyboard is None or self._registered:
             return
-        keyboard.add_hotkey(self._format(self.sequence), lambda: self.triggered.emit())
+        try:
+            keyboard.add_hotkey(
+                self._format(self.sequence),
+                lambda: self.triggered.emit(),
+            )
+        except Exception:  # pragma: no cover - ignore environments without input devices
+            return
         self._registered = True
 
     def stop(self) -> None:
