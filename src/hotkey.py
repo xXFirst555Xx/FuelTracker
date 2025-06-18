@@ -4,11 +4,12 @@ from PySide6.QtCore import QObject, Signal
 from typing import Any
 
 try:
-    import keyboard as kb
+    import keyboard as kb_module
 except Exception:  # pragma: no cover - optional dependency
-    kb = None
+    kb_module = None
 
-keyboard: Any | None = kb
+# Optional keyboard module, may be ``None`` when dependency is missing
+keyboard: Any | None = kb_module
 
 
 class GlobalHotkey(QObject):
@@ -42,7 +43,6 @@ class GlobalHotkey(QObject):
                 keyboard.add_hotkey(
                     self._format(self.sequence),
                     self._wrapped_callback,
-                    # type: ignore[arg-type]
                 )
         except Exception:  # pragma: no cover - ignore environments without input devices
             return
