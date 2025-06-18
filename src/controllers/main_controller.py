@@ -845,14 +845,14 @@ class MainController(QObject):
             last = repo.last_entry(vid)
             if last is not None and last.odo_after is not None:
                 dialog.odoBeforeEdit.setText(str(last.odo_after))
+                dialog.odoAfterEdit.setText(str(last.odo_after))
             else:
                 dialog.odoBeforeEdit.clear()
-            dialog.odoAfterEdit.clear()
+                dialog.odoAfterEdit.clear()
             dialog.amountEdit.clear()
             dialog.litersEdit.clear()
             dialog.odoAfterEdit.setReadOnly(True)
             dialog.litersEdit.setReadOnly(True)
-            _auto_fill()
 
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
@@ -1110,7 +1110,11 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        QTimer.singleShot(0, self.controller._load_prices)
+                        QMetaObject.invokeMethod(
+                            self.controller,
+                            "_load_prices",
+                            Qt.ConnectionType.QueuedConnection,
+                        )
                 except requests.RequestException as exc:  # pragma: no cover - network
                     logging.error("Failed to update oil prices: %s", exc)
                     if os.name == "nt":
