@@ -43,6 +43,7 @@ from PySide6.QtCore import (
     QParallelAnimationGroup,
     QSettings,
 )
+from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
@@ -1110,11 +1111,12 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        QMetaObject.invokeMethod(
-                            self.controller,
-                            "_load_prices",
-                            Qt.ConnectionType.QueuedConnection,
-                        )
+                        if isValid(self.controller):
+                            QMetaObject.invokeMethod(
+                                self.controller,
+                                "_load_prices",
+                                Qt.ConnectionType.QueuedConnection,
+                            )
                 except requests.RequestException as exc:  # pragma: no cover - network
                     logging.error("Failed to update oil prices: %s", exc)
                     if os.name == "nt":
