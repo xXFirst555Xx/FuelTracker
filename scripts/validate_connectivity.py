@@ -45,8 +45,19 @@ def run(
 
     print("$", " ".join(cmd))
     if capture:
-        return subprocess.run(cmd, text=True, capture_output=True, env=env, **kwargs)
-    return subprocess.run(cmd, text=True, env=env, **kwargs)
+        # FIX: prevent endless subprocess hang
+        result = subprocess.run(
+            cmd,
+            text=True,
+            env=env,
+            capture_output=True,
+            timeout=60,
+            **kwargs,
+        )
+        print(result.stdout)
+        print(result.stderr)
+        return result
+    return subprocess.run(cmd, text=True, env=env, timeout=60, **kwargs)
 
 
 def main() -> None:

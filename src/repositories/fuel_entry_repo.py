@@ -37,5 +37,8 @@ class FuelEntryRepository:
         with Session(self.engine) as sess:
             sess.add(entry)
             sess.commit()
-            sess.refresh(entry)
+            # FIX: prevent hang
+            sess.flush()
+            if entry.id is not None:
+                sess.refresh(entry)
             return entry

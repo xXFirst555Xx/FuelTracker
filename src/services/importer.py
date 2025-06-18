@@ -64,7 +64,10 @@ class Importer:
         with Session(self.storage.engine) as session:
             session.add_all(entries)
             session.commit()
+            # FIX: prevent hang
+            session.flush()
             for e in entries:
-                session.refresh(e)
+                if e.id is not None:
+                    session.refresh(e)
 
         return entries

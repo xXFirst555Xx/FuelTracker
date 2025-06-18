@@ -158,13 +158,19 @@ class StorageService:
 
             session.add(entry)
             session.commit()
-            session.refresh(entry)
+            # FIX: prevent hang when entry.id is None
+            session.flush()
+            if entry.id is not None:
+                session.refresh(entry)
 
     def add_vehicle(self, vehicle: Vehicle) -> None:
         with Session(self.engine) as session:
             session.add(vehicle)
             session.commit()
-            session.refresh(vehicle)
+            # FIX: prevent hang when vehicle.id is None
+            session.flush()
+            if vehicle.id is not None:
+                session.refresh(vehicle)
 
     def list_entries(self) -> List[FuelEntry]:
         with Session(self.engine) as session:
@@ -203,7 +209,10 @@ class StorageService:
         with Session(self.engine) as session:
             session.add(vehicle)
             session.commit()
-            session.refresh(vehicle)
+            # FIX: prevent hang when vehicle.id is None
+            session.flush()
+            if vehicle.id is not None:
+                session.refresh(vehicle)
 
     def delete_vehicle(self, vehicle_id: int) -> None:
         """ลบยานพาหนะออกจากฐานข้อมูล"""
@@ -324,7 +333,10 @@ class StorageService:
         with Session(self.engine) as session:
             session.add(entry)
             session.commit()
-            session.refresh(entry)
+            # FIX: prevent hang when entry.id is None
+            session.flush()
+            if entry.id is not None:
+                session.refresh(entry)
 
     def delete_entry(self, entry_id: int) -> None:
         """ลบข้อมูลการเติมน้ำมันออกจากฐานข้อมูล"""
@@ -342,7 +354,10 @@ class StorageService:
         with Session(self.engine) as session:
             session.add(task)
             session.commit()
-            session.refresh(task)
+            # FIX: prevent hang
+            session.flush()
+            if task.id is not None:
+                session.refresh(task)
 
     def list_maintenances(self, vehicle_id: int | None = None) -> List[Maintenance]:
         with Session(self.engine) as session:
@@ -359,7 +374,10 @@ class StorageService:
         with Session(self.engine) as session:
             session.add(task)
             session.commit()
-            session.refresh(task)
+            # FIX: prevent hang
+            session.flush()
+            if task.id is not None:
+                session.refresh(task)
 
     def mark_maintenance_done(self, task_id: int, done: bool = True) -> None:
         with Session(self.engine) as session:
@@ -369,7 +387,10 @@ class StorageService:
             task.is_done = done
             session.add(task)
             session.commit()
-            session.refresh(task)
+            # FIX: prevent hang
+            session.flush()
+            if task.id is not None:
+                session.refresh(task)
 
     def list_due_maintenances(
         self,
