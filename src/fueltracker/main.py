@@ -35,8 +35,8 @@ def run(argv: list[str] | None = None) -> None:
         upgrade(Config(ALEMBIC_INI), "head")
         return
 
-    if not args.check:
-        upgrade(Config(ALEMBIC_INI), "head")
+    # Always apply any pending migrations before launching the app
+    upgrade(Config(ALEMBIC_INI), "head")
 
     logging.basicConfig(level=logging.INFO)
     if args.check:
