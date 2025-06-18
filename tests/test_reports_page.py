@@ -1,11 +1,10 @@
-from src.controllers.main_controller import MainController
 from src.models import Vehicle
 from src.services.report_service import ReportService
 import pandas as pd
 
 
-def test_refresh_updates_summary(qtbot, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_refresh_updates_summary(qtbot, main_controller):
+    ctrl = main_controller
     page = ctrl.reports_page
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
@@ -13,8 +12,8 @@ def test_refresh_updates_summary(qtbot, tmp_path):
     assert "km" in page.cards["distance"].value_label.text()
 
 
-def test_monthly_tab_populates(qtbot, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_monthly_tab_populates(qtbot, main_controller):
+    ctrl = main_controller
     page = ctrl.reports_page
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
@@ -22,8 +21,8 @@ def test_monthly_tab_populates(qtbot, tmp_path):
     assert page.monthly_layout.count() > 0
 
 
-def test_refresh_clears_worker(qtbot, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_refresh_clears_worker(qtbot, main_controller):
+    ctrl = main_controller
     page = ctrl.reports_page
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
@@ -31,8 +30,8 @@ def test_refresh_clears_worker(qtbot, tmp_path):
     qtbot.waitUntil(lambda: page._worker is None, timeout=2000)
 
 
-def test_vehicle_selection_updates_monthly(qtbot, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_vehicle_selection_updates_monthly(qtbot, main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(name="v1", vehicle_type="t", license_plate="x", tank_capacity_liters=1)

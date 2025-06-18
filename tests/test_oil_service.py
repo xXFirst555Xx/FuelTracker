@@ -57,8 +57,8 @@ def test_fetch_latest(monkeypatch, in_memory_storage):
         assert len(rows) == 12
 
 
-def test_autofill_liters(qapp, monkeypatch, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_autofill_liters(main_controller, monkeypatch):
+    ctrl = main_controller
     ctrl.storage.add_vehicle(
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
     )
@@ -86,8 +86,8 @@ def test_autofill_liters(qapp, monkeypatch, tmp_path):
     assert dialog.litersEdit.text() == "2.00"
 
 
-def test_price_update_handles_error(qapp, monkeypatch, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_price_update_handles_error(main_controller, monkeypatch):
+    ctrl = main_controller
 
     monkeypatch.setattr(ctrl.thread_pool, "start", lambda job: job.run())
     called = {}

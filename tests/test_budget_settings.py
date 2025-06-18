@@ -2,12 +2,11 @@ from datetime import date
 
 from PySide6.QtWidgets import QMessageBox
 
-from src.controllers.main_controller import MainController
 from src.models import Vehicle, FuelEntry
 
 
-def test_budget_save_updates_storage(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_budget_save_updates_storage(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)

@@ -1,7 +1,5 @@
-from src.controllers.main_controller import MainController
-
-def test_switch_page_changes_index(qtbot, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_switch_page_changes_index(qtbot, main_controller):
+    ctrl = main_controller
     window = ctrl.window
     qtbot.addWidget(window)
     stack = window.stackedWidget
