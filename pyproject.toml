@@ -39,21 +39,15 @@ line-length = 88
 [tool.ruff]
 line-length = 88
 
-[tool.poe.tasks.lint]
-sequence = ["ruff", "mypy", "vulture"]
+[tool.poe.tasks]
+lint = [
+    { cmd = "ruff check ." },
+    { cmd = "mypy src/ --strict" },
+    { cmd = "vulture src/" }
+]
 
-[tool.poe.tasks.test]
-cmd = "pytest -q"
-
-[tool.poe.tasks.migrate]
-cmd = "python -m fueltracker migrate"
-
-[tool.poe.tasks.runtime-check]
-cmd = "python -m fueltracker --check"
-env = { QT_QPA_PLATFORM = "offscreen" }
-
-[tool.poe.tasks.build]
-cmd = "pyinstaller --noconfirm --noconsole --name FuelTracker --icon assets/icon.ico src/fueltracker/__main__.py"
-
-[tool.poe.tasks.validate]
-sequence = ["lint", "migrate", "test", "runtime-check"]
+test = { cmd = "pytest -q" }
+migrate = { cmd = "python -m fueltracker migrate" }
+runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen" } }
+build = { cmd = "pyinstaller --noconfirm --noconsole --name FuelTracker --icon assets/icon.ico src/fueltracker/__main__.py" }
+validate = { sequence = ["lint", "migrate", "test", "runtime-check"] }
