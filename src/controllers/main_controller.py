@@ -91,12 +91,12 @@ from .undo_commands import (
     UpdateVehicleCommand,
 )
 from ..views import (
-    load_ui,
-    load_add_entry_dialog,
-    load_add_vehicle_dialog,
-    load_about_dialog,
-    load_add_maintenance_dialog,
-    load_import_csv_dialog,
+    MainWindow,
+    AddEntryDialog,
+    AddVehicleDialog,
+    AboutDialog,
+    AddMaintenanceDialog,
+    ImportCsvDialog,
 )
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
@@ -176,8 +176,7 @@ class MainController(QObject):
         self.report_service = ReportService(self.storage)
         self.exporter = Exporter(self.storage)
         self.importer = Importer(self.storage)
-        # FIX: mypy clean
-        self.window: QMainWindow = cast(QMainWindow, load_ui("main_window"))
+        self.window: MainWindow = MainWindow()
         self.global_hotkey: GlobalHotkey | None = None
         self.settings = QSettings("FuelTracker", "MainWindow")
         geom = self.settings.value("windowGeometry")
@@ -246,8 +245,7 @@ class MainController(QObject):
         self._connect_signals()
         self._setup_tray()
         self._setup_hotkey()
-        # FIX: mypy clean
-        self.window.closeEvent = cast(Callable[[QCloseEvent], None], self._close_event)
+        self.window.closeEvent = self._close_event
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
@@ -655,8 +653,7 @@ class MainController(QObject):
     # Dialog handlers
     # ------------------------------------------------------------------
     def open_add_vehicle_dialog(self) -> None:
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_add_vehicle_dialog())
+        dialog = AddVehicleDialog(self.window)
         dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
         if dialog.exec() == QDialog.Accepted:
             name = dialog.nameLineEdit.text().strip()
@@ -686,8 +683,7 @@ class MainController(QObject):
         if vehicle is None:
             return
         before = Vehicle.model_validate(vehicle)
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_add_vehicle_dialog())
+        dialog = AddVehicleDialog(self.window)
         dialog.setWindowTitle("แก้ไขยานพาหนะ")
         dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
         dialog.nameLineEdit.setText(vehicle.name)
@@ -730,8 +726,7 @@ class MainController(QObject):
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_add_entry_dialog())
+        dialog = AddEntryDialog(self.window)
         dialog.dateEdit.setDate(date.today())
         dialog.odoBeforeEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.odoAfterEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
@@ -917,8 +912,7 @@ class MainController(QObject):
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_import_csv_dialog())
+        dialog = ImportCsvDialog(self.window)
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
 
@@ -968,16 +962,14 @@ class MainController(QObject):
             self._update_tray_tooltip()
 
     def open_about_dialog(self) -> None:
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_about_dialog())
+        dialog = AboutDialog(self.window)
         dialog.exec()
 
     def open_add_maintenance_dialog(self) -> None:
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_add_maintenance_dialog())
+        dialog = AddMaintenanceDialog(self.window)
         dialog.dateEdit.setDate(date.today())
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
         for v in self.storage.list_vehicles():
@@ -1015,8 +1007,7 @@ class MainController(QObject):
         task = self.storage.get_maintenance(task_id)
         if task is None:
             return
-        # FIX: mypy clean
-        dialog = cast(QDialog, load_add_maintenance_dialog())
+        dialog = AddMaintenanceDialog(self.window)
         dialog.setWindowTitle("แก้ไขงานบำรุงรักษา")
         dialog.dateEdit.setDate(task.due_date or date.today())
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
@@ -1083,7 +1074,7 @@ class MainController(QObject):
     # ตัวจัดตารางราคาน้ำมัน
     # ------------------------------------------------------------------
 
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:  # type: ignore[override]
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
         if (
             getattr(self, "window", None) is not None
             and obj is self.window
@@ -1101,7 +1092,7 @@ class MainController(QObject):
                 super().__init__()
                 self.controller = controller
 
-            def run(self) -> None:  # type: ignore[override]
+            def run(self) -> None:
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)

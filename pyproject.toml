@@ -29,6 +29,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "poethepoet",
+    "types-requests",
+    "types-matplotlib",
 ]
 [project.scripts]
 fueltracker = "fueltracker.main:run"
