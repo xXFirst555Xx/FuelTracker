@@ -47,7 +47,7 @@ from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast, Callable
 
 if TYPE_CHECKING:
     from win10toast import ToastNotifier
@@ -176,7 +176,8 @@ class MainController(QObject):
         self.report_service = ReportService(self.storage)
         self.exporter = Exporter(self.storage)
         self.importer = Importer(self.storage)
-        self.window: QMainWindow = load_ui("main_window")  # type: ignore
+        # FIX: mypy clean
+        self.window: QMainWindow = cast(QMainWindow, load_ui("main_window"))
         self.global_hotkey: GlobalHotkey | None = None
         self.settings = QSettings("FuelTracker", "MainWindow")
         geom = self.settings.value("windowGeometry")
@@ -245,7 +246,8 @@ class MainController(QObject):
         self._connect_signals()
         self._setup_tray()
         self._setup_hotkey()
-        self.window.closeEvent = self._close_event  # type: ignore[assignment]
+        # FIX: mypy clean
+        self.window.closeEvent = cast(Callable[[QCloseEvent], None], self._close_event)
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
