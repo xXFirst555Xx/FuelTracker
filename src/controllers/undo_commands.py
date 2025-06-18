@@ -4,7 +4,8 @@ from PySide6.QtGui import QUndoCommand
 
 from ..models import FuelEntry, Vehicle
 from ..services import StorageService
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, SignalInstance
+from typing import cast
 
 
 class AddEntryCommand(QUndoCommand):
@@ -24,7 +25,8 @@ class AddEntryCommand(QUndoCommand):
             self.storage.delete_entry(self.entry.id)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -40,7 +42,8 @@ class AddEntryCommand(QUndoCommand):
         self.storage.add_entry(self.entry)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -64,7 +67,8 @@ class DeleteEntryCommand(QUndoCommand):
             self.storage.add_entry(self.entry)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -73,7 +77,8 @@ class DeleteEntryCommand(QUndoCommand):
             self.storage.delete_entry(self.entry.id)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -95,7 +100,8 @@ class AddVehicleCommand(QUndoCommand):
             self.storage.delete_vehicle(self.vehicle.id)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -106,7 +112,8 @@ class AddVehicleCommand(QUndoCommand):
         self.storage.add_vehicle(self.vehicle)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -130,7 +137,8 @@ class DeleteVehicleCommand(QUndoCommand):
             self.storage.add_vehicle(self.vehicle)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -139,7 +147,8 @@ class DeleteVehicleCommand(QUndoCommand):
             self.storage.delete_vehicle(self.vehicle.id)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -165,7 +174,8 @@ class UpdateVehicleCommand(QUndoCommand):
         self.storage.update_vehicle(self.vehicle)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
 
@@ -175,6 +185,7 @@ class UpdateVehicleCommand(QUndoCommand):
         self.storage.update_vehicle(self.vehicle)
         if self.signal is not None:
             try:
-                self.signal.emit()
+                # FIX: mypy clean
+                cast(SignalInstance, self.signal).emit()
             except RuntimeError:
                 pass
