@@ -22,6 +22,9 @@ dependencies = [
     "keyboard",
     "openpyxl",
     "pydantic-settings",
+    "types-keyboard",
+    "types-reportlab",
+    "types-requests",
 ]
 [project.scripts]
 fueltracker = "fueltracker.main:run"

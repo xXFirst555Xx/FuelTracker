@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from datetime import datetime, date
-from typing import List, Optional
+from typing import List, Optional, Any, cast
 import os
 import shutil
 from getpass import getpass
@@ -85,11 +85,11 @@ class StorageService:
             SQLModel.metadata.create_all(
                 self.engine,
                 tables=[
-                    FuelEntry.__table__,
-                    Vehicle.__table__,
-                    Budget.__table__,
-                    Maintenance.__table__,
-                    FuelPrice.__table__,
+                    cast(Any, FuelEntry).__table__,
+                    cast(Any, Vehicle).__table__,
+                    cast(Any, Budget).__table__,
+                    cast(Any, Maintenance).__table__,
+                    cast(Any, FuelPrice).__table__,
                 ],
             )
         else:
@@ -124,11 +124,11 @@ class StorageService:
                 SQLModel.metadata.create_all(
                     self.engine,
                     tables=[
-                        FuelEntry.__table__,
-                        Vehicle.__table__,
-                        Budget.__table__,
-                        Maintenance.__table__,
-                        FuelPrice.__table__,
+                        cast(Any, FuelEntry).__table__,
+                        cast(Any, Vehicle).__table__,
+                        cast(Any, Budget).__table__,
+                        cast(Any, Maintenance).__table__,
+                        cast(Any, FuelPrice).__table__,
                     ],
                 )
 
@@ -141,9 +141,9 @@ class StorageService:
                 select(FuelEntry)
                 .where(
                     FuelEntry.vehicle_id == entry.vehicle_id,
-                    FuelEntry.odo_after.is_(None),
+                    cast(Any, FuelEntry.odo_after).is_(None),
                 )
-                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
             )
             prev = session.exec(statement).first()
             if prev is not None:
@@ -173,8 +173,10 @@ class StorageService:
             stmt = select(FuelEntry)
             if text:
                 stmt = (
-                    stmt.join(Vehicle, FuelEntry.vehicle_id == Vehicle.id)
-                    .where(func.lower(Vehicle.name).contains(text.lower()))
+                    stmt.join(
+                        Vehicle,
+                        cast(Any, FuelEntry.vehicle_id == Vehicle.id),
+                    ).where(func.lower(Vehicle.name).contains(text.lower()))
                 )
             if start:
                 stmt = stmt.where(FuelEntry.entry_date >= start)
@@ -217,7 +219,7 @@ class StorageService:
             stmt = (
                 select(FuelEntry)
                 .where(FuelEntry.vehicle_id == vehicle_id)
-                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
             )
             return session.exec(stmt).first()
 
@@ -225,12 +227,12 @@ class StorageService:
         """Calculate aggregate stats for a vehicle."""
         with Session(self.engine) as session:
             stmt = select(
-                func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                func.sum(cast(Any, FuelEntry.odo_after) - FuelEntry.odo_before),
                 func.sum(FuelEntry.liters),
                 func.sum(FuelEntry.amount_spent),
             ).where(
                 FuelEntry.vehicle_id == vehicle_id,
-                FuelEntry.odo_after.is_not(None),
+                cast(Any, FuelEntry.odo_after).is_not(None),
             )
             totals = session.exec(stmt).one()
             dist = float(totals[0] or 0.0)
@@ -243,9 +245,9 @@ class StorageService:
         with Session(self.engine) as session:
             dist, liters = session.exec(
                 select(
-                    func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                    func.sum(cast(Any, FuelEntry.odo_after) - FuelEntry.odo_before),
                     func.sum(FuelEntry.liters),
-                ).where(FuelEntry.odo_after.is_not(None))
+                ).where(cast(Any, FuelEntry.odo_after).is_not(None))
             ).one()
             price = session.exec(select(func.sum(FuelEntry.amount_spent))).one()
             return (
@@ -261,7 +263,7 @@ class StorageService:
         with Session(self.engine) as session:
             stmt = select(FuelEntry).where(
                 FuelEntry.vehicle_id == vehicle_id,
-                FuelEntry.entry_date.between(
+                cast(Any, FuelEntry.entry_date).between(
                     f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
                 ),
             )
@@ -274,13 +276,13 @@ class StorageService:
             stmt = (
                 select(
                     month.label("month"),
-                    func.sum(FuelEntry.odo_after - FuelEntry.odo_before),
+                    func.sum(cast(Any, FuelEntry.odo_after) - FuelEntry.odo_before),
                     func.sum(FuelEntry.liters),
                     func.sum(FuelEntry.amount_spent),
                 )
                 .where(
-                    FuelEntry.odo_after.is_not(None),
-                    FuelEntry.liters.is_not(None),
+                    cast(Any, FuelEntry.odo_after).is_not(None),
+                    cast(Any, FuelEntry.liters).is_not(None),
                 )
                 .group_by(month)
                 .order_by(month)
@@ -297,7 +299,7 @@ class StorageService:
         with Session(self.engine) as session:
             stmt = (
                 select(FuelEntry.fuel_type, func.sum(FuelEntry.liters))
-                .where(FuelEntry.liters.is_not(None))
+                .where(cast(Any, FuelEntry.liters).is_not(None))
                 .group_by(FuelEntry.fuel_type)
             )
             return {
@@ -382,15 +384,17 @@ class StorageService:
 
             conditions = [
                 Maintenance.vehicle_id == vehicle_id,
-                Maintenance.is_done.is_(False),
+                cast(Any, Maintenance.is_done).is_(False),
             ]
 
             odo_cond = (
-                Maintenance.due_odo.is_not(None) & (Maintenance.due_odo <= odo)
+                cast(Any, Maintenance.due_odo).is_not(None)
+                & (cast(Any, Maintenance.due_odo) <= odo)
             ) if odo is not None else None
 
             date_cond = (
-                Maintenance.due_date.is_not(None) & (Maintenance.due_date <= date_)
+                cast(Any, Maintenance.due_date).is_not(None)
+                & (cast(Any, Maintenance.due_date) <= date_)
             ) if date_ is not None else None
 
             if odo_cond is not None and date_cond is not None:
@@ -433,10 +437,10 @@ class StorageService:
                 func.sum(FuelEntry.amount_spent)
             ).where(
                 FuelEntry.vehicle_id == vehicle_id,
-                FuelEntry.entry_date.between(
+                cast(Any, FuelEntry.entry_date).between(
                     f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
                 ),
-                FuelEntry.amount_spent.is_not(None),
+                cast(Any, FuelEntry.amount_spent).is_not(None),
             )
             total = session.exec(stmt).first()
             return float(total or 0.0)

@@ -46,31 +46,36 @@ from PySide6.QtCore import (
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
-try:
+from typing import TYPE_CHECKING, Any, cast
+
+if TYPE_CHECKING:
     from win10toast import ToastNotifier
-except Exception:  # pragma: no cover - optional on non-Windows systems
+else:
+    try:
+        from win10toast import ToastNotifier  # type: ignore[import-not-found]
+    except Exception:  # pragma: no cover - optional on non-Windows systems
 
-    class ToastNotifier:
-        def __init__(self, *_, **__):
-            pass
+        class ToastNotifier:
+            def __init__(self, *_, **__):
+                pass
 
-        def show_toast(self, *_, **__):
-            pass
+            def show_toast(self, *_, **__):
+                pass
 
 
 from pathlib import Path
 import logging
 import os
 import sys
-from datetime import timedelta
+from datetime import timedelta, datetime
 import requests
 
 from ..settings import Settings
 
 from sqlmodel import Session, select
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # type: ignore[import-not-found]
+from matplotlib.figure import Figure  # type: ignore[import-not-found]
 
 from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
 from ..services import ReportService, StorageService, Exporter, Importer
@@ -469,7 +474,8 @@ class MainController(QObject):
             self.maint_dock.list_widget.addItem(item)
 
     def _notify_due_maintenance(self, vehicle_id: int, odo: float, when: date) -> None:
-        due = self.storage.list_due_maintenances(vehicle_id, odo=odo, date_=when)
+        when_dt = datetime.combine(when, datetime.min.time())
+        due = self.storage.list_due_maintenances(vehicle_id, odo=odo, date_=when_dt)
         if not due:
             return
         names = ", ".join(d.name for d in due)
@@ -781,7 +787,11 @@ class MainController(QObject):
                 dialog.amountEdit.clear()
                 return
 
-            dists = [e.odo_after - e.odo_before for e in entries]
+            dists = [
+                e.odo_after - e.odo_before
+                for e in entries
+                if e.odo_after is not None
+            ]
             if len(dists) >= 3:
                 dist_avg = sum(dists[:3]) / 3
             else:
@@ -795,7 +805,7 @@ class MainController(QObject):
             kml_vals = [
                 (e.odo_after - e.odo_before) / e.liters
                 for e in entries
-                if e.liters and e.liters > 0
+                if e.liters and e.liters > 0 and e.odo_after is not None
             ]
 
             liters_val: float | None
@@ -1120,7 +1130,7 @@ class MainController(QObject):
     def _load_prices(self) -> None:
         with Session(self.storage.engine) as session:
             rows = session.exec(
-                select(FuelPrice).order_by(FuelPrice.date.desc()).limit(90 * 6)
+                select(FuelPrice).order_by(cast(Any, FuelPrice.date).desc()).limit(90 * 6)
             ).all()
         self.oil_dock.table.setRowCount(len(rows))
         self.oil_dock.figure.clear()
