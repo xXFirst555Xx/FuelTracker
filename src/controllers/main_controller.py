@@ -101,7 +101,6 @@ from ..views import (
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
 
-DEFAULT_STATION = "ptt"
 DEFAULT_FUEL_TYPE = "e20"
 
 
@@ -1070,20 +1069,6 @@ class MainController(QObject):
     def show_dashboard(self) -> None:
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.dashboardPage)
-
-    def show_add_entry_page(self) -> None:
-        if hasattr(self.window, "stackedWidget"):
-            self.window.stackedWidget.setCurrentWidget(self.window.addEntryPage)
-
-    def show_report_page(self) -> None:
-        if hasattr(self, "reports_page"):
-            self.reports_page.refresh()
-        if hasattr(self.window, "stackedWidget"):
-            self.window.stackedWidget.setCurrentWidget(self.window.reportsPage)
-
-    def show_settings_page(self) -> None:
-        if hasattr(self.window, "stackedWidget"):
-            self.window.stackedWidget.setCurrentWidget(self.window.settingsPage)
 
     # ------------------------------------------------------------------
     # ตัวจัดตารางราคาน้ำมัน
