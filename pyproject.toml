@@ -25,7 +25,7 @@ dependencies = [
     "types-keyboard",
     "types-reportlab",
     "types-requests",
-    "types-matplotlib",
+    "matplotlib-stubs",
     "rich",
 ]
 [project.optional-dependencies]
