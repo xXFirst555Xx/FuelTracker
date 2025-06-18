@@ -33,6 +33,31 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+## Using Poe the Poet
+
+ติดตั้ง `Poe the Poet` เพื่อจัดการงานต่าง ๆ ภายในโปรเจ็กต์ได้ด้วย
+
+```bash
+pip install poe-the-poet
+```
+
+หรือใช้ตัวเลือกสำหรับนักพัฒนา
+
+```bash
+pip install -e .[dev]
+```
+
+งานที่มีให้ใช้งานประกอบด้วย
+
+- `poe lint`
+- `poe test`
+- `poe migrate`
+- `poe runtime-check`
+- `poe build`
+- `poe validate`
+
+คำสั่งเหล่านี้กำหนดไว้ในไฟล์ `pyproject.toml` สามารถเรียกใช้ได้ตามต้องการ
+
 ## การตั้งค่า
 
 คัดลอก `.env.example` ไปเป็น `.env` แล้วปรับค่าตามต้องการ
