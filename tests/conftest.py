@@ -2,9 +2,13 @@ import sys
 from pathlib import Path
 
 import pytest
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy.pool import StaticPool
+from alembic.config import Config
+from alembic import command
 from PySide6.QtWidgets import QApplication
+
+ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 
 # Ensure 'src' package is on the Python path
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +31,24 @@ def in_memory_storage():
     return storage
 
 
+@pytest.fixture
+def migrated_db_session():
+    """Return a Session connected to a migrated in-memory database."""
+    engine = create_engine(
+        "sqlite:///file:memdb1?mode=memory&cache=shared",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    keeper = engine.connect()
+    cfg = Config(str(ALEMBIC_INI))
+    cfg.set_main_option("sqlalchemy.url", str(engine.url))
+    command.upgrade(cfg, "head")
+    with Session(engine) as session:
+        yield session
+    keeper.close()
+    engine.dispose()
+
+
 @pytest.fixture(scope="session")
 def qapp():
     """Provide a QApplication instance for UI tests."""
@@ -40,8 +62,18 @@ def qapp():
 
 
 @pytest.fixture
-def main_controller(qapp, tmp_path):
-    """Return a MainController using a temporary database."""
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def main_controller(qapp, migrated_db_session, monkeypatch):
+    """Return a MainController bound to the migrated in-memory database."""
+
+    engine = migrated_db_session.get_bind()
+
+    def _storage_service(*_args, **_kwargs):
+        return StorageService(engine=engine)
+
+    monkeypatch.setattr(
+        "src.controllers.main_controller.StorageService", _storage_service
+    )
+
+    ctrl = MainController()
     yield ctrl
     ctrl.cleanup()
