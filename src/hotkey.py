@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
+from typing import Any
 
+kb: Any | None
 try:
-    import keyboard
+    import keyboard as kb
 except Exception:  # pragma: no cover - optional dependency
-    keyboard = None  # type: ignore
+    kb = None
+keyboard = kb  # FIX: mypy clean
 
 
 class GlobalHotkey(QObject):
