@@ -51,13 +51,13 @@ def run(
             text=True,
             env=env,
             capture_output=True,
-            timeout=60,
+            timeout=300,
             **kwargs,
         )
         print(result.stdout)
         print(result.stderr)
         return result
-    return subprocess.run(cmd, text=True, env=env, timeout=60, **kwargs)
+    return subprocess.run(cmd, text=True, env=env, timeout=300, **kwargs)
 
 
 def main() -> None:
