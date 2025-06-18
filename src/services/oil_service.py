@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 import requests
 from sqlmodel import Session, select
@@ -81,7 +81,7 @@ def get_price(
     session: Session, fuel_type: str, station: str, day: date
 ) -> Optional[Decimal]:
     row = session.exec(
-        select(FuelPrice.price).where(
+        select(cast(Any, FuelPrice.price)).where(
             FuelPrice.date == day,
             FuelPrice.station == station,
             FuelPrice.fuel_type == fuel_type,

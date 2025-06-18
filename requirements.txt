@@ -13,6 +13,7 @@ keyboard
 pydantic-settings
 types-keyboard
 types-reportlab
+types-requests
 alembic
 mypy
 pydeps

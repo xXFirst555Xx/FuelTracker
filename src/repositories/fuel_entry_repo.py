@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlmodel import Session, select
 from sqlalchemy.engine import Engine
+from typing import Any, cast
 
 from ..models import FuelEntry
 
@@ -17,7 +18,7 @@ class FuelEntryRepository:
             stmt = (
                 select(FuelEntry)
                 .where(FuelEntry.vehicle_id == vehicle_id)
-                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
             )
             return sess.exec(stmt).first()
 
@@ -27,7 +28,7 @@ class FuelEntryRepository:
             stmt = (
                 select(FuelEntry)
                 .where(FuelEntry.vehicle_id == vehicle_id)
-                .order_by(FuelEntry.entry_date.desc(), FuelEntry.id.desc())
+                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
                 .limit(limit)
             )
             return list(sess.exec(stmt))
