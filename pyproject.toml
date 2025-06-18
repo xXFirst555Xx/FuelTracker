@@ -26,6 +26,10 @@ dependencies = [
     "types-reportlab",
     "types-requests",
 ]
+[project.optional-dependencies]
+dev = [
+    "poethepoet",
+]
 [project.scripts]
 fueltracker = "fueltracker.main:run"
 
@@ -34,3 +38,22 @@ line-length = 88
 
 [tool.ruff]
 line-length = 88
+
+[tool.poe.tasks.lint]
+sequence = ["ruff", "mypy", "vulture"]
+
+[tool.poe.tasks.test]
+cmd = "pytest -q"
+
+[tool.poe.tasks.migrate]
+cmd = "python -m fueltracker migrate"
+
+[tool.poe.tasks.runtime-check]
+cmd = "python -m fueltracker --check"
+env = { QT_QPA_PLATFORM = "offscreen" }
+
+[tool.poe.tasks.build]
+cmd = "pyinstaller --noconfirm --noconsole --name FuelTracker --icon assets/icon.ico src/fueltracker/__main__.py"
+
+[tool.poe.tasks.validate]
+sequence = ["lint", "migrate", "test", "runtime-check"]
