@@ -15,6 +15,9 @@ from PySide6.QtWidgets import (
     QComboBox,
 )
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+
+# FIX: mypy clean
+from typing import cast
 from matplotlib.figure import Figure
 import pandas as pd
 
@@ -160,7 +163,12 @@ class ReportsPage(QWidget):
         self._worker.start()
 
     def _apply_data(
-        self, fig1: Figure, fig2: Figure, fig3: Figure, fig4: Figure, table: pd.DataFrame
+        self,
+        fig1: Figure,
+        fig2: Figure,
+        fig3: Figure,
+        fig4: Figure,
+        table: pd.DataFrame,
     ) -> None:
         for i in reversed(range(self.charts_layout.count())):
             item = self.charts_layout.takeAt(i)
@@ -168,14 +176,16 @@ class ReportsPage(QWidget):
             if w:
                 w.deleteLater()
         for fig in (fig1, fig2, fig3):
-            canvas = FigureCanvasQTAgg(fig)  # type: ignore[misc]
+            # FIX: mypy clean
+            canvas = cast(QWidget, FigureCanvasQTAgg(fig))
             self.charts_layout.addWidget(canvas)
         for i in reversed(range(self.monthly_layout.count())):
             item = self.monthly_layout.takeAt(i)
             w = item.widget()
             if w:
                 w.deleteLater()
-        canvas = FigureCanvasQTAgg(fig4)  # type: ignore[misc]
+        # FIX: mypy clean
+        canvas = cast(QWidget, FigureCanvasQTAgg(fig4))
         self.monthly_layout.addWidget(canvas)
         stats = self._service.calc_overall_stats()
         self.cards["distance"].set_value(f"{stats['total_distance']:.0f} km")
