@@ -18,22 +18,43 @@ class GlobalHotkey(QObject):
         super().__init__()
         self.sequence = sequence
         self._registered = False
+        self._listener: Any | None = None
+
+    # FIX: return int to avoid WPARAM crash
+    def _wrapped_callback(self) -> int:
+        try:
+            self.triggered.emit()
+        except Exception as e:  # pragma: no cover - defensive
+            print("Hotkey error:", e)
+        return 1
 
     def start(self) -> None:
         if keyboard is None or self._registered:
             return
         try:
-            keyboard.add_hotkey(
-                self._format(self.sequence),
-                lambda: (self.triggered.emit() or False),
-            )
+            if hasattr(keyboard, "GlobalHotKeys"):
+                # Support for pynput
+                self._listener = keyboard.GlobalHotKeys(
+                    {self._format(self.sequence): self._wrapped_callback}
+                )
+                self._listener.start()
+            else:
+                keyboard.add_hotkey(
+                    self._format(self.sequence),
+                    self._wrapped_callback,
+                )
         except Exception:  # pragma: no cover - ignore environments without input devices
             return
         self._registered = True
 
     def stop(self) -> None:
         if keyboard is not None and self._registered:
-            keyboard.remove_hotkey(self._format(self.sequence))
+            if hasattr(keyboard, "GlobalHotKeys"):
+                if self._listener is not None:
+                    self._listener.stop()
+                    self._listener = None
+            else:
+                keyboard.remove_hotkey(self._format(self.sequence))
             self._registered = False
 
     @staticmethod
