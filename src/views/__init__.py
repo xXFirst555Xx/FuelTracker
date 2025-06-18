@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox, QListWidget
 from PySide6.QtCore import QFile, QDir, Qt
 from typing import cast
 
-from .ui_main_window import Ui_MainWindow
 from .main_window import MainWindow
 from .dialogs import (
     AddEntryDialog,

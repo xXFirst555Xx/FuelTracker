@@ -47,7 +47,7 @@ from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
-from typing import TYPE_CHECKING, Any, cast, Callable
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from win10toast import ToastNotifier

@@ -9,17 +9,11 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
+from PySide6.QtCore import (QCoreApplication, QMetaObject, QSize, Qt)
+from PySide6.QtGui import (QFont, QIcon)
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDateEdit,
     QHBoxLayout, QLabel, QLineEdit, QListWidget,
-    QListWidgetItem, QMainWindow, QPushButton, QSizePolicy,
-    QSpinBox, QSplitter, QStackedWidget, QVBoxLayout,
+    QListWidgetItem, QPushButton, QSpinBox, QSplitter, QStackedWidget, QVBoxLayout,
     QWidget)
 
 class Ui_MainWindow(object):
@@ -37,19 +31,19 @@ class Ui_MainWindow(object):
         icon = QIcon()
         icon.addFile(u"icons:home.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         __qlistwidgetitem = QListWidgetItem(self.sidebarList)
-        __qlistwidgetitem.setIcon(icon);
+        __qlistwidgetitem.setIcon(icon)
         icon1 = QIcon()
         icon1.addFile(u"icons:plus-square.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         __qlistwidgetitem1 = QListWidgetItem(self.sidebarList)
-        __qlistwidgetitem1.setIcon(icon1);
+        __qlistwidgetitem1.setIcon(icon1)
         icon2 = QIcon()
         icon2.addFile(u"icons:bar-chart-2.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         __qlistwidgetitem2 = QListWidgetItem(self.sidebarList)
-        __qlistwidgetitem2.setIcon(icon2);
+        __qlistwidgetitem2.setIcon(icon2)
         icon3 = QIcon()
         icon3.addFile(u"icons:settings.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         __qlistwidgetitem3 = QListWidgetItem(self.sidebarList)
-        __qlistwidgetitem3.setIcon(icon3);
+        __qlistwidgetitem3.setIcon(icon3)
         self.sidebarList.setObjectName(u"sidebarList")
         self.sidebarList.setMinimumWidth(200)
         self.sidebarList.setMaximumWidth(240)
@@ -281,13 +275,13 @@ class Ui_MainWindow(object):
         __sortingEnabled = self.sidebarList.isSortingEnabled()
         self.sidebarList.setSortingEnabled(False)
         ___qlistwidgetitem = self.sidebarList.item(0)
-        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e25\u0e31\u0e01", None));
+        ___qlistwidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e25\u0e31\u0e01", None))
         ___qlistwidgetitem1 = self.sidebarList.item(1)
-        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e43\u0e2b\u0e21\u0e48", None));
+        ___qlistwidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e43\u0e2b\u0e21\u0e48", None))
         ___qlistwidgetitem2 = self.sidebarList.item(2)
-        ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19", None));
+        ___qlistwidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19", None))
         ___qlistwidgetitem3 = self.sidebarList.item(3)
-        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32", None));
+        ___qlistwidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32", None))
         self.sidebarList.setSortingEnabled(__sortingEnabled)
 
         self.addVehicleButton.setText(QCoreApplication.translate("MainWindow", u"\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e22\u0e32\u0e19\u0e1e\u0e32\u0e2b\u0e19\u0e30", None))
