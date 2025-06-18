@@ -8,7 +8,6 @@ from sqlalchemy.pool import StaticPool
 from src.models import FuelEntry, Vehicle
 from src.services import StorageService, Exporter
 from src.services.importer import Importer
-from src.controllers.main_controller import MainController
 from src.views import load_add_entry_dialog
 from PySide6.QtWidgets import QDialog
 
@@ -99,8 +98,8 @@ def test_import_many_single_transaction(tmp_path: Path):
     assert commit_count - start == 1
 
 
-def test_prefill_odometer(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_prefill_odometer(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(

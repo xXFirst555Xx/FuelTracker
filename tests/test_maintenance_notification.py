@@ -1,13 +1,12 @@
 from datetime import date
 from PySide6.QtWidgets import QMessageBox
 
-from src.controllers import main_controller
-from src.controllers.main_controller import MainController
+from src.controllers import main_controller as main_module
 from src.models import Vehicle, Maintenance
 
 
-def test_maintenance_notification(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_maintenance_notification(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
@@ -18,9 +17,9 @@ def test_maintenance_notification(qapp, tmp_path, monkeypatch):
         QMessageBox, "information", lambda *a, **k: notified.setdefault("n", True)
     )
     show = {}
-    monkeypatch.setattr(main_controller.os, "name", "nt", raising=False)
+    monkeypatch.setattr(main_module.os, "name", "nt", raising=False)
     monkeypatch.setattr(
-        main_controller.ToastNotifier,
+        main_module.ToastNotifier,
         "show_toast",
         lambda *a, **k: show.setdefault("t", True),
     )

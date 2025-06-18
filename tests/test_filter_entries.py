@@ -1,12 +1,11 @@
 from datetime import date, timedelta
 from PySide6.QtCore import QDate
-from src.controllers.main_controller import MainController
 from src.models import FuelEntry, Vehicle, Maintenance
 from src.services import StorageService
 
 
-def test_filter_entries(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_filter_entries(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(Vehicle(name="Car A", vehicle_type="t", license_plate="a", tank_capacity_liters=1))
     storage.add_vehicle(Vehicle(name="Car B", vehicle_type="t", license_plate="b", tank_capacity_liters=1))
@@ -72,8 +71,8 @@ def test_list_entries_filtered(tmp_path):
     assert res[0].vehicle_id == 2
 
 
-def test_last_entry_tooltip_and_maintenance(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_last_entry_tooltip_and_maintenance(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=1)

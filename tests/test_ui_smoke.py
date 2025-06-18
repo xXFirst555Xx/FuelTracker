@@ -3,7 +3,6 @@ import sys
 from datetime import date
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
-from src.controllers import MainController
 from src.models import Vehicle, FuelEntry
 
 
@@ -21,8 +20,8 @@ def test_mainwindow_launch(monkeypatch):
     assert shown
 
 
-def test_close_hides_window(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_close_hides_window(main_controller, monkeypatch):
+    ctrl = main_controller
     window = ctrl.window
     monkeypatch.setattr(ctrl.tray_icon, "isVisible", lambda: True)
     ctrl.config.hide_on_close = True
@@ -34,8 +33,8 @@ def test_close_hides_window(qapp, tmp_path, monkeypatch):
     assert hidden.get("h")
 
 
-def test_tray_tooltip_updates(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_tray_tooltip_updates(main_controller, monkeypatch):
+    ctrl = main_controller
     storage = ctrl.storage
     storage.add_vehicle(
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
@@ -57,8 +56,8 @@ def test_tray_tooltip_updates(qapp, tmp_path, monkeypatch):
     assert tip.get("v")
 
 
-def test_hotkey_invokes_dialog(qapp, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_hotkey_invokes_dialog(main_controller, monkeypatch):
+    ctrl = main_controller
     called = {}
     monkeypatch.setattr(ctrl, "open_add_entry_dialog", lambda: called.setdefault("ok", True))
     ctrl.window.hide()
@@ -69,8 +68,8 @@ def test_hotkey_invokes_dialog(qapp, tmp_path, monkeypatch):
     assert visible.get("v")
 
 
-def test_cleanup_unregisters_hotkey(qapp, tmp_path):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_cleanup_unregisters_hotkey(main_controller):
+    ctrl = main_controller
     # Hotkeys are enabled by default, so a GlobalHotkey instance should exist
     assert ctrl.global_hotkey is not None
     ctrl.cleanup()

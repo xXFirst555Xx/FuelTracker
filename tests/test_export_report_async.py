@@ -1,11 +1,10 @@
 import time
 from types import MethodType
 from PySide6.QtWidgets import QMessageBox
-from src.controllers.main_controller import MainController
 
 
-def test_export_report_runs_async(qtbot, tmp_path, monkeypatch):
-    ctrl = MainController(db_path=tmp_path / "t.db")
+def test_export_report_runs_async(qtbot, main_controller, monkeypatch):
+    ctrl = main_controller
     qtbot.addWidget(ctrl.window)
 
     # Prevent the QMessageBox connected to the signal from blocking the test

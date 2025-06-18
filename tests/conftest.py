@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 from src.services import StorageService  # noqa: E402
+from src.controllers.main_controller import MainController  # noqa: E402
 
 
 @pytest.fixture
@@ -36,3 +37,11 @@ def qapp():
     if app is None:
         app = QApplication([])
     return app
+
+
+@pytest.fixture
+def main_controller(qapp, tmp_path):
+    """Return a MainController using a temporary database."""
+    ctrl = MainController(db_path=tmp_path / "t.db")
+    yield ctrl
+    ctrl.cleanup()
