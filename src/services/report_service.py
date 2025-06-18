@@ -8,6 +8,10 @@ from typing import Dict, List
 
 import pandas as pd
 from fpdf import FPDF
+import matplotlib
+
+# Use a non-interactive backend for headless environments
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from ..models import FuelEntry, Vehicle
