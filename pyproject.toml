@@ -25,6 +25,7 @@ dependencies = [
     "types-keyboard",
     "types-reportlab",
     "types-requests",
+    "types-matplotlib",
     "rich",
 ]
 [project.optional-dependencies]
