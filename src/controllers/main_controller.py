@@ -1190,8 +1190,12 @@ class MainController(QObject):
                 self.window.removeEventFilter(self)
             except RuntimeError:
                 pass
-        self.settings.setValue("windowGeometry", self.window.saveGeometry())
-        self.settings.setValue("windowState", self.window.saveState())
+        try:
+            self.settings.setValue("windowGeometry", self.window.saveGeometry())
+            self.settings.setValue("windowState", self.window.saveState())
+        except RuntimeError:
+            # Window already destroyed
+            pass
         self._unregister_hotkey()
         self.executor.shutdown(wait=False)
 
