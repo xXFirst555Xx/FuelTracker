@@ -101,8 +101,6 @@ class StorageService:
                     password = env.ft_db_password or getpass("DB password: ")
                 else:
                     password = ""
-            self._password = password
-
             if password and db_path.exists() and _is_plain_sqlite(db_path):
                 _migrate_plain_to_encrypted(db_path, password)
 
@@ -364,13 +362,6 @@ class StorageService:
             session.add(task)
             session.commit()
             session.refresh(task)
-
-    def delete_maintenance(self, task_id: int) -> None:
-        with Session(self.engine) as session:
-            obj = session.get(Maintenance, task_id)
-            if obj:
-                session.delete(obj)
-                session.commit()
 
     def list_due_maintenances(
         self,
