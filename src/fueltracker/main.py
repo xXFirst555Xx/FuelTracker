@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import logging
+from rich.logging import RichHandler
 import argparse
 import os
 from pathlib import Path
@@ -29,7 +30,9 @@ def run(argv: list[str] | None = None) -> None:
     parser.add_argument("--start-minimized", action="store_true")
     args, _ = parser.parse_known_args(argv)
 
-    os.environ.setdefault("QT_QPA_FONTDIR", str(Path(__file__).resolve().parents[2] / "fonts"))
+    os.environ.setdefault(
+        "QT_QPA_FONTDIR", str(Path(__file__).resolve().parents[2] / "fonts")
+    )
 
     if args.command == "migrate":
         upgrade(Config(ALEMBIC_INI), "head")
@@ -38,7 +41,12 @@ def run(argv: list[str] | None = None) -> None:
     # Always apply any pending migrations before launching the app
     upgrade(Config(ALEMBIC_INI), "head")
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(rich_tracebacks=True, tracebacks_show_locals=True)],
+    )
     if args.check:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from PySide6.QtWidgets import QApplication
