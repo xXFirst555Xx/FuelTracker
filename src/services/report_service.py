@@ -6,6 +6,8 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List
 
+from pandas import DataFrame, Series
+
 import pandas as pd
 from fpdf import FPDF
 import matplotlib
@@ -13,6 +15,7 @@ import matplotlib
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.dates import date2num
 
 from ..models import FuelEntry, Vehicle
 from .storage_service import StorageService
@@ -54,7 +57,7 @@ class ReportService:
         return self.storage.list_entries_for_month(vehicle_id, month.year, month.month)
 
     # FIX: mypy clean
-    def _monthly_df(self, month: date, vehicle_id: int) -> pd.DataFrame:
+    def _monthly_df(self, month: date, vehicle_id: int) -> DataFrame:
         """คืนค่า DataFrame ของรายการประจำเดือน"""
         entries = self._filter_entries(month, vehicle_id)
         vehicles: Dict[int, Vehicle | None] = {}
@@ -137,11 +140,15 @@ class ReportService:
         """สร้างรายงาน PDF พร้อมกราฟอย่างง่าย"""
         df = self._monthly_df(month, vehicle_id)
 
+        # FIX: mypy clean
         # Create a line chart showing distance and amount spent per day
         if not df.empty:
+            dates_num: list[float] = [date2num(d) for d in df["date"]]
+            distances: list[float] = df["distance"].astype(float).tolist()
+            amounts: list[float] = df["amount_spent"].astype(float).tolist()
             fig, ax1 = plt.subplots()
-            ax1.plot(df["date"], df["distance"], marker="o", label="Distance (km)")
-            ax1.plot(df["date"], df["amount_spent"], marker="x", label="THB")
+            ax1.plot(dates_num, distances, marker="o", label="Distance (km)")
+            ax1.plot(dates_num, amounts, marker="x", label="THB")
             ax1.set_xlabel("Date")
             ax1.legend()
             fig.tight_layout()
@@ -184,7 +191,8 @@ class ReportService:
     # Data helpers for UI charts
     # ------------------------------------------------------------------
 
-    def last_year_summary(self) -> pd.DataFrame:
+    # FIX: mypy clean
+    def last_year_summary(self) -> DataFrame:
         """คืนข้อมูลสรุปรวมของ 12 เดือนล่าสุด"""
         rows = self.storage.monthly_totals()
         if not rows:
@@ -197,7 +205,8 @@ class ReportService:
         df["km_per_l"] = df["distance"] / df["liters"]
         return df.tail(12).reset_index(drop=True)
 
-    def monthly_summary(self) -> pd.DataFrame:
+    # FIX: mypy clean
+    def monthly_summary(self) -> DataFrame:
         """คืนข้อมูลสรุปรวมต่อเดือนจากทุกข้อมูลที่มี"""
         rows = self.storage.monthly_totals()
         if not rows:
@@ -209,7 +218,8 @@ class ReportService:
         df["km_per_l"] = df["distance"] / df["liters"]
         return df.reset_index(drop=True)
 
-    def liters_by_type(self) -> pd.Series:
+    # FIX: mypy clean
+    def liters_by_type(self) -> Series[float]:
         """รวมปริมาณเชื้อเพลิงตามประเภท"""
         data = {
             FUEL_TYPE_TH.get(ft or "", ft or ""): liters
