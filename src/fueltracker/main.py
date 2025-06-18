@@ -53,7 +53,9 @@ def run(argv: list[str] | None = None) -> None:
     from PySide6.QtCore import QCoreApplication, Qt
     from PySide6.QtGui import QFont, QFontDatabase
 
-    app = QApplication.instance() or QApplication(sys.argv[:1])
+    app = QApplication.instance()
+    if not isinstance(app, QApplication):
+        app = QApplication(sys.argv[:1])
 
     # FIX: set Thai-compatible font
     font_dir = os.environ.get("QT_QPA_FONTDIR")
@@ -62,7 +64,7 @@ def run(argv: list[str] | None = None) -> None:
             QFontDatabase.addApplicationFont(str(ttf))
     db = QFontDatabase()
     font_family = "Noto Sans Thai" if "Noto Sans Thai" in db.families() else "Tahoma"
-    app.setFont(QFont(font_family, 10))
+    QApplication.setFont(QFont(font_family, 10))
 
     # --- NEW: use MainController instead of bare MainWindow ---
     from src.controllers.main_controller import MainController

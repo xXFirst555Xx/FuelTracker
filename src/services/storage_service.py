@@ -10,7 +10,7 @@ from getpass import getpass
 from ..settings import Settings
 
 try:
-    from pysqlcipher3 import dbapi2 as sqlcipher  # type: ignore
+    from pysqlcipher3 import dbapi2 as sqlcipher
 
     _SQLCIPHER_AVAILABLE = True
 except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missing

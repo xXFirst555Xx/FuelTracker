@@ -42,8 +42,10 @@ from PySide6.QtCore import (
     QPoint,
     QParallelAnimationGroup,
     QSettings,
+    QByteArray,
+    QDate,
 )
-from shiboken6 import isValid
+from shiboken6 import isValid  # type: ignore[attr-defined]
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
@@ -75,8 +77,8 @@ from ..settings import Settings
 
 from sqlmodel import Session, select
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg  # type: ignore[import-not-found]
-from matplotlib.figure import Figure  # type: ignore[import-not-found]
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
 from ..services import ReportService, StorageService, Exporter, Importer
@@ -180,10 +182,10 @@ class MainController(QObject):
         self.global_hotkey: GlobalHotkey | None = None
         self.settings = QSettings("FuelTracker", "MainWindow")
         geom = self.settings.value("windowGeometry")
-        if geom:
+        if isinstance(geom, (QByteArray, bytes, bytearray, memoryview)):
             self.window.restoreGeometry(geom)
         state = self.settings.value("windowState")
-        if state:
+        if isinstance(state, (QByteArray, bytes, bytearray, memoryview)):
             self.window.restoreState(state)
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
@@ -245,7 +247,7 @@ class MainController(QObject):
         self._connect_signals()
         self._setup_tray()
         self._setup_hotkey()
-        self.window.closeEvent = self._close_event
+        self.window.closeEvent = self._close_event  # type: ignore[method-assign]
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
@@ -501,7 +503,7 @@ class MainController(QObject):
     def _setup_style(self) -> None:
         """ปรับสไตล์ชีตของแอปตามธีมที่เลือก"""
         app = QApplication.instance()
-        if not app:
+        if not isinstance(app, QApplication):
             return
 
         theme = self._theme_override
@@ -554,7 +556,7 @@ class MainController(QObject):
         self.tray_icon.show()
 
     def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
-        if reason == QSystemTrayIcon.Trigger:
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self.window.show()
 
     def _tray_quit(self) -> None:
@@ -655,7 +657,7 @@ class MainController(QObject):
     def open_add_vehicle_dialog(self) -> None:
         dialog = AddVehicleDialog(self.window)
         dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             name = dialog.nameLineEdit.text().strip()
             vtype = dialog.typeLineEdit.text().strip()
             plate = dialog.plateLineEdit.text().strip()
@@ -690,7 +692,7 @@ class MainController(QObject):
         dialog.typeLineEdit.setText(vehicle.vehicle_type)
         dialog.plateLineEdit.setText(vehicle.license_plate)
         dialog.capacityLineEdit.setText(str(vehicle.tank_capacity_liters))
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             vehicle.name = dialog.nameLineEdit.text().strip()
             vehicle.vehicle_type = dialog.typeLineEdit.text().strip()
             vehicle.license_plate = dialog.plateLineEdit.text().strip()
@@ -727,7 +729,8 @@ class MainController(QObject):
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
         dialog = AddEntryDialog(self.window)
-        dialog.dateEdit.setDate(date.today())
+        today = date.today()
+        dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoBeforeEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.odoAfterEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.amountEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
@@ -860,7 +863,7 @@ class MainController(QObject):
         dialog.vehicleComboBox.currentIndexChanged.connect(_prefill)
         dialog.odoBeforeEdit.editingFinished.connect(_auto_fill)
         dialog.autoFillCheckBox.toggled.connect(_auto_fill)
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             vehicle_id = dialog.vehicleComboBox.currentData()
             try:
                 odo_after_text = dialog.odoAfterEdit.text().strip()
@@ -897,7 +900,9 @@ class MainController(QObject):
                 )
                 return
             try:
-                cmd = AddEntryCommand(self.storage, entry, self.entry_changed)
+                cmd = AddEntryCommand(
+                    self.storage, entry, cast(Signal, self.entry_changed)
+                )
                 self.undo_stack.push(cmd)
             except ValueError as exc:
                 QMessageBox.warning(dialog, "การตรวจสอบ", str(exc))
@@ -953,7 +958,7 @@ class MainController(QObject):
 
         dialog.browseButton.clicked.connect(_load_file)
 
-        if dialog.exec() == QDialog.Accepted and entries:
+        if dialog.exec() == QDialog.DialogCode.Accepted and entries:
             vehicle_id = dialog.vehicleComboBox.currentData()
             for e in entries:
                 e.vehicle_id = vehicle_id
@@ -970,11 +975,12 @@ class MainController(QObject):
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
         dialog = AddMaintenanceDialog(self.window)
-        dialog.dateEdit.setDate(date.today())
+        today = date.today()
+        dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 odo = (
                     int(dialog.odoLineEdit.text())
@@ -988,11 +994,7 @@ class MainController(QObject):
                 vehicle_id=dialog.vehicleComboBox.currentData(),
                 name=dialog.nameLineEdit.text().strip(),
                 due_odo=odo,
-                due_date=(
-                    dialog.dateEdit.date().toPython()
-                    if dialog.dateEdit.date()
-                    else None
-                ),
+                due_date=cast(date, dialog.dateEdit.date().toPython()),
                 note=dialog.noteLineEdit.text().strip() or None,
             )
             self.storage.add_maintenance(task)
@@ -1009,7 +1011,11 @@ class MainController(QObject):
             return
         dialog = AddMaintenanceDialog(self.window)
         dialog.setWindowTitle("แก้ไขงานบำรุงรักษา")
-        dialog.dateEdit.setDate(task.due_date or date.today())
+        today = date.today()
+        if task.due_date:
+            dialog.dateEdit.setDate(QDate(task.due_date.year, task.due_date.month, task.due_date.day))
+        else:
+            dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
         dialog.nameLineEdit.setText(task.name)
         dialog.odoLineEdit.setText(
@@ -1022,7 +1028,7 @@ class MainController(QObject):
                 dialog.vehicleComboBox.setCurrentIndex(
                     dialog.vehicleComboBox.count() - 1
                 )
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 odo = (
                     int(dialog.odoLineEdit.text())
@@ -1035,9 +1041,7 @@ class MainController(QObject):
             task.vehicle_id = dialog.vehicleComboBox.currentData()
             task.name = dialog.nameLineEdit.text().strip()
             task.due_odo = odo
-            task.due_date = (
-                dialog.dateEdit.date().toPython() if dialog.dateEdit.date() else None
-            )
+            task.due_date = cast(date, dialog.dateEdit.date().toPython())
             task.note = dialog.noteLineEdit.text().strip() or None
             self.storage.update_maintenance(task)
             self._refresh_maintenance_panel()
@@ -1097,9 +1101,9 @@ class MainController(QObject):
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
                         if isValid(self.controller):
-                            QMetaObject.invokeMethod(
+                            cast(Any, QMetaObject).invokeMethod(
                                 self.controller,
-                                "_load_prices",
+                                b"_load_prices",
                                 Qt.ConnectionType.QueuedConnection,
                             )
                 except requests.RequestException as exc:  # pragma: no cover - network
@@ -1135,8 +1139,8 @@ class MainController(QObject):
         fuel = next(iter(by_type)) if by_type else None
         if fuel:
             points = sorted(by_type[fuel], key=lambda t: t[0])[-90:]
-            ax.plot([d for d, _ in points], [float(p) for _, p in points])
-        self.oil_dock.canvas.draw_idle()
+            ax.plot(cast(Any, [d for d, _ in points]), [float(p) for _, p in points])
+        cast(Any, self.oil_dock.canvas).draw_idle()
 
     def filter_entries(self) -> list[FuelEntry]:
         """Filter entries based on search text and start date."""
@@ -1147,7 +1151,7 @@ class MainController(QObject):
             if t:
                 text = t
         if hasattr(self.window, "startDateEdit"):
-            start = self.window.startDateEdit.date().toPython()
+            start = cast(date, self.window.startDateEdit.date().toPython())
         entries = self.storage.list_entries_filtered(text, start)
         if hasattr(self.window, "vehicleListWidget"):
             lw = self.window.vehicleListWidget
@@ -1164,7 +1168,9 @@ class MainController(QObject):
     # ------------------------------------------------------------------
 
     def delete_entry(self, entry_id: int) -> None:
-        cmd = DeleteEntryCommand(self.storage, entry_id, self.entry_changed)
+        cmd = DeleteEntryCommand(
+            self.storage, entry_id, cast(Signal, self.entry_changed)
+        )
         self.undo_stack.push(cmd)
 
     def delete_vehicle(self, vehicle_id: int) -> None:
