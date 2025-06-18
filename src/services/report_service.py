@@ -18,11 +18,11 @@ import matplotlib.pyplot as plt
 from matplotlib import dates as mdates
 from typing import Callable, cast
 
-date2num = cast(Callable[[date], float], mdates.date2num)
-
 from ..models import FuelEntry, Vehicle
 from .storage_service import StorageService
 from ..constants import FUEL_TYPE_TH
+
+date2num = cast(Callable[[date], float], mdates.date2num)
 
 
 class ReportService:
