@@ -9,7 +9,10 @@ from .storage_service import StorageService
 from ..models import FuelEntry
 
 
-def _monthly_data(entries: List[FuelEntry], year: int):
+# FIX: mypy clean
+def _monthly_data(
+    entries: List[FuelEntry], year: int
+) -> tuple[list[int], list[float], list[float], list[float]]:
     months = list(range(1, 13))
     distance = [0.0 for _ in months]
     liters = [0.0 for _ in months]
