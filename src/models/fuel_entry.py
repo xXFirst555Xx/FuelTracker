@@ -6,7 +6,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-class FuelEntry(SQLModel, table=True):  # type: ignore[call-arg]
+class FuelEntry(SQLModel, table=True):
     """โมเดลแทนข้อมูลการเติมเชื้อเพลิงหนึ่งรายการ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)

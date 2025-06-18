@@ -7,7 +7,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-class FuelPrice(SQLModel, table=True):  # type: ignore[call-arg]
+class FuelPrice(SQLModel, table=True):
     """ราคาน้ำมันรายวันของสถานีและประเภทเชื้อเพลิง"""
 
     id: Optional[int] = Field(default=None, primary_key=True)

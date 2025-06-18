@@ -15,7 +15,10 @@ import matplotlib
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.dates import date2num
+from matplotlib import dates as mdates
+from typing import Callable, cast
+
+date2num = cast(Callable[[date], float], mdates.date2num)
 
 from ..models import FuelEntry, Vehicle
 from .storage_service import StorageService

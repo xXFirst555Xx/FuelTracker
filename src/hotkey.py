@@ -3,12 +3,10 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Signal
 from typing import Any
 
-kb: Any | None
 try:
-    import keyboard as kb
+    import keyboard
 except Exception:  # pragma: no cover - optional dependency
-    kb = None
-keyboard = kb  # FIX: mypy clean
+    keyboard = None
 
 
 class GlobalHotkey(QObject):

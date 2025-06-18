@@ -1,7 +1,9 @@
-from PySide6.QtWidgets import QDialog
+from typing import Callable, cast
+
+from PySide6.QtWidgets import QDialog, QWidget
 from .ui_add_vehicle_dialog import Ui_AddVehicleDialog
 
 class AddVehicleDialog(QDialog, Ui_AddVehicleDialog):
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.setupUi(self)
+        cast(Callable[[QDialog], None], self.setupUi)(self)
