@@ -22,7 +22,7 @@
 
 ## ความต้องการ
 
- - Python 3.13 or later
+ - Python 3.11 or later
 - ติดตั้งแพ็กเกจที่ระบุใน `requirements.txt`
 
 ## การติดตั้ง
