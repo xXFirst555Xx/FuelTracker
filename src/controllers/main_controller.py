@@ -45,7 +45,7 @@ from PySide6.QtCore import (
     QByteArray,
     QDate,
 )
-from shiboken6 import isValid  # type: ignore[attr-defined]
+from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
