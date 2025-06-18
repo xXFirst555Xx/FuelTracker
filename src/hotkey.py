@@ -22,7 +22,7 @@ class GlobalHotkey(QObject):
         try:
             keyboard.add_hotkey(
                 self._format(self.sequence),
-                lambda: self.triggered.emit(),
+                lambda: (self.triggered.emit() or False),
             )
         except Exception:  # pragma: no cover - ignore environments without input devices
             return
