@@ -53,14 +53,16 @@ class ReportService:
         """ดึงรายการของยานพาหนะในเดือนที่กำหนด"""
         return self.storage.list_entries_for_month(vehicle_id, month.year, month.month)
 
+    # FIX: mypy clean
     def _monthly_df(self, month: date, vehicle_id: int) -> pd.DataFrame:
         """คืนค่า DataFrame ของรายการประจำเดือน"""
         entries = self._filter_entries(month, vehicle_id)
-        vehicles: Dict[int, Vehicle] = {}
+        vehicles: Dict[int, Vehicle | None] = {}
         data = []
         for e in entries:
             if e.vehicle_id not in vehicles:
-                vehicles[e.vehicle_id] = self.storage.get_vehicle(e.vehicle_id)  # type: ignore[assignment]
+                vehicle = self.storage.get_vehicle(e.vehicle_id)
+                vehicles[e.vehicle_id] = vehicle
             v = vehicles[e.vehicle_id]
             dist = None if e.odo_after is None else e.odo_after - e.odo_before
             kmpl = dist / e.liters if dist and e.liters else None
