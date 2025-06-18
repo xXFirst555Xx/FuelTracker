@@ -6,6 +6,7 @@ matplotlib
 python-dotenv
 pytest
 pytest-cov
+pytest-qt
 pyinstaller
 requests
 keyboard
