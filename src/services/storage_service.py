@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from datetime import datetime, date
-from typing import List, Optional, Any, cast
+from typing import List, Optional, Any, Callable, cast
 import os
 import shutil
 from getpass import getpass
@@ -50,10 +50,18 @@ class _ConnProxy:
     def __init__(self, conn: sqlcipher.Connection) -> None:
         self._conn = conn
 
-    def __getattr__(self, name: str):
+    # FIX: mypy clean
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._conn, name)
 
-    def create_function(self, name, num_params, func, deterministic=None):
+    # FIX: mypy clean
+    def create_function(
+        self,
+        name: str,
+        num_params: int,
+        func: Callable[..., Any],
+        deterministic: bool | None = None,
+    ) -> None:
         if deterministic is not None:
             self._conn.create_function(
                 name, num_params, func, deterministic=deterministic
