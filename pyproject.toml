@@ -25,6 +25,7 @@ dependencies = [
     "types-keyboard",
     "types-reportlab",
     "types-requests",
+    "rich",
 ]
 [project.optional-dependencies]
 dev = [
@@ -42,14 +43,18 @@ line-length = 88
 line-length = 88
 
 [tool.poe.tasks]
-lint = [
-    { cmd = "ruff check ." },
-    { cmd = "mypy src/ --strict" },
-    { cmd = "vulture src/" }
-]
+_ruff = { cmd = "ruff check .", help = "Run ruff linter" }
+_mypy = { cmd = "mypy src/ --strict", help = "Run mypy type checking" }
+_vulture = { cmd = "vulture src/", help = "Detect dead code" }
 
-test = { cmd = "pytest -q" }
-migrate = { cmd = "python -m fueltracker migrate" }
-runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen" } }
-build = { cmd = "pyinstaller --noconfirm --noconsole --name FuelTracker --icon assets/icon.ico src/fueltracker/__main__.py" }
-validate = { sequence = ["lint", "migrate", "test", "runtime-check"] }
+lint = { sequence = ["_ruff", "_mypy", "_vulture"], parallel = true, help = "Run all linters in parallel" }
+migrate = { cmd = "python -m fueltracker migrate", help = "Run database migrations" }
+test = { cmd = "pytest -q", deps = ["migrate"], help = "Run test suite" }
+runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen" }, help = "Run app in headless mode" }
+build = { cmd = "pyinstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build standalone executable" }
+validate = { sequence = ["lint", "test"], help = "Run linters then tests" }
+report = { sequence = [
+    { ref = "lint", stdout = "reports/lint.log" },
+    { ref = "test", stdout = "reports/test.log" },
+    { ref = "runtime-check", stdout = "reports/runtime-check.log" }
+], help = "Run all checks and store logs" }
