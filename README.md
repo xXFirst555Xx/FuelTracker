@@ -80,10 +80,10 @@ python -m fueltracker migrate
 
 ## การสร้างแพ็กเกจ
 
-รันสคริปต์ batch ที่ให้มาบน Windows เพื่อสร้างไฟล์ปฏิบัติการ
+ใช้คำสั่ง `poe build` เพื่อสร้างไฟล์ปฏิบัติการ
 
-```bat
-build.bat
+```bash
+poe build
 ```
 
 ไฟล์ที่ได้จะอยู่ในไดเรกทอรี `dist` กำหนดตัวแปร `SIGNTOOL` และ `CERT_PATH` เพื่อเซ็นไฟล์อัตโนมัติ
@@ -104,17 +104,16 @@ pip install -e .
 pytest
 ```
 
-ต้องการตรวจสอบแบบครบถ้วนยิ่งขึ้นสามารถรันสคริปต์
-`scripts/validate_connectivity.py` ซึ่งจะติดตั้งแพ็กเกจแบบ editable,
-รัน `pytest` และทดสอบการเปิดโปรแกรมแบบ offscreen ผลลัพธ์จะถูกบันทึกไว้ในโฟลเดอร์
-`reports/` ทั้งหมด ก่อนใช้งานให้ติดตั้งเครื่องมือสำหรับนักพัฒนาดังนี้
+ต้องการตรวจสอบแบบครบถ้วนยิ่งขึ้นสามารถใช้คำสั่ง `poe validate`
+ซึ่งจะติดตั้งแพ็กเกจแบบ editable รัน `pytest` และทดสอบการเปิดโปรแกรมแบบ
+offscreen ผลลัพธ์จะถูกบันทึกไว้ในโฟลเดอร์ `reports/` ทั้งหมด ก่อนใช้งานให้ติดตั้งเครื่องมือสำหรับนักพัฒนาดังนี้
 
 ```bash
 pip install pydeps ruff vulture mypy
 ```
 
-```bat
-python scripts/validate_connectivity.py
+```bash
+poe validate
 ```
 
 โปรเจ็กต์นี้ใช้สัญญาอนุญาต MIT ดูรายละเอียดได้ที่ไฟล์ [LICENSE](LICENSE)
