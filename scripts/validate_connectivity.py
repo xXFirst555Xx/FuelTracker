@@ -5,13 +5,33 @@ import json
 import os
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 REPORTS = Path("reports")
 REPORTS.mkdir(exist_ok=True)
 
 
-def run(cmd: list[str], *, capture: bool = True, **kwargs) -> subprocess.CompletedProcess[str]:
+@dataclass
+class Task:
+    cmd: list[str]
+    log_name: str
+    label: str
+    capture: bool = True
+    env: dict[str, str] | None = None
+
+    def execute(self) -> subprocess.CompletedProcess[str]:
+        result = run(self.cmd, capture=self.capture, env=self.env)
+        (REPORTS / self.log_name).write_text(
+            (result.stdout or "") + (result.stderr or "")
+        )
+        return result
+
+
+def run(
+    cmd: list[str], *, capture: bool = True, env: dict[str, str] | None = None, **kwargs
+) -> subprocess.CompletedProcess[str]:
     """Run *cmd* and optionally capture output.
 
     Parameters
@@ -25,25 +45,31 @@ def run(cmd: list[str], *, capture: bool = True, **kwargs) -> subprocess.Complet
 
     print("$", " ".join(cmd))
     if capture:
-        return subprocess.run(cmd, text=True, capture_output=True, **kwargs)
-    return subprocess.run(cmd, text=True, **kwargs)
+        return subprocess.run(cmd, text=True, capture_output=True, env=env, **kwargs)
+    return subprocess.run(cmd, text=True, env=env, **kwargs)
 
 
 def main() -> None:
-    summary = []
-    errors = []
+    summary: list[str] = []
+    errors: list[str] = []
 
-    # 1. Editable install
-    res = run([sys.executable, "-m", "pip", "install", "-e", "."])
-    (REPORTS / "install.log").write_text(res.stdout + res.stderr)
-    if res.returncode != 0:
-        errors.append("pip install")
+    install_tasks = [
+        Task(
+            [sys.executable, "-m", "pip", "install", "-e", "."],
+            "install.log",
+            "pip install",
+        ),
+        Task(
+            [sys.executable, "-m", "pip", "install", "alembic"],
+            "alembic_install.log",
+            "alembic install",
+        ),
+    ]
 
-    # Install alembic for migrations
-    res = run([sys.executable, "-m", "pip", "install", "alembic"])
-    (REPORTS / "alembic_install.log").write_text(res.stdout + res.stderr)
-    if res.returncode != 0:
-        errors.append("alembic install")
+    for task in install_tasks:
+        res = task.execute()
+        if res.returncode != 0:
+            errors.append(task.label)
 
     # 2. Import graph
     res = run(
@@ -63,54 +89,58 @@ def main() -> None:
     if cycles > 0:
         errors.append("import cycles")
 
-    # 3. Ruff
-    res = run(
-        ["ruff", "check", ".", "--select", "F401,F403,F841,PLC0414", "--statistics"]
-    )
-    (REPORTS / "ruff.txt").write_text(res.stdout + res.stderr)
-    summary.append("Ruff exit: " + str(res.returncode))
-    if res.returncode != 0:
-        errors.append("ruff")
+    # 3. Static analysis in parallel
+    static_tasks = [
+        Task(
+            ["ruff", "check", ".", "--select", "F401,F403,F841,PLC0414", "--statistics"],
+            "ruff.txt",
+            "ruff",
+        ),
+        Task(["vulture", "src/"], "vulture.txt", "vulture"),
+        Task(["mypy", "src/", "--strict"], "mypy.txt", "mypy"),
+    ]
 
-    # Dead code
-    res = run(["vulture", "src/"])
-    (REPORTS / "vulture.txt").write_text(res.stdout + res.stderr)
-    for line in res.stdout.splitlines():
-        if line.strip().startswith("Confidence"):
-            break
-    summary.append(f"Vulture exit: {res.returncode}")
-    if res.returncode != 0:
-        errors.append("vulture")
-
-    # 4. Mypy
-    res = run(["mypy", "src/", "--strict"])
-    (REPORTS / "mypy.txt").write_text(res.stdout + res.stderr)
-    summary.append("Mypy exit: " + str(res.returncode))
-    if res.returncode != 0:
-        errors.append("mypy")
+    with ThreadPoolExecutor() as ex:
+        futures = {ex.submit(t.execute): t for t in static_tasks}
+        for future in as_completed(futures):
+            task = futures[future]
+            res = future.result()
+            summary.append(f"{task.label} exit: {res.returncode}")
+            if task.label == "vulture":
+                for line in res.stdout.splitlines():
+                    if line.strip().startswith("Confidence"):
+                        break
+            if res.returncode != 0:
+                errors.append(task.label)
 
     # Apply database migrations
-    res = run([sys.executable, "-m", "fueltracker", "migrate"])
-    (REPORTS / "migrate.log").write_text(res.stdout + res.stderr)
+    migrate_task = Task(
+        [sys.executable, "-m", "fueltracker", "migrate"],
+        "migrate.log",
+        "migrate",
+    )
+    res = migrate_task.execute()
     if res.returncode != 0:
-        errors.append("migrate")
+        errors.append(migrate_task.label)
 
     # 5. Pytest
-    res = run(["pytest", "-q"], capture=False)
-    (REPORTS / "pytest.txt").write_text((res.stdout or "") + (res.stderr or ""))
+    pytest_task = Task(["pytest", "-q"], "pytest.txt", "pytest", capture=False)
+    res = pytest_task.execute()
     summary.append("Pytest exit: " + str(res.returncode))
     if res.returncode != 0:
-        errors.append("pytest")
+        errors.append(pytest_task.label)
 
     # 6. Runtime check
-    res = run(
+    runtime_task = Task(
         [sys.executable, "-m", "fueltracker", "--check"],
-        env={**dict(**os.environ), "QT_QPA_PLATFORM": "offscreen"},
+        "runtime.txt",
+        "runtime",
+        env={**os.environ, "QT_QPA_PLATFORM": "offscreen"},
     )
-    (REPORTS / "runtime.txt").write_text(res.stdout + res.stderr)
+    res = runtime_task.execute()
     summary.append(res.stdout.strip())
     if b"MainWindow OK" not in res.stdout.encode():
-        errors.append("runtime")
+        errors.append(runtime_task.label)
 
     # Write summary
     report = REPORTS / "connectivity_report.md"
