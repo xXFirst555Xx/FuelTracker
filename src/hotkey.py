@@ -27,16 +27,18 @@ class GlobalHotkey(QObject):
         self._stopping = False
 
     def _callback_adapter(self, *args: object) -> int:
-        """Invoke ``_wrapped_callback`` and always return ``1`` for Win32 hooks."""
+        """Invoke ``_wrapped_callback`` and always return an ``int``."""
         # Qt expects a Win32 hook callback to return an ``int``. If ``None`` is
-        # returned, a ``TypeError`` like ``WPARAM is simple, so must be an int``
-        # is raised during event dispatch. Always returning ``1`` avoids this.
+        # returned a ``TypeError`` like ``WPARAM is simple, so must be an int``
+        # bubbles up through the event loop. Converting the result ensures the
+        # correct type is always passed back to Qt.
         try:
-            self._wrapped_callback(*args)
+            res = self._wrapped_callback(*args)
+            return int(res) if res is not None else 1
         except Exception as exc:  # pragma: no cover - defensive
             # Ensure an integer is always returned to satisfy Windows hooks
             print("Hotkey adapter error:", exc)
-        return 1  # Must return int to avoid WPARAM errors on Windows
+            return 1
 
     def _wrapped_callback(self, *args: object) -> int:
         """Emit the hotkey signal and return ``1`` for Win32 hooks."""
