@@ -659,6 +659,8 @@ class MainController(QObject):
     # ------------------------------------------------------------------
     def open_add_vehicle_dialog(self) -> None:
         dialog = AddVehicleDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
         if dialog.exec() == QDialog.DialogCode.Accepted:
             name = dialog.nameLineEdit.text().strip()
@@ -689,6 +691,8 @@ class MainController(QObject):
             return
         before = Vehicle.model_validate(vehicle)
         dialog = AddVehicleDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         dialog.setWindowTitle("แก้ไขยานพาหนะ")
         dialog.capacityLineEdit.setValidator(QDoubleValidator(0.0, 1e6, 2))
         dialog.nameLineEdit.setText(vehicle.name)
@@ -733,6 +737,8 @@ class MainController(QObject):
             return
         dialog = load_add_entry_dialog()
         dialog.setParent(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         today = date.today()
         dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoBeforeEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
@@ -922,6 +928,8 @@ class MainController(QObject):
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
         dialog = ImportCsvDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
 
@@ -972,6 +980,7 @@ class MainController(QObject):
 
     def open_about_dialog(self) -> None:
         dialog = AboutDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
         dialog.exec()
 
     def open_add_maintenance_dialog(self) -> None:
@@ -979,6 +988,8 @@ class MainController(QObject):
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
         dialog = AddMaintenanceDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         today = date.today()
         dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
@@ -1014,6 +1025,8 @@ class MainController(QObject):
         if task is None:
             return
         dialog = AddMaintenanceDialog(self.window)
+        dialog.buttonBox.accepted.connect(dialog.accept)
+        dialog.buttonBox.rejected.connect(dialog.reject)
         dialog.setWindowTitle("แก้ไขงานบำรุงรักษา")
         today = date.today()
         if task.due_date:
