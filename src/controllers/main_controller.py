@@ -100,6 +100,7 @@ from ..views import (
     AddMaintenanceDialog,
     ImportCsvDialog,
     load_add_entry_dialog,
+    AddEntryDialog,
 )
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
@@ -740,7 +741,7 @@ class MainController(QObject):
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        dialog = load_add_entry_dialog()
+        dialog = cast(AddEntryDialog, load_add_entry_dialog())
         dialog.setParent(self.window)
         dialog.buttonBox.accepted.connect(dialog.accept)
         dialog.buttonBox.rejected.connect(dialog.reject)
