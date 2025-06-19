@@ -42,7 +42,6 @@ dev = [
 
     # Type Stubs
     "types-requests",
-    "types-matplotlib",
     "types-keyboard",
     "types-reportlab",
     "matplotlib-stubs",
