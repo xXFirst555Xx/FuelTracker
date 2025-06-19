@@ -7,6 +7,7 @@ from .importer import Importer
 from .charts import monthly_summary
 from .oil_service import fetch_latest, get_price
 from .theme_manager import ThemeManager
+from .tray_icon_manager import TrayIconManager
 
 __all__ = [
     "ReportService",
@@ -17,4 +18,5 @@ __all__ = [
     "fetch_latest",
     "get_price",
     "ThemeManager",
+    "TrayIconManager",
 ]

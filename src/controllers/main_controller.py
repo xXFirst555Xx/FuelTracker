@@ -17,14 +17,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QFileDialog,
-    QSystemTrayIcon,
-    QMenu,
 )
 from PySide6.QtGui import (
     QDoubleValidator,
     QUndoStack,
-    QIcon,
-    QAction,
     QCloseEvent,
     QShortcut,
     QKeySequence,
@@ -88,6 +84,7 @@ from ..services import (
     Exporter,
     Importer,
     ThemeManager,
+    TrayIconManager,
 )
 from ..repositories import FuelEntryRepository
 from ..services.oil_service import fetch_latest, get_price
@@ -260,7 +257,14 @@ class MainController(QObject):
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
         self._connect_signals()
-        self._setup_tray()
+        self.tray_manager = TrayIconManager(
+            self.window,
+            self.window.show,
+            self.window.hide,
+            self.open_add_entry_dialog,
+            self._tray_quit,
+        )
+        self.tray_manager.show()
         self._setup_hotkey()
         self.window.closeEvent = self._close_event  # type: ignore[method-assign]
         if hasattr(self.window, "budgetEdit"):
@@ -430,15 +434,15 @@ class MainController(QObject):
 
     def _update_tray_tooltip(self) -> None:
         """Update system tray tooltip with a short summary of the last entry."""
-        if not getattr(self, "tray_icon", None):
+        if not getattr(self, "tray_manager", None):
             return
         vid = self._selected_vehicle_id
         if vid is None:
-            self.tray_icon.setToolTip("")
+            self.tray_manager.set_tooltip("")
             return
         last = self.storage.get_last_entry(vid)
         if not last:
-            self.tray_icon.setToolTip("")
+            self.tray_manager.set_tooltip("")
             return
         parts = [str(last.entry_date)]
         if last.odo_after is not None:
@@ -446,7 +450,7 @@ class MainController(QObject):
             parts.append(f"{dist:g} km")
         if last.amount_spent is not None:
             parts.append(f"฿{last.amount_spent:g}")
-        self.tray_icon.setToolTip(" - ".join(parts))
+        self.tray_manager.set_tooltip(" - ".join(parts))
 
     def _check_budget(self, vehicle_id: int, entry_date: date) -> None:
         budget = self.storage.get_budget(vehicle_id)
@@ -461,8 +465,8 @@ class MainController(QObject):
                 "เกินงบประมาณ",
                 "ค่าใช้จ่ายค่าน้ำมันเดือนนี้เกินงบที่ตั้งไว้",
             )
-            if getattr(self, "tray_icon", None):
-                self.tray_icon.showMessage("FuelTracker", "เกินงบประมาณ")
+            if getattr(self, "tray_manager", None):
+                self.tray_manager.show_message("FuelTracker", "เกินงบประมาณ")
 
     def _refresh_maintenance_panel(self) -> None:
         vid = self._selected_vehicle_id
@@ -527,28 +531,6 @@ class MainController(QObject):
             dark_mode_override=self._dark_mode,
         )
 
-    def _setup_tray(self) -> None:
-        """สร้างไอคอนใน system tray พร้อมเมนู"""
-        icon = QIcon("icons:home.svg")
-        self.tray_icon = QSystemTrayIcon(icon, self.window)
-        menu = QMenu(self.window)
-        add_act = QAction("เพิ่มรายการใหม่", self.window)
-        add_act.triggered.connect(self.open_add_entry_dialog)
-        menu.addAction(add_act)
-        show_act = QAction("เปิดหน้าต่างหลัก", self.window)
-        show_act.triggered.connect(self.window.show)
-        menu.addAction(show_act)
-        quit_act = QAction("ออก", self.window)
-        quit_act.triggered.connect(self._tray_quit)
-        menu.addAction(quit_act)
-        self.tray_icon.setContextMenu(menu)
-        self.tray_icon.activated.connect(self._on_tray_activated)
-        self._update_tray_tooltip()
-        self.tray_icon.show()
-
-    def _on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
-        if reason == QSystemTrayIcon.ActivationReason.Trigger:
-            self.window.show()
 
     def _tray_quit(self) -> None:
         self.shutdown()
@@ -1219,8 +1201,8 @@ class MainController(QObject):
 
     def _close_event(self, event: QCloseEvent) -> None:
         if (
-            getattr(self, "tray_icon", None)
-            and self.tray_icon.isVisible()
+            getattr(self, "tray_manager", None)
+            and self.tray_manager.is_visible()
             and self.config.hide_on_close
         ):
             event.ignore()
