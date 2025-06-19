@@ -26,7 +26,7 @@ class GlobalHotkey(QObject):
         # backend fires callbacks as we are tearing down.
         self._stopping = False
 
-    def _wrapped_callback(self) -> int:
+    def _wrapped_callback(self, *args: object) -> int:
         """Emit the hotkey signal and return ``1`` for Win32 hooks."""
         if self._stopping:
             # Ignore callbacks that may fire while the listener is shutting down
