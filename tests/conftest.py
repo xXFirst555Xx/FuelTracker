@@ -81,5 +81,6 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
 
     ctrl = MainController()
     yield ctrl
-    ctrl.window.close()  # ADDED: ensure Qt window cleanup
+    # ADDED: Ensure the window is closed after each test to trigger proper cleanup
+    ctrl.window.close() 
     ctrl.cleanup()
