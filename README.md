@@ -65,6 +65,7 @@ pip install poethepoet
 - `DB_PATH` กำหนดตำแหน่งฐานข้อมูล SQLite
 - `FT_THEME` เลือกธีม `light`, `dark` หรือ `modern`
 - `FT_DB_PASSWORD` ตั้งรหัสผ่านเพื่อเปิดใช้ SQLCipher (ปล่อยว่างได้ถ้าไม่ต้องการ)
+- `FUEL_API_KEY` ใส่คีย์สำหรับดึงราคาน้ำมันล่าสุดผ่าน API
 
 ## ธีม
 
