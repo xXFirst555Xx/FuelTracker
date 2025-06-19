@@ -100,7 +100,6 @@ from ..views import (
     AddMaintenanceDialog,
     ImportCsvDialog,
     load_add_entry_dialog,
-    AddEntryDialog,
 )
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
@@ -157,7 +156,7 @@ class OilPricesDock(QDockWidget):
         self.table.setHorizontalHeaderLabels(["วันที่", "ประเภทเชื้อเพลิง", "ราคา"])
         self.figure = Figure(figsize=(4, 3))
         # ``FigureCanvasQTAgg`` comes from ``matplotlib`` which is not fully typed
-        self.canvas = FigureCanvasQTAgg(self.figure)
+        self.canvas = FigureCanvasQTAgg(self.figure)  # type: ignore[no-untyped-call]
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(self.table)
@@ -741,7 +740,7 @@ class MainController(QObject):
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        dialog = cast(AddEntryDialog, load_add_entry_dialog())
+        dialog = load_add_entry_dialog()
         dialog.setParent(self.window)
         dialog.buttonBox.accepted.connect(dialog.accept)
         dialog.buttonBox.rejected.connect(dialog.reject)
