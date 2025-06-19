@@ -44,6 +44,7 @@ from PySide6.QtCore import (
     QSettings,
     QByteArray,
     QDate,
+    Slot,
 )
 from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
@@ -1123,6 +1124,7 @@ class MainController(QObject):
         interval_ms = self.config.update_hours * 3_600_000
         QTimer.singleShot(interval_ms, self._schedule_price_update)
 
+    @Slot()
     def _load_prices(self) -> None:
         with Session(self.storage.engine) as session:
             rows = session.exec(
