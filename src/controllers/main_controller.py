@@ -95,7 +95,6 @@ from .undo_commands import (
 )
 from ..views import (
     MainWindow,
-    AddEntryDialog,
     AddVehicleDialog,
     AboutDialog,
     AddMaintenanceDialog,
