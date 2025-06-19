@@ -26,6 +26,11 @@ class GlobalHotkey(QObject):
         # backend fires callbacks as we are tearing down.
         self._stopping = False
 
+    def _callback_adapter(self, *args: object) -> int:
+        """Invoke ``_wrapped_callback`` and return ``1`` for Win32 hooks."""
+        self._wrapped_callback(*args)
+        return 1  # Must return int to avoid WPARAM errors on Windows
+
     def _wrapped_callback(self, *args: object) -> int:
         """Emit the hotkey signal and return ``1`` for Win32 hooks."""
         if self._stopping:
@@ -44,13 +49,13 @@ class GlobalHotkey(QObject):
             if hasattr(keyboard, "GlobalHotKeys"):
                 # Support for pynput
                 self._listener = keyboard.GlobalHotKeys(
-                    {self._format(self.sequence): self._wrapped_callback}
+                    {self._format(self.sequence): self._callback_adapter}
                 )
                 self._listener.start()
             else:
                 keyboard.add_hotkey(
                     self._format(self.sequence),
-                    self._wrapped_callback,
+                    self._callback_adapter,
                 )
         except Exception:  # pragma: no cover - ignore environments without input devices
             return
