@@ -22,18 +22,32 @@ dependencies = [
     "keyboard",
     "openpyxl",
     "pydantic-settings",
-    "types-keyboard",
-    "types-reportlab",
-    "types-requests",
-    "matplotlib-stubs",
     "rich",
 ]
+
 [project.optional-dependencies]
 dev = [
+    # Task Runner
     "poethepoet",
+    
+    # Linters & Formatters
+    "ruff",
+    "mypy",
+    "vulture",
+    "black",
+
+    # Testing
+    "pytest",
+    "pytest-qt",
+
+    # Type Stubs
     "types-requests",
     "types-matplotlib",
+    "types-keyboard",
+    "types-reportlab",
+    "matplotlib-stubs",
 ]
+
 [project.scripts]
 fueltracker = "fueltracker.main:run"
 
