@@ -49,12 +49,13 @@ pip install -e .[dev]
 
 งานที่มีให้ใช้งานประกอบด้วย
 
-- `poe lint`
-- `poe test`
-- `poe migrate`
-- `poe runtime-check`
-- `poe build`
-- `poe validate`
+- `poe lint` - รัน `ruff`, `mypy` และ `vulture` เพื่อตรวจสอบคุณภาพโค้ด
+- `poe test` - รันชุดทดสอบด้วย `pytest` หลังจากอัปเกรดฐานข้อมูล
+- `poe migrate` - รันสคริปต์ `alembic` เพื่ออัปเกรดฐานข้อมูล
+- `poe runtime-check` - เปิดโปรแกรมแบบไม่สร้างหน้าต่างเพื่อตรวจสอบการทำงาน
+- `poe build` - สร้างไฟล์ปฏิบัติการแบบ standalone ด้วย `PyInstaller`
+- `poe validate` - รันคำสั่ง `lint` แล้วต่อด้วย `test`
+- `poe report` - รัน `lint`, `test` และ `runtime-check` เพื่อรายงานผลโดยรวม
 
 คำสั่งเหล่านี้กำหนดไว้ในไฟล์ `pyproject.toml` สามารถเรียกใช้ได้ตามต้องการ
 
