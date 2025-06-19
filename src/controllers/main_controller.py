@@ -113,6 +113,8 @@ class StatsDock(QDockWidget):
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
         super().__init__("สถิติ", parent)
+        # ADDED: ensure unique object name for saveState
+        self.setObjectName("statsDock")
         self.kml_label = QLabel("km/L: -")
         self.cost_label = QLabel("฿/km: -")
         widget = QWidget()
@@ -127,6 +129,8 @@ class MaintenanceDock(QDockWidget):
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
         super().__init__("บำรุงรักษา", parent)
+        # ADDED: ensure unique object name for saveState
+        self.setObjectName("maintenanceDock")
         self.list_widget = QListWidget()
         self.add_button = QPushButton("เพิ่ม")
         self.edit_button = QPushButton("แก้ไข")
@@ -147,6 +151,8 @@ class OilPricesDock(QDockWidget):
 
     def __init__(self, parent: QMainWindow | None = None) -> None:
         super().__init__("ราคาน้ำมัน", parent)
+        # ADDED: ensure unique object name for saveState
+        self.setObjectName("oilPricesDock")
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels(["วันที่", "ประเภทเชื้อเพลิง", "ราคา"])
         self.figure = Figure(figsize=(4, 3))

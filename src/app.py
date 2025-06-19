@@ -1,3 +1,4 @@
+from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
 
 def main() -> None:
@@ -7,7 +8,9 @@ def main() -> None:
     win.setCentralWidget(QLabel("Hello FuelTracker!"))
     win.resize(640, 480)
     win.show()
-    app.exec()
+    # CHANGED: exit cleanly with sys.exit
+    import sys
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
