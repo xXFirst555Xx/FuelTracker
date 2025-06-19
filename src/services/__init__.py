@@ -6,6 +6,7 @@ from .exporter import Exporter
 from .importer import Importer
 from .charts import monthly_summary
 from .oil_service import fetch_latest, get_price
+from .theme_manager import ThemeManager
 
 __all__ = [
     "ReportService",
@@ -15,4 +16,5 @@ __all__ = [
     "monthly_summary",
     "fetch_latest",
     "get_price",
+    "ThemeManager",
 ]

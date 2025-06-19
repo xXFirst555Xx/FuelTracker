@@ -82,7 +82,13 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 from ..models import FuelEntry, Vehicle, Maintenance, FuelPrice
-from ..services import ReportService, StorageService, Exporter, Importer
+from ..services import (
+    ReportService,
+    StorageService,
+    Exporter,
+    Importer,
+    ThemeManager,
+)
 from ..repositories import FuelEntryRepository
 from ..services.oil_service import fetch_latest, get_price
 from ..config import AppConfig
@@ -244,6 +250,7 @@ class MainController(QObject):
         self._price_timer_started = False
         self.window.installEventFilter(self)
         app = QApplication.instance()
+        self.theme_manager = ThemeManager(app) if app else None
         if app:
             app.aboutToQuit.connect(self.cleanup)
             app.aboutToQuit.connect(self.shutdown)
@@ -510,39 +517,15 @@ class MainController(QObject):
 
     def _setup_style(self) -> None:
         """ปรับสไตล์ชีตของแอปตามธีมที่เลือก"""
-        app = QApplication.instance()
-        if not isinstance(app, QApplication):
+        if not self.theme_manager:
             return
 
-        theme = self._theme_override
-        if theme is None:
-            for arg in app.arguments():
-                if arg.startswith("--theme="):
-                    theme = arg.split("=", 1)[1]
-                    break
-        theme = (theme or self.env.ft_theme or self.config.theme or "system").lower()
-        if self._dark_mode is not None:
-            theme = "dark" if self._dark_mode else "light"
-        if theme == "system":
-            scheme = app.styleHints().colorScheme()
-            theme = "dark" if scheme == Qt.ColorScheme.Dark else "light"
-
-        qss_map = {
-            "light": "light.qss",
-            "dark": "dark.qss",
-            "modern": "modern.qss",
-            "vivid": "vivid.qss",
-        }
-        qss_file = qss_map.get(theme)
-        if qss_file:
-            try:
-                qss_path = (
-                    Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
-                )
-                with open(qss_path, "r", encoding="utf-8") as fh:
-                    app.setStyleSheet(fh.read())
-            except OSError:
-                pass
+        self.theme_manager.apply_theme(
+            theme_override=self._theme_override,
+            env_theme=self.env.ft_theme,
+            config_theme=self.config.theme,
+            dark_mode_override=self._dark_mode,
+        )
 
     def _setup_tray(self) -> None:
         """สร้างไอคอนใน system tray พร้อมเมนู"""
