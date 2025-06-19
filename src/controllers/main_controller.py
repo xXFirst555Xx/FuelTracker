@@ -716,175 +716,45 @@ class MainController(QObject):
         dialog.buttonBox.rejected.connect(dialog.reject)
         today = date.today()
         dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
+
         dialog.odoBeforeEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
-        dialog.odoAfterEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         dialog.amountEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
-        dialog.litersEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
-        dialog.autoFillCheckBox.setChecked(True)
 
-        dialog.odoAfterEdit.setReadOnly(True)
-        dialog.litersEdit.setReadOnly(True)
-
-        def _auto_calc() -> None:
-            if dialog.litersEdit.text():
-                return
-            amt_text = dialog.amountEdit.text()
-            if not amt_text:
-                return
-            station = self.config.default_station
-            with Session(self.storage.engine) as sess:
-                price = get_price(sess, DEFAULT_FUEL_TYPE, station, date.today())
-                if price is None:
-                    price = get_price(
-                        sess,
-                        DEFAULT_FUEL_TYPE,
-                        station,
-                        date.today() - timedelta(days=1),
-                    )
-            if price is None:
-                return
-            liters = Decimal(amt_text) / price
-            dialog.litersEdit.setText(f"{liters.quantize(Decimal('0.01'))}")
-
-        dialog.amountEdit.editingFinished.connect(_auto_calc)
-
-        def _auto_fill() -> None:
-            if not dialog.autoFillCheckBox.isChecked():
-                dialog.odoAfterEdit.setReadOnly(False)
-                dialog.litersEdit.setReadOnly(False)
-                return
-
-            vid = dialog.vehicleComboBox.currentData()
-            odo_text = dialog.odoBeforeEdit.text()
-            if vid is None or not odo_text:
-                return
-
-            repo = FuelEntryRepository(self.storage.engine)
-            entries = [
-                e
-                for e in repo.last_entries(vid, 3)
-                if e.odo_after is not None
-            ]
-
-            if not entries:
-                QMessageBox.information(dialog, "Insufficient data", "ไม่มีข้อมูลเพียงพอ")
-                dialog.odoAfterEdit.setReadOnly(False)
-                dialog.litersEdit.setReadOnly(False)
-                dialog.odoAfterEdit.clear()
-                dialog.litersEdit.clear()
-                dialog.amountEdit.clear()
-                return
-
-            dists = [
-                e.odo_after - e.odo_before
-                for e in entries
-                if e.odo_after is not None
-            ]
-            if len(dists) >= 3:
-                dist_avg = sum(dists[:3]) / 3
-            else:
-                dist_avg = dists[0]
-
-            odo_before = float(odo_text)
-            odo_after = odo_before + dist_avg
-            dialog.odoAfterEdit.setText(f"{odo_after:.2f}")
-            dialog.odoAfterEdit.setReadOnly(True)
-
-            kml_vals = [
-                (e.odo_after - e.odo_before) / e.liters
-                for e in entries
-                if e.liters and e.liters > 0 and e.odo_after is not None
-            ]
-
-            liters_val: float | None
-            if kml_vals:
-                if len(kml_vals) >= 3:
-                    kml_avg = sum(kml_vals[:3]) / 3
-                else:
-                    kml_avg = kml_vals[0]
-                liters_val = dist_avg / kml_avg
-                dialog.litersEdit.setText(f"{liters_val:.2f}")
-                dialog.litersEdit.setReadOnly(True)
-            else:
-                liters_val = None
-                dialog.litersEdit.setReadOnly(False)
-                dialog.litersEdit.setText("—")
-
-            price_vals = [
-                e.amount_spent / e.liters
-                for e in entries
-                if e.liters and e.amount_spent is not None and e.liters > 0
-            ]
-            if price_vals and liters_val is not None:
-                if len(price_vals) >= 3:
-                    price_avg = sum(price_vals[:3]) / 3
-                else:
-                    price_avg = price_vals[0]
-                price = liters_val * price_avg
-                dialog.amountEdit.setText(f"{price:.2f}")
-            else:
-                dialog.amountEdit.setText("—")
+        # Disable fields managed automatically
+        dialog.odoAfterEdit.setEnabled(False)
+        dialog.litersEdit.setEnabled(False)
+        dialog.autoFillCheckBox.setEnabled(False)
 
         def _prefill() -> None:
             vid = dialog.vehicleComboBox.currentData()
             if vid is None:
                 return
-            # Use ``StorageService`` helper to fetch the latest entry.
-            # This avoids subtle issues with stale sessions during tests and
-            # keeps the logic in one place.
             last = self.storage.get_last_entry(vid)
             if last is not None and last.odo_after is not None:
                 dialog.odoBeforeEdit.setText(str(last.odo_after))
-                dialog.odoAfterEdit.setText(str(last.odo_after))
             else:
                 dialog.odoBeforeEdit.clear()
-                dialog.odoAfterEdit.clear()
             dialog.amountEdit.clear()
-            dialog.litersEdit.clear()
-            dialog.odoAfterEdit.setReadOnly(True)
-            dialog.litersEdit.setReadOnly(True)
 
         for v in self.storage.list_vehicles():
             dialog.vehicleComboBox.addItem(v.name, v.id)
         _prefill()
         dialog.vehicleComboBox.currentIndexChanged.connect(_prefill)
-        dialog.odoBeforeEdit.editingFinished.connect(_auto_fill)
-        dialog.autoFillCheckBox.toggled.connect(_auto_fill)
+
         if dialog.exec() == QDialog.DialogCode.Accepted:
             vehicle_id = dialog.vehicleComboBox.currentData()
             try:
-                odo_after_text = dialog.odoAfterEdit.text().strip()
                 amount_text = dialog.amountEdit.text().strip()
-                liters_text = dialog.litersEdit.text().strip()
-
                 entry = FuelEntry(
                     entry_date=dialog.dateEdit.date().toPython(),
                     vehicle_id=vehicle_id,
                     odo_before=float(dialog.odoBeforeEdit.text()),
-                    odo_after=(
-                        float(odo_after_text)
-                        if odo_after_text and odo_after_text != "—"
-                        else None
-                    ),
-                    amount_spent=(
-                        float(amount_text) if amount_text and amount_text != "—" else None
-                    ),
-                    liters=(
-                        float(liters_text) if liters_text and liters_text != "—" else None
-                    ),
+                    odo_after=None,
+                    amount_spent=float(amount_text) if amount_text else None,
+                    liters=None,
                 )
             except ValueError:
                 QMessageBox.warning(dialog, "ข้อผิดพลาด", "ข้อมูลตัวเลขไม่ถูกต้อง")
-                return
-            if (
-                entry.odo_after is not None
-                and entry.odo_after < entry.odo_before
-            ):
-                QMessageBox.warning(
-                    dialog,
-                    "การตรวจสอบ",
-                    "เลขไมล์หลังต้องไม่ต่ำกว่าเลขไมล์ก่อน",
-                )
                 return
             try:
                 cmd = AddEntryCommand(
@@ -895,10 +765,6 @@ class MainController(QObject):
                 QMessageBox.warning(dialog, "การตรวจสอบ", str(exc))
                 return
             self._check_budget(entry.vehicle_id, entry.entry_date)
-            if entry.odo_after is not None:
-                self._notify_due_maintenance(
-                    entry.vehicle_id, entry.odo_after, entry.entry_date
-                )
 
     def open_import_csv_dialog(self) -> None:
         if not self.storage.list_vehicles():
