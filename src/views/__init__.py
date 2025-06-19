@@ -2,10 +2,7 @@
 
 from pathlib import Path
 import sys
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox, QListWidget
-from PySide6.QtCore import QFile, QDir, Qt
-
+from PySide6.QtCore import QDir
 
 from .main_window import MainWindow
 from .dialogs import (
@@ -27,41 +24,8 @@ def asset_path(*parts: str) -> Path:
     root = Path(getattr(sys, "_MEIPASS", BASE_PATH.parents[1]))
     return root.joinpath("assets", *parts)
 
-
 # Allow Qt to resolve ``icons:`` paths inside .ui files.
 QDir.addSearchPath("icons", str(asset_path("icons")))
-
-
-def load_ui(name: str) -> QWidget:
-    """โหลดไฟล์ ``.ui`` จากไดเรกทอรี views"""
-    ui_path = BASE_PATH / f"{name}.ui"
-    if not ui_path.exists():
-        raise FileNotFoundError(ui_path)
-
-    file = QFile(str(ui_path))
-    file.open(QFile.ReadOnly)  # type: ignore[attr-defined]
-    loader = QUiLoader()
-    widget = loader.load(file)
-    file.close()
-
-
-    if isinstance(widget, QDialog):
-        button_box = widget.findChild(QDialogButtonBox, "buttonBox")
-        if button_box is not None:
-            button_box.accepted.connect(widget.accept)
-            button_box.rejected.connect(widget.reject)
-
-    # Ensure list widget items are selectable
-    for lw in widget.findChildren(QListWidget):
-        for i in range(lw.count()):
-            item = lw.item(i)
-            item.setFlags(
-                item.flags()
-                | Qt.ItemFlag.ItemIsEnabled
-                | Qt.ItemFlag.ItemIsSelectable
-            )
-
-    return widget
 
 
 def load_add_entry_dialog() -> AddEntryDialog:
@@ -77,18 +41,6 @@ def load_add_vehicle_dialog() -> AddVehicleDialog:
 def load_about_dialog() -> AboutDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเกี่ยวกับโปรแกรม"""
     return AboutDialog()
-
-
-def load_add_maintenance_dialog() -> AddMaintenanceDialog:
-    """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มงานบำรุงรักษา"""
-    return AddMaintenanceDialog()
-
-
-def load_import_csv_dialog() -> ImportCsvDialog:
-    """ตัวช่วยโหลดกล่องโต้ตอบนำเข้าข้อมูลจาก CSV"""
-    return ImportCsvDialog()
-
-
 __all__ = [
     "MainWindow",
     "AddEntryDialog",
@@ -97,10 +49,7 @@ __all__ = [
     "ImportCsvDialog",
     "AboutDialog",
     "asset_path",
-    "load_ui",
     "load_add_entry_dialog",
     "load_add_vehicle_dialog",
     "load_about_dialog",
-    "load_add_maintenance_dialog",
-    "load_import_csv_dialog",
 ]
