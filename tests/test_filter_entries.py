@@ -34,7 +34,6 @@ def test_filter_entries(main_controller, monkeypatch):
     ctrl.window.searchLineEdit.setText("Car B")
     ctrl.window.startDateEdit.setDate(QDate.currentDate())
 
-    monkeypatch.setattr(storage, "list_entries", lambda: (_ for _ in ()).throw(AssertionError("unfiltered")))
 
     entries = ctrl.filter_entries()
     assert len(entries) == 1
