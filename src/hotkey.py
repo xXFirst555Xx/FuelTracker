@@ -3,8 +3,10 @@ from __future__ import annotations
 from PySide6.QtCore import QObject, Signal
 from typing import Any
 
+kb_module: Any
 try:
-    import keyboard as kb_module
+    import keyboard as kb
+    kb_module = kb
 except Exception:  # pragma: no cover - optional dependency
     kb_module = None
 
