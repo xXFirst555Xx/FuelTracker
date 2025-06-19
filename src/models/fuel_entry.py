@@ -20,3 +20,27 @@ class FuelEntry(SQLModel, table=True):
     amount_spent: Optional[float] = None
     #: Liters filled. Must be provided together with ``amount_spent``.
     liters: Optional[float] = None
+
+    def calc_metrics(self) -> dict[str, Optional[float]]:
+        """Return basic calculated metrics for this entry."""
+        distance = 0.0
+        if self.odo_after is not None:
+            distance = self.odo_after - self.odo_before
+
+        cost_per_km: Optional[float]
+        if distance > 0 and self.amount_spent is not None:
+            cost_per_km = self.amount_spent / distance
+        else:
+            cost_per_km = None
+
+        fuel_eff: Optional[float]
+        if self.liters and self.liters > 0 and distance > 0:
+            fuel_eff = distance / self.liters
+        else:
+            fuel_eff = None
+
+        return {
+            "distance": distance,
+            "cost_per_km": cost_per_km,
+            "fuel_efficiency_km_l": fuel_eff,
+        }
