@@ -81,4 +81,5 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
 
     ctrl = MainController()
     yield ctrl
+    ctrl.window.close()  # ADDED: ensure Qt window cleanup
     ctrl.cleanup()
