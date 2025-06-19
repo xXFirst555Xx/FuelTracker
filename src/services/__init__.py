@@ -4,7 +4,6 @@ from .report_service import ReportService
 from .storage_service import StorageService
 from .exporter import Exporter
 from .importer import Importer
-from .charts import monthly_summary
 from .oil_service import fetch_latest, get_price
 from .theme_manager import ThemeManager
 from .tray_icon_manager import TrayIconManager
@@ -14,7 +13,6 @@ __all__ = [
     "StorageService",
     "Exporter",
     "Importer",
-    "monthly_summary",
     "fetch_latest",
     "get_price",
     "ThemeManager",

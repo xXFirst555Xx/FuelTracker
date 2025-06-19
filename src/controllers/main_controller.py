@@ -44,7 +44,7 @@ from PySide6.QtCore import (
 )
 from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QSystemTrayIcon
 
 from typing import TYPE_CHECKING, Any, cast
 
@@ -272,6 +272,11 @@ class MainController(QObject):
         self.refresh_vehicle_list()
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.dashboardPage)
+
+    @property
+    def tray_icon(self) -> QSystemTrayIcon:
+        """Return the underlying system tray icon."""
+        return self.tray_manager.tray_icon
 
     def _connect_signals(self) -> None:
         w = self.window
