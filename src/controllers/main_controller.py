@@ -254,8 +254,8 @@ class MainController(QObject):
         if app:
             app.aboutToQuit.connect(self.cleanup)
             app.aboutToQuit.connect(self.shutdown)
-            if hasattr(app, "paletteChanged"):
-                app.paletteChanged.connect(self._on_palette_changed)
+            if self.theme_manager is not None:
+                self.theme_manager.palette_changed.connect(self._on_palette_changed)
         self.entry_changed.connect(self._update_stats_panel)
         self.entry_changed.connect(self._refresh_maintenance_panel)
         self._setup_style()
