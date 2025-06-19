@@ -28,12 +28,7 @@
 ## การติดตั้ง
 
 ```bash
-python -m venv .venv
-pip install -r requirements.txt
-pip install -e .
-# หากรันบน Linux (Debian/Ubuntu) ติดตั้งไลบรารีนี้เพื่อให้การทดสอบ PySide6 ทำงานได้
-sudo apt-get install -y libegl1
-# หากรันบน Windows ไม่ต้องติดตั้งแพ็กเกจเสริม
+pip install -e .[dev]
 ```
 
 ## Using Poe the Poet
