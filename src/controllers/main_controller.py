@@ -1223,6 +1223,13 @@ class MainController(QObject):
         self._unregister_hotkey()
         self.executor.shutdown(wait=False)
 
+    def __del__(self) -> None:  # pragma: no cover - defensive
+        """Ensure resources are released if cleanup was not called."""
+        try:
+            self.cleanup()
+        except Exception:
+            pass
+
     def shutdown(self) -> None:
         backup = self.storage.auto_backup()
         if self.sync_enabled and self.cloud_path is not None:

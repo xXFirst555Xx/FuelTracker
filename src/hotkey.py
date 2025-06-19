@@ -81,6 +81,14 @@ class GlobalHotkey(QObject):
             self._registered = False
             self._stopping = False
 
+    def __del__(self) -> None:  # pragma: no cover - defensive
+        """Ensure any system hooks are released on object deletion."""
+        try:
+            self.stop()
+        except Exception:
+            # Avoid spurious errors during interpreter shutdown
+            pass
+
     @staticmethod
     def _format(seq: str) -> str:
         """Normalize Qt style hotkey string to keyboard module format."""
