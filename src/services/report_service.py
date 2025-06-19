@@ -156,7 +156,7 @@ class ReportService:
             ax1.legend()
             fig.tight_layout()
             chart_file = path.with_suffix(".png")
-            fig.savefig(chart_file)
+            fig.savefig(str(chart_file))
             plt.close(fig)
         else:
             chart_file = None

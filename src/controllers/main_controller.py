@@ -71,7 +71,7 @@ import logging
 import os
 import sys
 from datetime import timedelta, datetime
-import requests  # type: ignore[import-untyped]
+import requests
 
 from ..settings import Settings
 
@@ -149,7 +149,7 @@ class OilPricesDock(QDockWidget):
         self.table.setHorizontalHeaderLabels(["วันที่", "ประเภทเชื้อเพลิง", "ราคา"])
         self.figure = Figure(figsize=(4, 3))
         # ``FigureCanvasQTAgg`` comes from ``matplotlib`` which is not fully typed
-        self.canvas = FigureCanvasQTAgg(self.figure)  # type: ignore[no-untyped-call]
+        self.canvas = FigureCanvasQTAgg(self.figure)
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(self.table)
