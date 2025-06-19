@@ -128,7 +128,7 @@ def test_prefill_odometer(main_controller, monkeypatch):
 
     def fake_exec():
         assert float(dialog.odoBeforeEdit.text()) == 500.0
-        assert float(dialog.odoAfterEdit.text()) == 500.0
+        assert not dialog.odoAfterEdit.isEnabled()
         return QDialog.Rejected
 
     monkeypatch.setattr(dialog, "exec", fake_exec)

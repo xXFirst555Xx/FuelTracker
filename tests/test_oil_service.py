@@ -76,14 +76,13 @@ def test_autofill_liters(main_controller, monkeypatch):
     )
 
     def fake_exec():
-        dialog.amountEdit.setText("100")
-        dialog.amountEdit.editingFinished.emit()
         return QDialog.Rejected
 
     monkeypatch.setattr(dialog, "exec", fake_exec)
 
     ctrl.open_add_entry_dialog()
-    assert dialog.litersEdit.text() == "2.00"
+    assert not dialog.litersEdit.isEnabled()
+    assert not dialog.odoAfterEdit.isEnabled()
 
 
 def test_price_update_handles_error(main_controller, monkeypatch):

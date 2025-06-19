@@ -21,7 +21,7 @@ def test_invalid_odometer(tmp_path):
         storage.add_entry(entry)
 
 
-def test_incomplete_pair(tmp_path):
+def test_liters_requires_amount(tmp_path):
     storage = StorageService(db_path=tmp_path / "fuel.db")
     storage.add_vehicle(
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
@@ -31,8 +31,8 @@ def test_incomplete_pair(tmp_path):
         vehicle_id=1,
         odo_before=0.0,
         odo_after=50.0,
-        amount_spent=20.0,
-        liters=None,
+        amount_spent=None,
+        liters=5.0,
     )
     with pytest.raises(ValueError):
         storage.add_entry(entry)

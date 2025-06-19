@@ -6,6 +6,7 @@ from typing import List, Optional, Any, Callable, cast
 import os
 import shutil
 from getpass import getpass
+from decimal import Decimal
 
 from ..settings import Settings
 
@@ -24,6 +25,7 @@ from sqlalchemy import func, or_
 
 from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
+from .oil_service import get_price
 
 
 def _is_plain_sqlite(path: Path) -> bool:
@@ -139,11 +141,11 @@ class StorageService:
                 )
 
     def add_entry(self, entry: FuelEntry) -> None:
+        """Add a new refuel entry and update the previous pending one."""
         validate_entry(entry)
         with Session(self.engine) as session:
-            # If there is an older entry for the same vehicle without
-            # ``odo_after`` set, fill it with the new ``odo_before`` value.
-            statement = (
+            # Find the most recent entry for this vehicle without an ``odo_after``.
+            stmt = (
                 select(FuelEntry)
                 .where(
                     FuelEntry.vehicle_id == entry.vehicle_id,
@@ -151,9 +153,19 @@ class StorageService:
                 )
                 .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
             )
-            prev = session.exec(statement).first()
+            prev = session.exec(stmt).first()
             if prev is not None:
                 prev.odo_after = entry.odo_before
+                # Auto-calculate liters for the previous entry if possible
+                if prev.amount_spent is not None and prev.liters is None:
+                    price = get_price(
+                        session,
+                        prev.fuel_type or "e20",
+                        "ptt",
+                        prev.entry_date,
+                    )
+                    if price is not None:
+                        prev.liters = Decimal(str(prev.amount_spent)) / price
                 session.add(prev)
 
             session.add(entry)
