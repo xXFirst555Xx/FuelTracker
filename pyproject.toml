@@ -49,9 +49,15 @@ _mypy = { cmd = "mypy src/ --strict", help = "Run mypy type checking" }
 _vulture = { cmd = "vulture src .vulture-whitelist.py", help = "Detect dead code" }
 
 lint = { sequence = ["_ruff", "_mypy", "_vulture"], help = "Run all linters" }
-migrate = { cmd = "python -m fueltracker migrate", help = "Run database migrations" }
-test = { cmd = "pytest -q", deps = ["migrate"], help = "Run test suite" }
-runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen" }, help = "Run app in headless mode" }
+migrate = { cmd = "python -m fueltracker migrate", env = { PYTHONPATH = "src" }, help = "Run database migrations" }
+test = { cmd = "pytest -q", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite" }
+runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen", PYTHONPATH = "src" }, help = "Run app in headless mode" }
 build = { cmd = "pyinstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build standalone executable" }
 validate = { sequence = ["lint", "test"], help = "Run linters then tests" }
 report = { sequence = ["lint", "test", "runtime-check"], help = "Run all checks" }
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
