@@ -38,7 +38,7 @@ pip install -e .
 ติดตั้ง `Poe the Poet` เพื่อจัดการงานต่าง ๆ ภายในโปรเจ็กต์ได้ด้วย
 
 ```bash
-pip install poe-the-poet
+pip install poethepoet
 ```
 
 หรือใช้ตัวเลือกสำหรับนักพัฒนา
