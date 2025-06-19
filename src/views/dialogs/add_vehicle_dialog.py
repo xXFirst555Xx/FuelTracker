@@ -7,3 +7,5 @@ class AddVehicleDialog(QDialog, Ui_AddVehicleDialog):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         cast(Callable[[QDialog], None], self.setupUi)(self)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
