@@ -60,3 +60,13 @@ def test_start_stop(monkeypatch):
     assert triggered == [True]
     gh.stop()
     assert calls["listener_stop"] == 1
+
+def test_hotkey_returns_int(monkeypatch):
+    gh = GlobalHotkey("Ctrl+Shift+N")
+    called = []
+    gh.triggered.connect(lambda: called.append(True))
+    assert gh._callback_adapter() == 1
+    assert called == [True]
+    called.clear()
+    assert gh._wrapped_callback() == 1
+    assert called == [True]
