@@ -854,8 +854,10 @@ class MainController(QObject):
             vid = dialog.vehicleComboBox.currentData()
             if vid is None:
                 return
-            repo = FuelEntryRepository(self.storage.engine)
-            last = repo.last_entry(vid)
+            # Use ``StorageService`` helper to fetch the latest entry.
+            # This avoids subtle issues with stale sessions during tests and
+            # keeps the logic in one place.
+            last = self.storage.get_last_entry(vid)
             if last is not None and last.odo_after is not None:
                 dialog.odoBeforeEdit.setText(str(last.odo_after))
                 dialog.odoAfterEdit.setText(str(last.odo_after))
@@ -1118,9 +1120,14 @@ class MainController(QObject):
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
                         if isValid(self.controller):
+                            # ``invokeMethod`` expects the member name as a
+                            # Python ``str`` in newer PySide versions. Using a
+                            # ``bytes`` object causes a ``ValueError`` which in
+                            # turn fails the test suite.  Cast to ``Any`` is
+                            # kept for mypy compatibility.
                             cast(Any, QMetaObject).invokeMethod(
                                 self.controller,
-                                b"_load_prices",
+                                "_load_prices",
                                 Qt.ConnectionType.QueuedConnection,
                             )
                 except requests.RequestException as exc:  # pragma: no cover - network
