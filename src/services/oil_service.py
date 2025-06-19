@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Any, Dict, Optional, cast
 
-import requests  # type: ignore[import-untyped]
+import requests
 from sqlmodel import Session, select
 
 from ..models import FuelPrice
