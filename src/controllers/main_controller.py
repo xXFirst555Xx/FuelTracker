@@ -156,7 +156,7 @@ class OilPricesDock(QDockWidget):
         self.table.setHorizontalHeaderLabels(["วันที่", "ประเภทเชื้อเพลิง", "ราคา"])
         self.figure = Figure(figsize=(4, 3))
         # ``FigureCanvasQTAgg`` comes from ``matplotlib`` which is not fully typed
-        self.canvas = FigureCanvasQTAgg(self.figure)
+        self.canvas = FigureCanvasQTAgg(self.figure)  # type: ignore[no-untyped-call]
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(self.table)

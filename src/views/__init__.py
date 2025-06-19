@@ -64,29 +64,29 @@ def load_ui(name: str) -> QWidget:
     return widget
 
 
-def load_add_entry_dialog() -> QDialog:
+def load_add_entry_dialog() -> AddEntryDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มข้อมูลการเติมน้ำมัน"""
-    return cast(QDialog, load_ui("dialogs/add_entry_dialog"))
+    return cast(AddEntryDialog, load_ui("dialogs/add_entry_dialog"))
 
 
-def load_add_vehicle_dialog() -> QDialog:
+def load_add_vehicle_dialog() -> AddVehicleDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มยานพาหนะ"""
-    return cast(QDialog, load_ui("dialogs/add_vehicle_dialog"))
+    return cast(AddVehicleDialog, load_ui("dialogs/add_vehicle_dialog"))
 
 
-def load_about_dialog() -> QDialog:
+def load_about_dialog() -> AboutDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเกี่ยวกับโปรแกรม"""
-    return cast(QDialog, load_ui("dialogs/about_dialog"))
+    return cast(AboutDialog, load_ui("dialogs/about_dialog"))
 
 
-def load_add_maintenance_dialog() -> QDialog:
+def load_add_maintenance_dialog() -> AddMaintenanceDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มงานบำรุงรักษา"""
-    return cast(QDialog, load_ui("dialogs/add_maintenance_dialog"))
+    return cast(AddMaintenanceDialog, load_ui("dialogs/add_maintenance_dialog"))
 
 
-def load_import_csv_dialog() -> QDialog:
+def load_import_csv_dialog() -> ImportCsvDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบนำเข้าข้อมูลจาก CSV"""
-    return cast(QDialog, load_ui("dialogs/import_csv_dialog"))
+    return cast(ImportCsvDialog, load_ui("dialogs/import_csv_dialog"))
 
 
 __all__ = [
