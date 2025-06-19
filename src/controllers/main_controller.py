@@ -100,6 +100,7 @@ from ..views import (
     AboutDialog,
     AddMaintenanceDialog,
     ImportCsvDialog,
+    load_add_entry_dialog,
 )
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
@@ -730,7 +731,8 @@ class MainController(QObject):
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
-        dialog = AddEntryDialog(self.window)
+        dialog = load_add_entry_dialog()
+        dialog.setParent(self.window)
         today = date.today()
         dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoBeforeEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
