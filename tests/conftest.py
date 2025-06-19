@@ -72,6 +72,13 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
 
     engine = migrated_db_session.get_bind()
 
+    # Avoid registering system-wide hotkeys during tests. On Windows, callbacks
+    # from the ``keyboard`` module must return an ``int``; if the handler is not
+    # set up correctly a ``TypeError`` like ``WPARAM is simple, so must be an
+    # int object`` can occur.  Disabling the backend here prevents such errors
+    # in environments where the ``keyboard`` package is available.
+    monkeypatch.setattr("src.hotkey.keyboard", None, raising=False)
+
     def _storage_service(*_args, **_kwargs):
         return StorageService(engine=engine)
 
@@ -82,5 +89,5 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
     ctrl = MainController()
     yield ctrl
     # ADDED: Ensure the window is closed after each test to trigger proper cleanup
-    ctrl.window.close() 
+    ctrl.window.close()
     ctrl.cleanup()
