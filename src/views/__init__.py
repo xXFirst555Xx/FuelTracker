@@ -5,7 +5,7 @@ import sys
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QWidget, QDialog, QDialogButtonBox, QListWidget
 from PySide6.QtCore import QFile, QDir, Qt
-from typing import cast
+
 
 from .main_window import MainWindow
 from .dialogs import (
@@ -64,29 +64,29 @@ def load_ui(name: str) -> QWidget:
     return widget
 
 
-def load_add_entry_dialog() -> QDialog:
+def load_add_entry_dialog() -> AddEntryDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มข้อมูลการเติมน้ำมัน"""
-    return cast(QDialog, load_ui("dialogs/add_entry_dialog"))
+    return AddEntryDialog()
 
 
-def load_add_vehicle_dialog() -> QDialog:
+def load_add_vehicle_dialog() -> AddVehicleDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มยานพาหนะ"""
-    return cast(QDialog, load_ui("dialogs/add_vehicle_dialog"))
+    return AddVehicleDialog()
 
 
-def load_about_dialog() -> QDialog:
+def load_about_dialog() -> AboutDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเกี่ยวกับโปรแกรม"""
-    return cast(QDialog, load_ui("dialogs/about_dialog"))
+    return AboutDialog()
 
 
-def load_add_maintenance_dialog() -> QDialog:
+def load_add_maintenance_dialog() -> AddMaintenanceDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มงานบำรุงรักษา"""
-    return cast(QDialog, load_ui("dialogs/add_maintenance_dialog"))
+    return AddMaintenanceDialog()
 
 
-def load_import_csv_dialog() -> QDialog:
+def load_import_csv_dialog() -> ImportCsvDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบนำเข้าข้อมูลจาก CSV"""
-    return cast(QDialog, load_ui("dialogs/import_csv_dialog"))
+    return ImportCsvDialog()
 
 
 __all__ = [
