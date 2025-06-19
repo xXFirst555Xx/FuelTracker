@@ -22,14 +22,20 @@ class GlobalHotkey(QObject):
         self.sequence = sequence
         self._registered = False
         self._listener: Any | None = None
+        # Guard flag used during shutdown to avoid race conditions when the
+        # backend fires callbacks as we are tearing down.
+        self._stopping = False
 
     def _wrapped_callback(self) -> int:
-        """Emit the hotkey signal and return a value understood by Windows."""
+        """Emit the hotkey signal and return ``1`` for Win32 hooks."""
+        if self._stopping:
+            # Ignore callbacks that may fire while the listener is shutting down
+            return 1
         try:
             self.triggered.emit()
         except Exception as e:  # pragma: no cover - defensive
             print("Hotkey error:", e)
-        return 1  # FIX: must return an int to avoid WPARAM errors on Windows
+        return 1  # Must return int to avoid WPARAM errors on Windows
 
     def start(self) -> None:
         if keyboard is None or self._registered:
@@ -51,14 +57,29 @@ class GlobalHotkey(QObject):
         self._registered = True
 
     def stop(self) -> None:
-        if keyboard is not None and self._registered:
+        if keyboard is None or not self._registered:
+            return
+
+        self._stopping = True
+        try:
             if hasattr(keyboard, "GlobalHotKeys"):
                 if self._listener is not None:
-                    self._listener.stop()
-                    self._listener = None
+                    try:
+                        self._listener.stop()
+                        if hasattr(self._listener, "join"):
+                            self._listener.join(timeout=1.0)
+                    finally:
+                        self._listener = None
             else:
-                keyboard.remove_hotkey(self._format(self.sequence))
+                try:
+                    keyboard.remove_hotkey(self._format(self.sequence))
+                except Exception:
+                    pass
+        except Exception as e:  # pragma: no cover - defensive
+            print("Hotkey stop error:", e)
+        finally:
             self._registered = False
+            self._stopping = False
 
     @staticmethod
     def _format(seq: str) -> str:
