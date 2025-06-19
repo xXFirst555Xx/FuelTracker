@@ -64,9 +64,9 @@ def load_ui(name: str) -> QWidget:
     return widget
 
 
-def load_add_entry_dialog() -> QDialog:
+def load_add_entry_dialog() -> AddEntryDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มข้อมูลการเติมน้ำมัน"""
-    return cast(QDialog, load_ui("dialogs/add_entry_dialog"))
+    return AddEntryDialog()
 
 
 def load_add_vehicle_dialog() -> QDialog:
