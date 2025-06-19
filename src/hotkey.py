@@ -27,8 +27,12 @@ class GlobalHotkey(QObject):
         self._stopping = False
 
     def _callback_adapter(self, *args: object) -> int:
-        """Invoke ``_wrapped_callback`` and return ``1`` for Win32 hooks."""
-        self._wrapped_callback(*args)
+        """Invoke ``_wrapped_callback`` and always return ``1`` for Win32 hooks."""
+        try:
+            self._wrapped_callback(*args)
+        except Exception as exc:  # pragma: no cover - defensive
+            # Ensure an integer is always returned to satisfy Windows hooks
+            print("Hotkey adapter error:", exc)
         return 1  # Must return int to avoid WPARAM errors on Windows
 
     def _wrapped_callback(self, *args: object) -> int:
