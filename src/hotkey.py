@@ -23,13 +23,13 @@ class GlobalHotkey(QObject):
         self._registered = False
         self._listener: Any | None = None
 
-    # FIX: return int to avoid WPARAM crash
     def _wrapped_callback(self) -> int:
+        """Emit the hotkey signal and return a value understood by Windows."""
         try:
             self.triggered.emit()
         except Exception as e:  # pragma: no cover - defensive
             print("Hotkey error:", e)
-        return 1
+        return 1  # FIX: must return an int to avoid WPARAM errors on Windows
 
     def start(self) -> None:
         if keyboard is None or self._registered:
