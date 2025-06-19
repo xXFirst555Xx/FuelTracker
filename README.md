@@ -39,12 +39,6 @@ pip install -e .[dev]
 pip install poethepoet
 ```
 
-หรือใช้ตัวเลือกสำหรับนักพัฒนา
-
-```bash
-pip install -e .[dev]
-```
-
 งานที่มีให้ใช้งานประกอบด้วย
 
 - `poe lint` - รัน `ruff`, `mypy` และ `vulture` เพื่อตรวจสอบคุณภาพโค้ด
