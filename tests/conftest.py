@@ -45,6 +45,11 @@ def migrated_db_session():
     command.upgrade(cfg, "head")
     with Session(engine) as session:
         yield session
+    # Clear data after each test to avoid cross-test contamination
+    with Session(engine) as cleanup:
+        for table in reversed(SQLModel.metadata.sorted_tables):
+            cleanup.execute(table.delete())
+        cleanup.commit()
     keeper.close()
     engine.dispose()
 

@@ -71,6 +71,13 @@ def run(argv: list[str] | None = None) -> None:
 
     global _controller
     _controller = MainController()
+    # When running in check mode we only want to verify that the UI can
+    # be constructed. The oil price fetcher normally starts when the
+    # window is first shown which requires migrated tables.  Disable the
+    # automatic update timer to avoid touching the database before the
+    # tests upgrade it.
+    if args.check:
+        _controller._price_timer_started = True
     window = _controller.window
     # ----------------------------------------------------------
     if args.check:
