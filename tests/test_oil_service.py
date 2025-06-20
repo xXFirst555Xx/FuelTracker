@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from src.services import oil_service
 
 from src.services.oil_service import fetch_latest
-from src.models import FuelPrice, Vehicle
+from src.models import FuelPrice, Vehicle, FuelEntry
 from src.controllers.main_controller import MainController
 from src.views import load_add_entry_dialog
 
@@ -197,3 +197,27 @@ def test_fetch_latest_calls_purge(monkeypatch, in_memory_storage):
     with Session(in_memory_storage.engine) as s:
         fetch_latest(s)
     assert called_purge["days"] is None  # fetch_latest passes None so helper reads env
+
+
+def test_fetch_latest_updates_missing_liters(monkeypatch, in_memory_storage):
+    monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
+    with Session(in_memory_storage.engine) as s:
+        s.add(
+            Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+        )
+        s.commit()
+        entry = FuelEntry(
+            entry_date=date(2024, 6, 1),
+            vehicle_id=1,
+            fuel_type="e20",
+            odo_before=0.0,
+            odo_after=10.0,
+            amount_spent=88.0,
+            liters=None,
+        )
+        s.add(entry)
+        s.commit()
+        fetch_latest(s)
+        updated = s.get(FuelEntry, entry.id)
+        assert updated is not None
+        assert updated.liters == pytest.approx(2.0)
