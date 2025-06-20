@@ -4,6 +4,7 @@ from datetime import date
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
+from sqlalchemy import Index
 
 
 class FuelEntry(SQLModel, table=True):
@@ -20,6 +21,11 @@ class FuelEntry(SQLModel, table=True):
     amount_spent: Optional[float] = None
     #: Liters filled. Must be provided together with ``amount_spent``.
     liters: Optional[float] = None
+
+    __table_args__ = (
+        Index("ix_fuelentry_vehicle_id", "vehicle_id"),
+        Index("ix_fuelentry_entry_date", "entry_date"),
+    )
 
     def calc_metrics(self) -> dict[str, Optional[float]]:
         """Return basic calculated metrics for this entry."""
