@@ -8,7 +8,6 @@ from sqlmodel import Session, select
 from src.services import oil_service
 
 from src.services.oil_service import fetch_latest
-import os
 from src.models import FuelPrice, Vehicle
 from src.controllers.main_controller import MainController
 from src.views import load_add_entry_dialog
