@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QObject, Signal, Qt
 
 
-
 class _ThemeArgs(TypedDict, total=False):
     theme_override: Optional[str]
     env_theme: Optional[str]
@@ -24,6 +23,7 @@ class ThemeManager(QObject):
         super().__init__()
         self.app = app
         self._last_args: _ThemeArgs = {}
+        self._qss_cache: dict[str, str] = {}
         if hasattr(app, "paletteChanged"):
             app.paletteChanged.connect(self._on_palette_changed)
 
@@ -72,11 +72,13 @@ class ThemeManager(QObject):
             return
 
         try:
-            qss_path = (
-                Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
-            )
-            with qss_path.open("r", encoding="utf-8") as fh:
-                self.app.setStyleSheet(fh.read())
+            if theme not in self._qss_cache:
+                qss_path = (
+                    Path(__file__).resolve().parents[2] / "assets" / "qss" / qss_file
+                )
+                with qss_path.open("r", encoding="utf-8") as fh:
+                    self._qss_cache[theme] = fh.read()
+            self.app.setStyleSheet(self._qss_cache[theme])
         except OSError:
             pass
 
