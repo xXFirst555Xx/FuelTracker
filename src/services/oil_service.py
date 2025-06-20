@@ -9,7 +9,7 @@ import requests
 from sqlmodel import Session, select
 from sqlalchemy import delete
 
-from ..models import FuelPrice
+from ..models import FuelPrice, FuelEntry
 
 # Reusable HTTP session for API requests
 _HTTP_SESSION = requests.Session()
@@ -87,6 +87,29 @@ def purge_old_prices(session: Session, days: int | None = None) -> None:
     session.commit()
 
 
+def update_missing_liters(session: Session, station: str = "ptt") -> None:
+    """Fill :class:`FuelEntry.liters` for rows missing the value."""
+
+    stmt = select(FuelEntry).where(
+        cast(Any, FuelEntry.liters).is_(None),
+        cast(Any, FuelEntry.amount_spent).is_not(None),
+    )
+    entries = session.exec(stmt).all()
+
+    for entry in entries:
+        price = get_price(
+            session,
+            entry.fuel_type or "e20",
+            station,
+            entry.entry_date,
+        )
+        if price is None or entry.amount_spent is None:
+            continue
+        entry.liters = Decimal(str(entry.amount_spent)) / price
+        session.add(entry)
+    session.commit()
+
+
 def fetch_latest(
     session: Session,
     station: str = "ptt",
@@ -106,6 +129,7 @@ def fetch_latest(
     day = _parse_thai_date(thai_date)
     stations = data["response"]["stations"]
     _parse_prices(stations, day, session)
+    update_missing_liters(session, station)
     purge_old_prices(session)
 
 
