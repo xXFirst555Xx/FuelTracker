@@ -920,9 +920,27 @@ class MainController(QObject):
         self._refresh_maintenance_panel()
 
     def export_report(self) -> None:
-        out_csv = Path("report.csv")
-        out_pdf = Path("report.pdf")
         today = date.today()
+        csv_path_str, _ = QFileDialog.getSaveFileName(
+            self.window,
+            self.tr("เลือกที่บันทึกไฟล์ CSV"),
+            "report.csv",
+            "CSV Files (*.csv)",
+        )
+        if not csv_path_str:
+            return
+
+        pdf_path_str, _ = QFileDialog.getSaveFileName(
+            self.window,
+            self.tr("เลือกที่บันทึกไฟล์ PDF"),
+            "report.pdf",
+            "PDF Files (*.pdf)",
+        )
+        if not pdf_path_str:
+            return
+
+        out_csv = Path(csv_path_str)
+        out_pdf = Path(pdf_path_str)
 
         def job() -> None:
             self.exporter.monthly_csv(today.month, today.year, out_csv)

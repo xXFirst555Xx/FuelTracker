@@ -1,19 +1,25 @@
 import time
 from types import MethodType
-from PySide6.QtWidgets import QMessageBox
+from pathlib import Path
+from PySide6.QtWidgets import QMessageBox, QFileDialog
 
 
-def test_export_report_runs_async(qtbot, main_controller, monkeypatch):
+def test_export_report_runs_async(qtbot, main_controller, tmp_path, monkeypatch):
     ctrl = main_controller
     qtbot.addWidget(ctrl.window)
 
     # Prevent the QMessageBox connected to the signal from blocking the test
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: None)
 
+    csv_path = tmp_path / "out.csv"
+    pdf_path = tmp_path / "out.pdf"
+
     def slow_csv(self, month, year, path):
+        assert Path(path) == csv_path
         time.sleep(0.2)
 
     def slow_pdf(self, month, year, path):
+        assert Path(path) == pdf_path
         time.sleep(0.2)
 
     monkeypatch.setattr(
@@ -22,6 +28,17 @@ def test_export_report_runs_async(qtbot, main_controller, monkeypatch):
     monkeypatch.setattr(
         ctrl.exporter, "monthly_pdf", MethodType(slow_pdf, ctrl.exporter)
     )
+
+    calls = []
+
+    def fake_get_save_file_name(*_a, **_k):
+        if not calls:
+            calls.append("csv")
+            return str(csv_path), ""
+        calls.append("pdf")
+        return str(pdf_path), ""
+
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", fake_get_save_file_name)
 
     start = time.monotonic()
     ctrl.export_report()
