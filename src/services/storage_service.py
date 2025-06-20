@@ -498,6 +498,7 @@ class StorageService:
         now: datetime | None = None,
         backup_dir: Path | None = None,
         encrypted: bool = False,
+        max_backups: int = 30,
     ) -> Path:
         """คัดลอกไฟล์ฐานข้อมูลไปยังที่สำรองโดยมีเวลาในชื่อไฟล์
 
@@ -507,6 +508,8 @@ class StorageService:
         ----------
         encrypted:
             ถ้า ``True`` และมี SQLCipher จะเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเดียวกัน
+        max_backups:
+            จำนวนไฟล์สำรองสูงสุดที่จะเก็บไว้ก่อนลบของเก่า ค่าเริ่มต้น ``30``
         """
 
         if self._db_path is None:
@@ -529,8 +532,8 @@ class StorageService:
 
         backups = [p for p in backup_dir.glob("*.db") if p != self._db_path]
         backups.sort()
-        if len(backups) > 30:
-            for old in backups[: len(backups) - 30]:
+        if len(backups) > max_backups:
+            for old in backups[: len(backups) - max_backups]:
                 old.unlink()
 
         return backup_path
