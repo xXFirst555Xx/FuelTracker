@@ -1,4 +1,5 @@
 # FuelTracker
+[![Dependabot alerts](https://img.shields.io/badge/dependabot-enabled-brightgreen?logo=dependabot)](../../security/dependabot)
 
 โปรแกรมตัวอย่างแสดงโครงสร้าง MVC สำหรับบันทึกการใช้น้ำมัน
 
