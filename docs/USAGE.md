@@ -20,3 +20,8 @@
 `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` โปรแกรมจะเปิดแบบย่อ
 ทันทีเมื่อล็อกอิน หากกำหนด `start_minimized` เป็น `true` ในไฟล์ตั้งค่า
 หน้าต่างจะถูกซ่อนหลังสร้างขึ้น
+
+## การจัดเรียงฐานข้อมูล
+`StorageService` จะเรียกคำสั่ง `VACUUM` อัตโนมัติหลังเพิ่มรายการด้วย
+`add_entry` ครบ 100 ครั้ง เพื่อลดขนาดไฟล์ฐานข้อมูล
+(ปรับได้ด้วย `StorageService(vacuum_threshold=n)`)

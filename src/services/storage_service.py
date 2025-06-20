@@ -89,6 +89,7 @@ class StorageService:
         db_path: str | Path = "fuel.db",
         engine: Engine | None = None,
         password: str | None = None,
+        vacuum_threshold: int = 100,
     ) -> None:
         """เริ่มต้นบริการจัดเก็บข้อมูล
 
@@ -98,7 +99,13 @@ class StorageService:
             เส้นทางไปยังไฟล์ฐานข้อมูล SQLite ไม่ใช้ถ้ากำหนด ``engine``
         engine: Engine | None
             ออบเจ็กต์ Engine ที่เตรียมไว้ (ไม่บังคับ)
+        vacuum_threshold:
+            เรียก :meth:`vacuum` หลังจากเพิ่มข้อมูลด้วย :meth:`add_entry`
+            ครบจำนวนครั้งที่กำหนด ค่าเริ่มต้น ``100``
         """
+
+        self._vacuum_threshold = vacuum_threshold
+        self._entry_counter = 0
 
         if engine is not None:
             self.engine = engine
@@ -173,6 +180,11 @@ class StorageService:
             session.flush()
             if entry.id is not None:
                 session.refresh(entry)
+
+        self._entry_counter += 1
+        if self._entry_counter >= self._vacuum_threshold:
+            self.vacuum()
+            self._entry_counter = 0
 
     def add_vehicle(self, vehicle: Vehicle) -> None:
         with Session(self.engine) as session:
@@ -543,3 +555,8 @@ class StorageService:
         cloud_dir.mkdir(parents=True, exist_ok=True)
         for file in backup_dir.glob("*.db"):
             shutil.copy2(file, cloud_dir / file.name)
+
+    def vacuum(self) -> None:
+        """ลดขนาดฐานข้อมูลด้วยคำสั่ง ``VACUUM``."""
+        with self.engine.connect() as conn:
+            conn.exec_driver_sql("VACUUM")
