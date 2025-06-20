@@ -1,14 +1,17 @@
 from datetime import datetime, timedelta
 
-from src.services import StorageService
-from src.controllers.main_controller import MainController
-from sqlmodel import SQLModel, create_engine
-from sqlalchemy.pool import StaticPool
-from PySide6.QtCore import QTimer
 from pathlib import Path
 from typing import Any
+import gzip
 import sqlite3
+
 import pytest
+from PySide6.QtCore import QTimer
+from sqlmodel import SQLModel, create_engine
+from sqlalchemy.pool import StaticPool
+
+from src.services import StorageService
+from src.controllers.main_controller import MainController
 from src.services.storage_service import _SQLCIPHER_AVAILABLE
 from src.models import Vehicle
 
@@ -51,6 +54,23 @@ def test_encrypted_backup(tmp_path):
         sqlite3.connect(enc).execute("SELECT name FROM sqlite_master").fetchall()
 
 
+def test_compressed_backup(tmp_path):
+    db = tmp_path / "fuel.db"
+    storage = StorageService(db_path=db)
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+
+    gz = storage.auto_backup(backup_dir=tmp_path, compress=True)
+    assert gz.suffix == ".gz"
+    tmp = tmp_path / "unpacked.db"
+    with gzip.open(gz, "rb") as fh:
+        tmp.write_bytes(fh.read())
+
+    with sqlite3.connect(tmp) as conn:
+        conn.execute("SELECT name FROM sqlite_master").fetchall()
+
+
 def test_daily_backup_timer(qapp, tmp_path, monkeypatch):
     engine = create_engine(
         "sqlite:///:memory:",
@@ -81,7 +101,7 @@ def test_daily_backup_timer(qapp, tmp_path, monkeypatch):
 
     monkeypatch.setattr(storage, "auto_backup", fake_backup)
 
-    ctrl = MainController()
+    MainController()
 
     assert count["n"] == 1
     assert calls["ms"] == 86_400_000
