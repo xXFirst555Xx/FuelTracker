@@ -45,6 +45,7 @@ dev = [
     "types-keyboard",
     "types-reportlab",
     "matplotlib-stubs",
+    "PySide6-stubs",
 ]
 
 [project.scripts]
