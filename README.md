@@ -51,6 +51,23 @@ pip install poethepoet
 
 คำสั่งเหล่านี้กำหนดไว้ในไฟล์ `pyproject.toml` สามารถเรียกใช้ได้ตามต้องการ
 
+## Development setup
+
+โปรเจ็กต์นี้ใช้ [pre-commit](https://pre-commit.com/) เพื่อตรวจสอบสไตล์และรันทดสอบโดยอัตโนมัติ
+ติดตั้งและเปิดใช้งานฮุคได้ด้วยคำสั่งต่อไปนี้:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+ฮุคจะรัน `ruff`, `black`, `mypy` และ `pytest` ทุกครั้งที่คอมมิต
+หากต้องการรันทั้งหมดด้วยตนเองให้ใช้:
+
+```bash
+pre-commit run --all-files
+```
+
 ## การแก้ปัญหา
 
 หากทดสอบบน Windows แล้วพบข้อความ `WPARAM is simple, so must be an int` ให้ตรวจสอบว่า
