@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import logging
 import pytest
 from src.models import FuelEntry
 from src.services import ReportService
@@ -48,7 +49,7 @@ def test_calc_overall_stats(in_memory_storage):
     assert stats["cost_per_km"] == pytest.approx(60.0 / 300.0)
 
 
-def test_generate_report_output(capsys, in_memory_storage):
+def test_generate_report_output(caplog, in_memory_storage):
     storage = in_memory_storage
     storage.add_entry(
         FuelEntry(
@@ -61,10 +62,10 @@ def test_generate_report_output(capsys, in_memory_storage):
         )
     )
     service = ReportService(storage)
-    service.generate_report()
-    captured = capsys.readouterr()
-    assert "total_distance" in captured.out
-    assert "avg_consumption" in captured.out
+    with caplog.at_level(logging.INFO):
+        service.generate_report()
+    assert "total_distance" in caplog.text
+    assert "avg_consumption" in caplog.text
 
 
 def test_get_monthly_stats(in_memory_storage):

@@ -12,6 +12,7 @@ import pandas as pd
 from fpdf import FPDF
 import matplotlib
 from io import BytesIO
+import logging
 
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
@@ -22,6 +23,8 @@ from typing import Callable, cast
 from ..models import FuelEntry, Vehicle
 from .storage_service import StorageService
 from ..constants import FUEL_TYPE_TH
+
+logger = logging.getLogger(__name__)
 
 date2num = cast(Callable[[date], float], mdates.date2num)
 
@@ -48,9 +51,9 @@ class ReportService:
 
     def generate_report(self) -> None:
         stats = self.calc_overall_stats()
-        print("Generated report:")
+        logger.info("Generated report:")
         for key, value in stats.items():
-            print(f"{key}: {value}")
+            logger.info("%s: %s", key, value)
 
     # ------------------------------------------------------------------
     # New functionality for exporting monthly reports
