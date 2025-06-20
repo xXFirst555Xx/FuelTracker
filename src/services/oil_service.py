@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 from typing import Any, Dict, Optional, cast
+import os
 
 import requests
 from sqlmodel import Session, select
@@ -65,10 +66,19 @@ def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
     session.commit()
 
 
-def fetch_latest(session: Session, station: str = "ptt") -> None:
-    """ดึงและบันทึกราคาน้ำมันล่าสุดจาก Thai Oil API"""
+def fetch_latest(
+    session: Session,
+    station: str = "ptt",
+    api_base: Optional[str] = None,
+) -> None:
+    """ดึงและบันทึกราคาน้ำมันล่าสุดจาก Thai Oil API
 
-    resp = _HTTP_SESSION.get(f"{API_BASE}/latest", timeout=5)
+    สามารถกำหนดฐาน URL ได้ผ่านพารามิเตอร์ ``api_base``
+    หรือผ่านตัวแปรสภาพแวดล้อม ``OIL_API_BASE``
+    """
+
+    base = api_base or os.getenv("OIL_API_BASE", API_BASE)
+    resp = _HTTP_SESSION.get(f"{base}/latest", timeout=5)
     resp.raise_for_status()
     data = resp.json()
     thai_date = data["response"]["date"]
