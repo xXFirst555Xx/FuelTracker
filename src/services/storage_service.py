@@ -27,6 +27,17 @@ from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
 from .oil_service import get_price
 
+# ---------------------------------------------------------------------------
+# Database table collection
+# ---------------------------------------------------------------------------
+ALL_TABLES = (
+    cast(Any, FuelEntry).__table__,
+    cast(Any, Vehicle).__table__,
+    cast(Any, Budget).__table__,
+    cast(Any, Maintenance).__table__,
+    cast(Any, FuelPrice).__table__,
+)
+
 
 def _is_plain_sqlite(path: Path) -> bool:
     with open(path, "rb") as fh:
@@ -93,16 +104,7 @@ class StorageService:
             self.engine = engine
             self._db_path = Path(engine.url.database) if engine.url.database else None
             self._password = password or ""
-            SQLModel.metadata.create_all(
-                self.engine,
-                tables=[
-                    cast(Any, FuelEntry).__table__,
-                    cast(Any, Vehicle).__table__,
-                    cast(Any, Budget).__table__,
-                    cast(Any, Maintenance).__table__,
-                    cast(Any, FuelPrice).__table__,
-                ],
-            )
+            SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
         else:
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,16 +134,7 @@ class StorageService:
             self._db_path = db_path
 
             if not exists_before:
-                SQLModel.metadata.create_all(
-                    self.engine,
-                    tables=[
-                        cast(Any, FuelEntry).__table__,
-                        cast(Any, Vehicle).__table__,
-                        cast(Any, Budget).__table__,
-                        cast(Any, Maintenance).__table__,
-                        cast(Any, FuelPrice).__table__,
-                    ],
-                )
+                SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
 
     def add_entry(self, entry: FuelEntry) -> None:
         """Add a new refuel entry and update the previous pending one."""
@@ -154,7 +147,10 @@ class StorageService:
                     FuelEntry.vehicle_id == entry.vehicle_id,
                     cast(Any, FuelEntry.odo_after).is_(None),
                 )
-                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
+                .order_by(
+                    cast(Any, FuelEntry.entry_date).desc(),
+                    cast(Any, FuelEntry.id).desc(),
+                )
             )
             prev = session.exec(stmt).first()
             if prev is not None:
@@ -199,12 +195,10 @@ class StorageService:
         with Session(self.engine) as session:
             stmt = select(FuelEntry)
             if text:
-                stmt = (
-                    stmt.join(
-                        Vehicle,
-                        cast(Any, FuelEntry.vehicle_id == Vehicle.id),
-                    ).where(func.lower(Vehicle.name).contains(text.lower()))
-                )
+                stmt = stmt.join(
+                    Vehicle,
+                    cast(Any, FuelEntry.vehicle_id == Vehicle.id),
+                ).where(func.lower(Vehicle.name).contains(text.lower()))
             if start:
                 stmt = stmt.where(FuelEntry.entry_date >= start)
             return list(session.exec(stmt))
@@ -249,7 +243,10 @@ class StorageService:
             stmt = (
                 select(FuelEntry)
                 .where(FuelEntry.vehicle_id == vehicle_id)
-                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
+                .order_by(
+                    cast(Any, FuelEntry.entry_date).desc(),
+                    cast(Any, FuelEntry.id).desc(),
+                )
             )
             return session.exec(stmt).first()
 
@@ -321,7 +318,12 @@ class StorageService:
             res = []
             for m, d, liters_val, amount_val in session.exec(stmt):
                 res.append(
-                    (m, float(d or 0.0), float(liters_val or 0.0), float(amount_val or 0.0))
+                    (
+                        m,
+                        float(d or 0.0),
+                        float(liters_val or 0.0),
+                        float(amount_val or 0.0),
+                    )
                 )
             return res
 
@@ -424,14 +426,22 @@ class StorageService:
             ]
 
             odo_cond = (
-                cast(Any, Maintenance.due_odo).is_not(None)
-                & (cast(Any, Maintenance.due_odo) <= odo)
-            ) if odo is not None else None
+                (
+                    cast(Any, Maintenance.due_odo).is_not(None)
+                    & (cast(Any, Maintenance.due_odo) <= odo)
+                )
+                if odo is not None
+                else None
+            )
 
             date_cond = (
-                cast(Any, Maintenance.due_date).is_not(None)
-                & (cast(Any, Maintenance.due_date) <= date_)
-            ) if date_ is not None else None
+                (
+                    cast(Any, Maintenance.due_date).is_not(None)
+                    & (cast(Any, Maintenance.due_date) <= date_)
+                )
+                if date_ is not None
+                else None
+            )
 
             if odo_cond is not None and date_cond is not None:
                 conditions.append(or_(odo_cond, date_cond))
@@ -469,9 +479,7 @@ class StorageService:
 
     def get_total_spent(self, vehicle_id: int, year: int, month: int) -> float:
         with Session(self.engine) as session:
-            stmt = select(
-                func.sum(FuelEntry.amount_spent)
-            ).where(
+            stmt = select(func.sum(FuelEntry.amount_spent)).where(
                 FuelEntry.vehicle_id == vehicle_id,
                 cast(Any, FuelEntry.entry_date).between(
                     f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
