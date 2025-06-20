@@ -738,7 +738,33 @@ class MainController(QObject):
         # Disable fields managed automatically
         dialog.odoAfterEdit.setEnabled(False)
         dialog.litersEdit.setEnabled(False)
-        dialog.autoFillCheckBox.setEnabled(False)
+
+        def _auto_fill_liters() -> None:
+            """Fill liters field from amount and daily price."""
+            if not dialog.autoFillCheckBox.isChecked():
+                dialog.litersEdit.setEnabled(True)
+                return
+
+            text = dialog.amountEdit.text().strip()
+            try:
+                amount = Decimal(text)
+            except Exception:
+                return
+
+            with Session(self.storage.engine) as session:
+                price = get_price(
+                    session,
+                    DEFAULT_FUEL_TYPE,
+                    self.config.default_station,
+                    dialog.dateEdit.date().toPython(),
+                )
+
+            if price is not None:
+                liters = amount / price
+                dialog.litersEdit.setText(str(liters))
+                dialog.litersEdit.setEnabled(False)
+
+        dialog.amountEdit.editingFinished.connect(_auto_fill_liters)
 
         def _prefill() -> None:
             vid = dialog.vehicleComboBox.currentData()
