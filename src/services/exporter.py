@@ -15,12 +15,7 @@ class Exporter:
         self.storage = storage
 
     def _entries(self, month: int, year: int) -> List[FuelEntry]:
-        entries = self.storage.list_entries()
-        return [
-            e
-            for e in entries
-            if e.entry_date.year == year and e.entry_date.month == month
-        ]
+        return self.storage.list_entries_for_month(year, month)
 
     def monthly_csv(self, month: int, year: int, path: Path) -> None:
         entries = self._entries(month, year)

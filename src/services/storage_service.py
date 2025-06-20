@@ -284,16 +284,17 @@ class StorageService:
             )
 
     def list_entries_for_month(
-        self, vehicle_id: int, year: int, month: int
+        self, year: int, month: int, vehicle_id: int | None = None
     ) -> List[FuelEntry]:
-        """Return entries for a vehicle within the given month."""
+        """Return entries within the given month optionally filtered by vehicle."""
         with Session(self.engine) as session:
             stmt = select(FuelEntry).where(
-                FuelEntry.vehicle_id == vehicle_id,
                 cast(Any, FuelEntry.entry_date).between(
                     f"{year}-{month:02d}-01", f"{year}-{month:02d}-31"
-                ),
+                )
             )
+            if vehicle_id is not None:
+                stmt = stmt.where(FuelEntry.vehicle_id == vehicle_id)
             return list(session.exec(stmt))
 
     def monthly_totals(self) -> list[tuple[str, float, float, float]]:
