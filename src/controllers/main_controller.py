@@ -65,6 +65,7 @@ else:
 
 from pathlib import Path
 import logging
+logger = logging.getLogger(__name__)
 import os
 import sys
 from datetime import datetime
@@ -994,7 +995,7 @@ class MainController(QObject):
                                 Qt.ConnectionType.QueuedConnection,
                             )
                 except requests.RequestException as exc:  # pragma: no cover - network
-                    logging.error("Failed to update oil prices: %s", exc)
+                    logger.error("Failed to update oil prices: %s", exc)
                     if os.name == "nt":
                         try:
                             ToastNotifier().show_toast(
