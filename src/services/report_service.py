@@ -57,7 +57,7 @@ class ReportService:
 
     def _filter_entries(self, month: date, vehicle_id: int) -> List[FuelEntry]:
         """ดึงรายการของยานพาหนะในเดือนที่กำหนด"""
-        return self.storage.list_entries_for_month(vehicle_id, month.year, month.month)
+        return self.storage.list_entries_for_month(month.year, month.month, vehicle_id)
 
     # FIX: mypy clean
     def _monthly_df(self, month: date, vehicle_id: int) -> DataFrame:
