@@ -35,7 +35,7 @@ class AppConfig:
                 hotkey=data.get("hotkey", "Ctrl+Shift+N"),
                 start_minimized=bool(data.get("start_minimized", False)),
             )
-        except Exception:
+        except (OSError, json.JSONDecodeError):
             return cls(theme=Settings().ft_theme)
 
     def save(self, path: Path | None = None) -> None:

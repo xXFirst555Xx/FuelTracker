@@ -67,7 +67,7 @@ from pathlib import Path
 import logging
 import os
 import sys
-from datetime import timedelta, datetime
+from datetime import datetime
 import requests
 
 from ..settings import Settings
@@ -86,8 +86,7 @@ from ..services import (
     ThemeManager,
     TrayIconManager,
 )
-from ..repositories import FuelEntryRepository
-from ..services.oil_service import fetch_latest, get_price
+from ..services.oil_service import fetch_latest
 from ..config import AppConfig
 from .undo_commands import (
     AddEntryCommand,
