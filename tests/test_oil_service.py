@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date, timedelta
 import requests
 
 from PySide6.QtWidgets import QDialog
@@ -39,6 +40,7 @@ SAMPLE = {
 
 
 called: dict[str, str] = {}
+
 
 def fake_get(url: str, timeout: int | None = None):
     called["url"] = url
@@ -122,3 +124,45 @@ def test_price_update_handles_error(main_controller, monkeypatch):
 
     ctrl._schedule_price_update()
     assert called.get("scheduled")
+
+
+def test_purge_old_prices(in_memory_storage):
+    with Session(in_memory_storage.engine) as s:
+        old_day = date.today() - timedelta(days=40)
+        s.add(
+            FuelPrice(
+                date=old_day,
+                station="ptt",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("40"),
+            )
+        )
+        s.add(
+            FuelPrice(
+                date=date.today(),
+                station="ptt",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("41"),
+            )
+        )
+        s.commit()
+        oil_service.purge_old_prices(s, days=30)
+        rows = s.exec(select(FuelPrice)).all()
+        assert len(rows) == 1
+        assert rows[0].date == date.today()
+
+
+def test_fetch_latest_calls_purge(monkeypatch, in_memory_storage):
+    monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
+    called_purge = {}
+
+    def fake_purge(session, days=None):
+        called_purge["days"] = days
+
+    monkeypatch.setattr(oil_service, "purge_old_prices", fake_purge)
+    monkeypatch.setenv("OIL_PRICE_RETENTION_DAYS", "15")
+    with Session(in_memory_storage.engine) as s:
+        fetch_latest(s)
+    assert called_purge["days"] is None  # fetch_latest passes None so helper reads env

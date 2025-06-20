@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Dict, Optional, cast
 import os
 
 import requests
 from sqlmodel import Session, select
+from sqlalchemy import delete
 
 from ..models import FuelPrice
 
@@ -14,6 +15,7 @@ from ..models import FuelPrice
 _HTTP_SESSION = requests.Session()
 
 API_BASE = "https://api.chnwt.dev/thai-oil-api"
+DEFAULT_RETENTION_DAYS = 30
 
 # Mapping of Thai month names to numbers for API date parsing
 _THAI_MONTHS = {
@@ -66,6 +68,25 @@ def _parse_prices(data: Dict[str, Any], day: date, session: Session) -> None:
     session.commit()
 
 
+def purge_old_prices(session: Session, days: int | None = None) -> None:
+    """Remove :class:`FuelPrice` rows older than ``days``.
+
+    The number of days defaults to the ``OIL_PRICE_RETENTION_DAYS`` environment
+    variable or :data:`DEFAULT_RETENTION_DAYS`.
+    """
+
+    if days is None:
+        try:
+            days = int(os.getenv("OIL_PRICE_RETENTION_DAYS", ""))
+        except ValueError:
+            days = DEFAULT_RETENTION_DAYS
+        if not days:
+            days = DEFAULT_RETENTION_DAYS
+    cutoff = date.today() - timedelta(days=days)
+    session.exec(delete(FuelPrice).where(FuelPrice.date < cutoff))
+    session.commit()
+
+
 def fetch_latest(
     session: Session,
     station: str = "ptt",
@@ -85,6 +106,7 @@ def fetch_latest(
     day = _parse_thai_date(thai_date)
     stations = data["response"]["stations"]
     _parse_prices(stations, day, session)
+    purge_old_prices(session)
 
 
 def get_price(
