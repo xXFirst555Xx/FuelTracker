@@ -86,7 +86,7 @@ from ..services import (
     ThemeManager,
     TrayIconManager,
 )
-from ..services.oil_service import fetch_latest
+from ..services.oil_service import fetch_latest, get_price as _get_price
 from ..config import AppConfig
 from .undo_commands import (
     AddEntryCommand,
@@ -107,6 +107,11 @@ from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
 
 DEFAULT_FUEL_TYPE = "e20"
+
+
+def get_price(*args, **kwargs):
+    """Wrapper to access :func:`src.services.oil_service.get_price`."""
+    return _get_price(*args, **kwargs)
 
 
 class StatsDock(QDockWidget):
