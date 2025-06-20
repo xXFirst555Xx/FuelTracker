@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
 from typing import Any
+import logging
+
+logger = logging.getLogger(__name__)
 
 kb_module: Any
 try:
@@ -37,7 +40,7 @@ class GlobalHotkey(QObject):
             return int(res) if res is not None else 1
         except Exception as exc:  # pragma: no cover - defensive
             # Ensure an integer is always returned to satisfy Windows hooks
-            print("Hotkey adapter error:", exc)
+            logger.exception("Hotkey adapter error: %s", exc)
             return 1
 
     def _wrapped_callback(self, *args: object) -> int:
@@ -48,7 +51,7 @@ class GlobalHotkey(QObject):
         try:
             self.triggered.emit()
         except Exception as e:  # pragma: no cover - defensive
-            print("Hotkey error:", e)
+            logger.exception("Hotkey error: %s", e)
         return 1  # Must return int to avoid WPARAM errors on Windows
 
     def start(self) -> None:
@@ -90,7 +93,7 @@ class GlobalHotkey(QObject):
                 except Exception:
                     pass
         except Exception as e:  # pragma: no cover - defensive
-            print("Hotkey stop error:", e)
+            logger.exception("Hotkey stop error: %s", e)
         finally:
             self._registered = False
             self._stopping = False
