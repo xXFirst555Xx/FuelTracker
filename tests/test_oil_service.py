@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 from src.services import oil_service
 
 from src.services.oil_service import fetch_latest
+import os
 from src.models import FuelPrice, Vehicle
 from src.controllers.main_controller import MainController
 from src.views import load_add_entry_dialog
@@ -38,7 +39,11 @@ SAMPLE = {
 }
 
 
+called: dict[str, str] = {}
+
 def fake_get(url: str, timeout: int | None = None):
+    called["url"] = url
+
     class R:
         def raise_for_status(self) -> None:
             pass
@@ -52,9 +57,19 @@ def fake_get(url: str, timeout: int | None = None):
 def test_fetch_latest(monkeypatch, in_memory_storage):
     monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
     with Session(in_memory_storage.engine) as s:
-        fetch_latest(s)
+        fetch_latest(s, api_base="http://test/api")
         rows = s.exec(select(FuelPrice)).all()
         assert len(rows) == 12
+        assert called["url"].startswith("http://test/api")
+
+
+def test_fetch_latest_env(monkeypatch, in_memory_storage):
+    monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
+    monkeypatch.setenv("OIL_API_BASE", "http://env/api")
+    called.clear()
+    with Session(in_memory_storage.engine) as s:
+        fetch_latest(s)
+        assert called["url"].startswith("http://env/api")
 
 
 def test_autofill_liters(main_controller, monkeypatch):

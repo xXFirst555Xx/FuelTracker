@@ -25,7 +25,7 @@ def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
     monkeypatch.setattr(ctrl.thread_pool, "start", lambda job: job.run())
     monkeypatch.setattr(
         "src.controllers.main_controller.fetch_latest",
-        lambda s, station: calls.setdefault("station", station),
+        lambda s, station, api_base=None: calls.setdefault("station", station),
     )
     ctrl._schedule_price_update()
 
