@@ -500,7 +500,13 @@ class StorageService:
         backup_dir.mkdir(parents=True, exist_ok=True)
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
-        shutil.copy2(self._db_path, backup_path)
+
+        source_conn = self.engine.raw_connection()
+        try:
+            with sqlcipher.connect(str(backup_path)) as dest_conn:
+                source_conn.backup(dest_conn)
+        finally:
+            source_conn.close()
 
         backups = [p for p in backup_dir.glob("*.db") if p != self._db_path]
         backups.sort()

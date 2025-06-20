@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from src.services import StorageService
+import sqlite3
 from src.models import Vehicle
 
 
@@ -12,7 +13,11 @@ def test_backup_rotation(tmp_path):
     )
     now = datetime(2024, 1, 1, 0, 0)
     for i in range(35):
-        storage.auto_backup(now=now + timedelta(minutes=i), backup_dir=tmp_path)
+        backup = storage.auto_backup(now=now + timedelta(minutes=i), backup_dir=tmp_path)
+        if i == 0:
+            with sqlite3.connect(backup) as conn:
+                conn.execute("SELECT name FROM sqlite_master").fetchall()
+            backup.unlink()
     backups = sorted(p for p in tmp_path.glob("*.db") if p.name != "fuel.db")
     assert len(backups) == 30
     first = backups[0].stem
