@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
+from sqlalchemy import Index
 
 
 class FuelPrice(SQLModel, table=True):
@@ -16,3 +17,12 @@ class FuelPrice(SQLModel, table=True):
     fuel_type: str
     name_th: str
     price: Decimal
+
+    __table_args__ = (
+        Index(
+            "ix_fuelprice_date_station_fuel_type",
+            "date",
+            "station",
+            "fuel_type",
+        ),
+    )
