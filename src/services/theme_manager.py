@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TypedDict
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QObject, Signal, Qt
+
+
+
+class _ThemeArgs(TypedDict, total=False):
+    theme_override: Optional[str]
+    env_theme: Optional[str]
+    config_theme: Optional[str]
+    dark_mode_override: Optional[bool]
 
 
 class ThemeManager(QObject):
@@ -15,7 +23,7 @@ class ThemeManager(QObject):
     def __init__(self, app: QApplication) -> None:
         super().__init__()
         self.app = app
-        self._last_args: dict[str, Optional[str | bool]] = {}
+        self._last_args: _ThemeArgs = {}
         if hasattr(app, "paletteChanged"):
             app.paletteChanged.connect(self._on_palette_changed)
 
@@ -75,7 +83,12 @@ class ThemeManager(QObject):
     def reapply_theme(self) -> None:
         """Reapply the last requested theme."""
 
-        self.apply_theme(**self._last_args)
+        self.apply_theme(
+            theme_override=self._last_args.get("theme_override"),
+            env_theme=self._last_args.get("env_theme"),
+            config_theme=self._last_args.get("config_theme"),
+            dark_mode_override=self._last_args.get("dark_mode_override"),
+        )
 
     # ------------------------------------------------------------------
     # Internal helpers
