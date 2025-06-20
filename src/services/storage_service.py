@@ -92,6 +92,7 @@ class StorageService:
         if engine is not None:
             self.engine = engine
             self._db_path = Path(engine.url.database) if engine.url.database else None
+            self._password = password or ""
             SQLModel.metadata.create_all(
                 self.engine,
                 tables=[
@@ -113,6 +114,8 @@ class StorageService:
                     password = ""
             if password and db_path.exists() and _is_plain_sqlite(db_path):
                 _migrate_plain_to_encrypted(db_path, password)
+
+            self._password = password or ""
 
             def _connect() -> sqlcipher.Connection:
                 raw = sqlcipher.connect(str(db_path))
@@ -486,10 +489,16 @@ class StorageService:
         self,
         now: datetime | None = None,
         backup_dir: Path | None = None,
+        encrypted: bool = False,
     ) -> Path:
         """คัดลอกไฟล์ฐานข้อมูลไปยังที่สำรองโดยมีเวลาในชื่อไฟล์
 
         คืนค่าที่ตั้งไฟล์สำรองที่สร้างขึ้น
+
+        Parameters
+        ----------
+        encrypted:
+            ถ้า ``True`` และมี SQLCipher จะเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเดียวกัน
         """
 
         if self._db_path is None:
@@ -504,6 +513,8 @@ class StorageService:
         source_conn = self.engine.raw_connection()
         try:
             with sqlcipher.connect(str(backup_path)) as dest_conn:
+                if encrypted and _SQLCIPHER_AVAILABLE and self._password:
+                    dest_conn.execute(f"PRAGMA key='{self._password}';")
                 source_conn.backup(dest_conn)
         finally:
             source_conn.close()
