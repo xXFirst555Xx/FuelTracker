@@ -278,6 +278,8 @@ class MainController(QObject):
         self.refresh_vehicle_list()
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.dashboardPage)
+        # Start automatic daily backups
+        self._schedule_daily_backup()
 
     @property
     def tray_icon(self) -> QSystemTrayIcon:
@@ -1042,6 +1044,13 @@ class MainController(QObject):
             points = sorted(by_type[fuel], key=lambda t: t[0])[-90:]
             ax.plot(cast(Any, [d for d, _ in points]), [float(p) for _, p in points])
         cast(Any, self.oil_dock.canvas).draw_idle()
+
+    def _schedule_daily_backup(self) -> None:
+        """Perform daily backup and reschedule the timer."""
+        backup = self.storage.auto_backup()
+        if self.sync_enabled and self.cloud_path is not None:
+            self.storage.sync_to_cloud(backup.parent, self.cloud_path)
+        QTimer.singleShot(86_400_000, self._schedule_daily_backup)
 
     def filter_entries(self) -> list[FuelEntry]:
         """Filter entries based on search text and start date."""
