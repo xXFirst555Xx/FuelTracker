@@ -175,6 +175,7 @@ class OilPricesDock(QDockWidget):
 class MainController(QObject):
     entry_changed = Signal()
     export_finished = Signal(Path, Path)
+    export_failed = Signal(str)
     """โค้ดเชื่อมระหว่างวิดเจ็ต Qt กับบริการของแอป"""
 
     def __init__(
@@ -329,6 +330,13 @@ class MainController(QObject):
             self.export_finished.connect(
                 lambda c, p: QMessageBox.information(
                     self.window, self.tr("เสร็จสิ้น"), self.tr("ส่งออกรายงานแล้ว")
+                )
+            )
+            self.export_failed.connect(
+                lambda m: QMessageBox.critical(
+                    self.window,
+                    self.tr("ข้อผิดพลาด"),
+                    m or self.tr("ไม่สามารถส่งออกรายงานได้"),
                 )
             )
         self.maint_dock.add_button.clicked.connect(self.open_add_maintenance_dialog)
@@ -944,9 +952,13 @@ class MainController(QObject):
         out_pdf = Path(pdf_path_str)
 
         def job() -> None:
-            self.exporter.monthly_csv(today.month, today.year, out_csv)
-            self.exporter.monthly_pdf(today.month, today.year, out_pdf)
-            self.export_finished.emit(out_csv, out_pdf)
+            try:
+                self.exporter.monthly_csv(today.month, today.year, out_csv)
+                self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+            except Exception as exc:  # pragma: no cover - handled in tests
+                self.export_failed.emit(str(exc))
+            else:
+                self.export_finished.emit(out_csv, out_pdf)
 
         self.executor.submit(job)
 
