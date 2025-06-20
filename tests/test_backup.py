@@ -15,7 +15,9 @@ def test_backup_rotation(tmp_path):
     )
     now = datetime(2024, 1, 1, 0, 0)
     for i in range(35):
-        backup = storage.auto_backup(now=now + timedelta(minutes=i), backup_dir=tmp_path)
+        backup = storage.auto_backup(
+            now=now + timedelta(minutes=i), backup_dir=tmp_path, max_backups=30
+        )
         if i == 0:
             with sqlite3.connect(backup) as conn:
                 conn.execute("SELECT name FROM sqlite_master").fetchall()
