@@ -11,6 +11,7 @@ from pandas import DataFrame, Series
 import pandas as pd
 from fpdf import FPDF
 import matplotlib
+from io import BytesIO
 
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
@@ -155,11 +156,12 @@ class ReportService:
             ax1.set_xlabel("Date")
             ax1.legend()
             fig.tight_layout()
-            chart_file = path.with_suffix(".png")
-            fig.savefig(str(chart_file))
+            chart_buffer = BytesIO()
+            fig.savefig(chart_buffer, format="png")
+            chart_buffer.seek(0)
             plt.close(fig)
         else:
-            chart_file = None
+            chart_buffer = None
 
         stats = self.get_monthly_stats(month, vehicle_id)
 
@@ -173,14 +175,10 @@ class ReportService:
         for key, value in stats.items():
             pdf.cell(0, 10, f"{key}: {value}", ln=1)
 
-        if chart_file and chart_file.exists():
-            pdf.image(str(chart_file), w=170)
+        if chart_buffer:
+            pdf.image(chart_buffer, w=170)
 
-        try:
-            pdf.output(str(path))
-        finally:
-            if chart_file and chart_file.exists():
-                chart_file.unlink()
+        pdf.output(str(path))
 
     def export_excel(self, month: date, vehicle_id: int, path: Path) -> None:
         """ส่งออกรายการประจำเดือนเป็นไฟล์ Excel พร้อมสรุปข้อมูล"""
