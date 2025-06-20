@@ -5,6 +5,7 @@ from datetime import datetime, date
 from typing import List, Optional, Any, Callable, cast
 import os
 import shutil
+import gzip
 from getpass import getpass
 from decimal import Decimal
 
@@ -510,6 +511,7 @@ class StorageService:
         now: datetime | None = None,
         backup_dir: Path | None = None,
         encrypted: bool = False,
+        compress: bool = False,
         max_backups: int = 30,
     ) -> Path:
         """คัดลอกไฟล์ฐานข้อมูลไปยังที่สำรองโดยมีเวลาในชื่อไฟล์
@@ -520,6 +522,8 @@ class StorageService:
         ----------
         encrypted:
             ถ้า ``True`` และมี SQLCipher จะเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเดียวกัน
+        compress:
+            ถ้า ``True`` จะบีบอัดไฟล์สำรองด้วย gzip แล้วเพิ่ม ``.gz`` ต่อท้ายชื่อไฟล์
         max_backups:
             จำนวนไฟล์สำรองสูงสุดที่จะเก็บไว้ก่อนลบของเก่า ค่าเริ่มต้น ``30``
         """
@@ -542,7 +546,14 @@ class StorageService:
         finally:
             source_conn.close()
 
-        backups = [p for p in backup_dir.glob("*.db") if p != self._db_path]
+        if compress:
+            gz_path = backup_path.with_suffix(backup_path.suffix + ".gz")
+            with open(backup_path, "rb") as fh, gzip.open(gz_path, "wb") as out:
+                shutil.copyfileobj(fh, out)
+            backup_path.unlink()
+            backup_path = gz_path
+
+        backups = [p for p in backup_dir.glob("*.db*") if p != self._db_path]
         backups.sort()
         if len(backups) > max_backups:
             for old in backups[: len(backups) - max_backups]:
