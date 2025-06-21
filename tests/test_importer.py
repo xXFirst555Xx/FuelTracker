@@ -1,15 +1,17 @@
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 import csv
 from sqlalchemy import event
 from sqlmodel import SQLModel, create_engine, Session
 from sqlalchemy.pool import StaticPool
 
-from src.models import FuelEntry, Vehicle
+from src.models import FuelEntry, Vehicle, FuelPrice
 from src.services import StorageService, Exporter
 from src.services.importer import Importer
 from src.views import load_add_entry_dialog
 from PySide6.QtWidgets import QDialog
+import pytest
 
 
 def _new_storage():
@@ -97,9 +99,10 @@ def test_import_many_single_transaction(tmp_path: Path):
     entries = importer.import_csv(csv_path, 1)
     event.remove(Session, "after_commit", count_commit)
 
-    assert len(entries) == 2
-    assert commit_count - start == 1
-    assert entries[0].fuel_type == "gasoline_95"
+    saved = storage.list_entries()
+    assert len(saved) == 2
+    assert commit_count - start == 2
+    assert saved[0].fuel_type == "gasoline_95"
 
 
 def test_prefill_odometer(main_controller, monkeypatch):
@@ -138,3 +141,47 @@ def test_prefill_odometer(main_controller, monkeypatch):
     monkeypatch.setattr(dialog, "exec", fake_exec)
 
     ctrl.open_add_entry_dialog()
+
+
+def test_import_csv_fills_liters_when_prices_exist(
+    tmp_path: Path, in_memory_storage: StorageService
+) -> None:
+    storage = in_memory_storage
+    storage.add_vehicle(
+        Vehicle(
+            name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40
+        )
+    )
+
+    with Session(storage.engine) as s:
+        s.add(
+            FuelPrice(
+                date=date(2024, 6, 1),
+                station="ptt",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("40"),
+            )
+        )
+        s.commit()
+
+    csv_path = tmp_path / "data.csv"
+    with open(csv_path, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(
+            [
+                "date",
+                "fuel_type",
+                "odo_before",
+                "odo_after",
+                "liters",
+                "amount_spent",
+            ]
+        )
+        writer.writerow(["2024-06-01", "e20", "0", "100", "", "80"])
+
+    importer = Importer(storage)
+    importer.import_csv(csv_path, 1)
+
+    saved = storage.list_entries()
+    assert saved[0].liters == pytest.approx(2.0)
