@@ -8,6 +8,7 @@ import csv
 from ..models import FuelEntry
 from .storage_service import StorageService
 from .validators import validate_entry
+from .oil_service import update_missing_liters
 from sqlmodel import Session
 
 
@@ -71,5 +72,6 @@ class Importer:
             for e in entries:
                 if e.id is not None:
                     session.refresh(e)
+            update_missing_liters(session)
 
         return entries
