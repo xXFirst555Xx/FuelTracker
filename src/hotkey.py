@@ -11,6 +11,7 @@ _NOT_LOADED = object()
 # Optional keyboard module, initialized lazily to avoid import side effects
 keyboard: Any | None = _NOT_LOADED
 
+
 def _ensure_keyboard() -> None:
     """Load the optional ``keyboard`` module on demand."""
     global keyboard
@@ -18,6 +19,7 @@ def _ensure_keyboard() -> None:
         return
     try:  # pragma: no cover - optional dependency
         import keyboard as kb
+
         keyboard = kb
     except Exception:
         keyboard = None
@@ -36,10 +38,10 @@ class GlobalHotkey(QObject):
         self._stopping = False
 
     def _callback_adapter(self, *args: object) -> int:
-        """Invoke ``_wrapped_callback`` and always return an ``int``."""
+        """Invoke ``_wrapped_callback`` and return an ``int`` for Win32 hooks."""
         # Qt expects a Win32 hook callback to return an ``int``. If ``None`` is
-        # returned a ``TypeError`` like ``WPARAM is simple, so must be an int``
-        # bubbles up through the event loop. Converting the result ensures the
+        # propagated, a ``TypeError`` like ``WPARAM is simple, so must be an int``
+        # is raised during event dispatch.  Converting the result ensures the
         # correct type is always passed back to Qt.
         try:
             res = self._wrapped_callback(*args)
@@ -77,7 +79,9 @@ class GlobalHotkey(QObject):
                     self._format(self.sequence),
                     self._callback_adapter,
                 )
-        except Exception:  # pragma: no cover - ignore environments without input devices
+        except (
+            Exception
+        ):  # pragma: no cover - ignore environments without input devices
             return
         self._registered = True
 
@@ -121,4 +125,3 @@ class GlobalHotkey(QObject):
         """Normalize Qt style hotkey string to keyboard module format."""
         tokens = [t.strip().lower() for t in seq.split("+") if t.strip()]
         return "+".join(tokens)
-
