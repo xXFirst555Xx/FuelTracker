@@ -42,7 +42,7 @@ from PySide6.QtCore import (
     QDate,
     Slot,
 )
-from shiboken6 import isValid
+import shiboken6
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QSystemTrayIcon
 
@@ -273,7 +273,7 @@ class MainController(QObject):
         )
         self.tray_manager.show()
         self._setup_hotkey()
-        self.window.closeEvent = self._close_event
+        self.window.closeEvent = self._close_event  # type: ignore[method-assign]
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
@@ -1042,7 +1042,7 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        if isValid(self.controller):
+                        if shiboken6.isValid(self.controller):  # type: ignore[attr-defined]
                             # ``invokeMethod`` expects the member name as a
                             # Python ``str`` in newer PySide versions. Using a
                             # ``bytes`` object causes a ``ValueError`` which in
