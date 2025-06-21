@@ -36,7 +36,7 @@ def migrated_db_session():
     """Return a Session connected to a migrated in-memory database."""
     engine = create_engine(
         "sqlite:///file:memdb1?mode=memory&cache=shared",
-        connect_args={"check_same_thread": False},
+        connect_args={"check_same_thread": False, "uri": True},
         poolclass=StaticPool,
     )
     keeper = engine.connect()
