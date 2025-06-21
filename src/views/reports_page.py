@@ -22,6 +22,7 @@ from matplotlib.figure import Figure
 import pandas as pd
 
 from ..services import ReportService
+from . import supports_shadow
 
 FigureCanvas = cast(Callable[[Figure], QWidget], FigureCanvasQTAgg)
 
@@ -38,9 +39,10 @@ class SummaryCard(QWidget):
         layout.addWidget(self.title_label)
         layout.addWidget(self.value_label)
         self.setStyleSheet("background:white;border-radius:12px;padding:8px;")
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(8)
-        self.setGraphicsEffect(shadow)
+        if supports_shadow():
+            shadow = QGraphicsDropShadowEffect(self)
+            shadow.setBlurRadius(8)
+            self.setGraphicsEffect(shadow)
 
     def set_value(self, text: str) -> None:
         self.value_label.setText(text)
