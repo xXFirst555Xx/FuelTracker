@@ -6,7 +6,9 @@ from src.services import StorageService
 
 def test_mark_done(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    storage.add_vehicle(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
     task = Maintenance(vehicle_id=1, name="Oil", due_odo=100)
     storage.add_maintenance(task)
     storage.mark_maintenance_done(task.id)
@@ -17,7 +19,9 @@ def test_mark_done(in_memory_storage: StorageService) -> None:
 
 def test_list_due_by_odo(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    storage.add_vehicle(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
     due = Maintenance(vehicle_id=1, name="Oil", due_odo=100)
     not_due = Maintenance(vehicle_id=1, name="Filter", due_odo=150)
     storage.add_maintenance(due)
@@ -29,9 +33,15 @@ def test_list_due_by_odo(in_memory_storage: StorageService) -> None:
 
 def test_list_due_by_date(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    storage.add_vehicle(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
-    overdue = Maintenance(vehicle_id=1, name="Check", due_date=date.today() - timedelta(days=1))
-    future = Maintenance(vehicle_id=1, name="Wash", due_date=date.today() + timedelta(days=2))
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+    overdue = Maintenance(
+        vehicle_id=1, name="Check", due_date=date.today() - timedelta(days=1)
+    )
+    future = Maintenance(
+        vehicle_id=1, name="Wash", due_date=date.today() + timedelta(days=2)
+    )
     storage.add_maintenance(overdue)
     storage.add_maintenance(future)
 
@@ -41,9 +51,13 @@ def test_list_due_by_date(in_memory_storage: StorageService) -> None:
 
 def test_list_due_by_either(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
-    storage.add_vehicle(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
     odo_due = Maintenance(vehicle_id=1, name="Oil", due_odo=100)
-    date_due = Maintenance(vehicle_id=1, name="Check", due_date=date.today() - timedelta(days=1))
+    date_due = Maintenance(
+        vehicle_id=1, name="Check", due_date=date.today() - timedelta(days=1)
+    )
     storage.add_maintenance(odo_due)
     storage.add_maintenance(date_due)
 

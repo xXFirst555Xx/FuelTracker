@@ -10,6 +10,7 @@ def _table_absent(table: str) -> bool:
     inspector = sa.inspect(bind)
     return table not in inspector.get_table_names()
 
+
 revision = "0002"
 down_revision = "0001"
 branch_labels = None

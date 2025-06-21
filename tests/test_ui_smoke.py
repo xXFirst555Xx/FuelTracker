@@ -59,7 +59,9 @@ def test_tray_tooltip_updates(main_controller, monkeypatch):
 def test_hotkey_invokes_dialog(main_controller, monkeypatch):
     ctrl = main_controller
     called = {}
-    monkeypatch.setattr(ctrl, "open_add_entry_dialog", lambda: called.setdefault("ok", True))
+    monkeypatch.setattr(
+        ctrl, "open_add_entry_dialog", lambda: called.setdefault("ok", True)
+    )
     ctrl.window.hide()
     visible = {}
     monkeypatch.setattr(ctrl.window, "show", lambda: visible.setdefault("v", True))

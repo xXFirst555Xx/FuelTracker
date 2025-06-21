@@ -7,8 +7,16 @@ from src.services import StorageService
 def test_filter_entries(main_controller, monkeypatch):
     ctrl = main_controller
     storage = ctrl.storage
-    storage.add_vehicle(Vehicle(name="Car A", vehicle_type="t", license_plate="a", tank_capacity_liters=1))
-    storage.add_vehicle(Vehicle(name="Car B", vehicle_type="t", license_plate="b", tank_capacity_liters=1))
+    storage.add_vehicle(
+        Vehicle(
+            name="Car A", vehicle_type="t", license_plate="a", tank_capacity_liters=1
+        )
+    )
+    storage.add_vehicle(
+        Vehicle(
+            name="Car B", vehicle_type="t", license_plate="b", tank_capacity_liters=1
+        )
+    )
 
     storage.add_entry(
         FuelEntry(
@@ -34,7 +42,6 @@ def test_filter_entries(main_controller, monkeypatch):
     ctrl.window.searchLineEdit.setText("Car B")
     ctrl.window.startDateEdit.setDate(QDate.currentDate())
 
-
     entries = ctrl.filter_entries()
     assert len(entries) == 1
     assert entries[0].vehicle_id == 2
@@ -42,8 +49,12 @@ def test_filter_entries(main_controller, monkeypatch):
 
 def test_list_entries_filtered(tmp_path):
     storage = StorageService(db_path=tmp_path / "t.db")
-    storage.add_vehicle(Vehicle(name="A", vehicle_type="t", license_plate="a", tank_capacity_liters=1))
-    storage.add_vehicle(Vehicle(name="B", vehicle_type="t", license_plate="b", tank_capacity_liters=1))
+    storage.add_vehicle(
+        Vehicle(name="A", vehicle_type="t", license_plate="a", tank_capacity_liters=1)
+    )
+    storage.add_vehicle(
+        Vehicle(name="B", vehicle_type="t", license_plate="b", tank_capacity_liters=1)
+    )
     storage.add_entry(
         FuelEntry(
             entry_date=date.today(),

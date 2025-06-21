@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 # Disable global hotkey backend for the entire test session **before** any
 # application modules that might load the ``keyboard`` package are imported.
 import src.hotkey as _hotkey  # noqa: E402
+
 _hotkey.keyboard = None
 
 from src.services import StorageService  # noqa: E402
@@ -76,7 +77,6 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
     """Return a MainController bound to the migrated in-memory database."""
 
     engine = migrated_db_session.get_bind()
-
 
     def _storage_service(*_args, **_kwargs):
         return StorageService(engine=engine)

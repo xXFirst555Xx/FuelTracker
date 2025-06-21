@@ -190,7 +190,9 @@ def test_import_csv_fills_liters_when_prices_exist(
 def test_import_csv_uses_default_station(tmp_path: Path) -> None:
     storage = _new_storage(default_station="bcp")
     storage.add_vehicle(
-        Vehicle(name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40)
+        Vehicle(
+            name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40
+        )
     )
 
     with Session(storage.engine) as s:

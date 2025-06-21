@@ -34,4 +34,3 @@ def test_theme_manager_reads_qss_once(qapp, tmp_path, monkeypatch):
 
     # The QSS file should only be read once
     assert len(open_calls) == 1
-

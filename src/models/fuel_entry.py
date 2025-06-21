@@ -37,11 +37,7 @@ class FuelEntry(SQLModel, table=True):
             distance = None
 
         cost_per_km: Optional[float]
-        if (
-            distance is not None
-            and distance > 0
-            and self.amount_spent is not None
-        ):
+        if distance is not None and distance > 0 and self.amount_spent is not None:
             cost_per_km = self.amount_spent / distance
         else:
             cost_per_km = None
