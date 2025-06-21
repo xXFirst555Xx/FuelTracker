@@ -85,7 +85,9 @@ def purge_old_prices(session: Session, days: int | None = None) -> None:
         if not days:
             days = DEFAULT_RETENTION_DAYS
     cutoff = date.today() - timedelta(days=days)
-    session.exec(delete(FuelPrice).where(FuelPrice.date < cutoff))
+    session.execute(
+        delete(FuelPrice).where(cast(Any, FuelPrice.date) < cutoff)
+    )
     session.commit()
 
 
