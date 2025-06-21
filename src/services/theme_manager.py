@@ -1,17 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, TypedDict
+from typing import Optional
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QObject, Signal, Qt
-
-
-class _ThemeArgs(TypedDict, total=False):
-    theme_override: Optional[str]
-    env_theme: Optional[str]
-    config_theme: Optional[str]
-    dark_mode_override: Optional[bool]
 
 
 class ThemeManager(QObject):
@@ -22,7 +15,6 @@ class ThemeManager(QObject):
     def __init__(self, app: QApplication) -> None:
         super().__init__()
         self.app = app
-        self._last_args: _ThemeArgs = {}
         self._qss_cache: dict[str, str] = {}
         if hasattr(app, "paletteChanged"):
             app.paletteChanged.connect(self._on_palette_changed)
@@ -38,13 +30,6 @@ class ThemeManager(QObject):
         dark_mode_override: Optional[bool] = None,
     ) -> None:
         """Apply the appropriate QSS based on the given themes."""
-
-        self._last_args = {
-            "theme_override": theme_override,
-            "env_theme": env_theme,
-            "config_theme": config_theme,
-            "dark_mode_override": dark_mode_override,
-        }
 
         if not isinstance(self.app, QApplication):
             return
