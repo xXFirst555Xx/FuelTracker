@@ -42,7 +42,7 @@ from PySide6.QtCore import (
     QDate,
     Slot,
 )
-from shiboken6 import isValid
+from shiboken6 import isValid  # type: ignore[attr-defined]
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QSystemTrayIcon
 
@@ -256,9 +256,7 @@ class MainController(QObject):
         self.window.installEventFilter(self)
         app = QApplication.instance()
         self.theme_manager = (
-            ThemeManager(cast(QApplication, app))
-            if isinstance(app, QApplication)
-            else None
+            ThemeManager(app) if isinstance(app, QApplication) else None
         )
         if app:
             app.aboutToQuit.connect(self.cleanup)
