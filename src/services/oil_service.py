@@ -16,6 +16,8 @@ _HTTP_SESSION = requests.Session()
 
 API_BASE = "https://api.chnwt.dev/thai-oil-api"
 DEFAULT_RETENTION_DAYS = 30
+# Default number of days to look back when price for a specific day is missing
+DEFAULT_FALLBACK_DAYS = 7
 
 # Mapping of Thai month names to numbers for API date parsing
 _THAI_MONTHS = {
@@ -105,7 +107,9 @@ def update_missing_liters(session: Session, station: str = "ptt") -> None:
         )
         if price is None or entry.amount_spent is None:
             continue
-        entry.liters = Decimal(str(entry.amount_spent)) / price
+        entry.liters = float(
+            (Decimal(str(entry.amount_spent)) / price).quantize(Decimal("0.01"))
+        )
         session.add(entry)
     session.commit()
 
@@ -134,7 +138,11 @@ def fetch_latest(
 
 
 def get_price(
-    session: Session, fuel_type: str, station: str, day: date
+    session: Session,
+    fuel_type: str,
+    station: str,
+    day: date,
+    fallback_days: int = DEFAULT_FALLBACK_DAYS,
 ) -> Optional[Decimal]:
     row = session.exec(
         select(cast(Any, FuelPrice.price)).where(
@@ -143,6 +151,22 @@ def get_price(
             FuelPrice.fuel_type == fuel_type,
         )
     ).first()
+
+    if row is None and fallback_days:
+        cutoff = day - timedelta(days=fallback_days)
+        row = (
+            session.exec(
+                select(cast(Any, FuelPrice.price))
+                .where(
+                    FuelPrice.date < day,
+                    FuelPrice.date >= cutoff,
+                    FuelPrice.station == station,
+                    FuelPrice.fuel_type == fuel_type,
+                )
+                .order_by(cast(Any, FuelPrice.date).desc())
+            ).first()
+        )
+
     if row is None:
         return None
     return Decimal(row)
