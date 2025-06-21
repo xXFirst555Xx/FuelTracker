@@ -560,7 +560,7 @@ class StorageService:
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
 
-        source_conn = self.engine.raw_connection()
+        source_conn = cast(sqlcipher.Connection, self.engine.raw_connection())
         try:
             with sqlcipher.connect(str(backup_path)) as dest_conn:
                 if encrypted and _SQLCIPHER_AVAILABLE and self._password:
