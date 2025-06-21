@@ -5,7 +5,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
-class Vehicle(SQLModel, table=True):
+class Vehicle(SQLModel, table=True):  # type: ignore[misc]
     """ยานพาหนะที่ลงทะเบียนในระบบ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
