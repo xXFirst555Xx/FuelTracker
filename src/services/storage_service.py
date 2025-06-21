@@ -150,10 +150,29 @@ class StorageService:
                 SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
 
     def add_entry(self, entry: FuelEntry) -> None:
-        """Add a new refuel entry and update the previous pending one."""
+        """Add a refuel entry and finalize the previous incomplete one.
+
+        Parameters
+        ----------
+        entry:
+            The :class:`~src.models.FuelEntry` instance to be persisted. If
+            ``liters`` is ``None`` but ``amount_spent`` is provided, the method
+            will attempt to infer the missing value from stored fuel prices.
+
+        Returns
+        -------
+        None
+            The entry is written to the database. After the call ``entry.id``
+            will be populated with the assigned primary key.
+        """
+
         validate_entry(entry)
         with Session(self.engine) as session:
-            # Find the most recent entry for this vehicle without an ``odo_after``.
+            # ------------------------------------------------------------------
+            # Find the latest entry for this vehicle that hasn't recorded an
+            # ``odo_after`` yet. This represents a previous refuel awaiting the
+            # next odometer reading to know the distance driven.
+            # ------------------------------------------------------------------
             stmt = (
                 select(FuelEntry)
                 .where(
@@ -167,8 +186,12 @@ class StorageService:
             )
             prev = session.exec(stmt).first()
             if prev is not None:
+                # Update the previous entry so that its ``odo_after`` matches the
+                # odometer reading before this new refuel.
                 prev.odo_after = entry.odo_before
-                # Auto-calculate liters for the previous entry if possible
+
+                # If the previous entry recorded spending but not liters, derive
+                # the liters from the historical fuel price at that date.
                 if prev.amount_spent is not None and prev.liters is None:
                     price = get_price(
                         session,
@@ -184,7 +207,11 @@ class StorageService:
                         )
                 session.add(prev)
 
-            # Auto-calculate liters for the current entry if possible
+            # ------------------------------------------------------------------
+            # Auto-calculate liters for the current entry when only the amount
+            # spent is provided. The calculation uses the fuel price for the
+            # entry date and the service's default station.
+            # ------------------------------------------------------------------
             if entry.amount_spent is not None and entry.liters is None:
                 price = get_price(
                     session,
@@ -201,6 +228,7 @@ class StorageService:
 
             session.add(entry)
             session.commit()
+
             # FIX: prevent hang when entry.id is None
             session.flush()
             if entry.id is not None:
