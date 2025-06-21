@@ -15,6 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
+# Disable global hotkey backend for the entire test session **before** any
+# application modules that might load the ``keyboard`` package are imported.
+import src.hotkey as _hotkey  # noqa: E402
+_hotkey.keyboard = None
+
 from src.services import StorageService  # noqa: E402
 from src.controllers.main_controller import MainController  # noqa: E402
 
@@ -72,12 +77,6 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
 
     engine = migrated_db_session.get_bind()
 
-    # Avoid registering system-wide hotkeys during tests. On Windows, callbacks
-    # from the ``keyboard`` module must return an ``int``; if the handler is not
-    # set up correctly a ``TypeError`` like ``WPARAM is simple, so must be an
-    # int object`` can occur.  Disabling the backend here prevents such errors
-    # in environments where the ``keyboard`` package is available.
-    monkeypatch.setattr("src.hotkey.keyboard", None, raising=False)
 
     def _storage_service(*_args, **_kwargs):
         return StorageService(engine=engine)
