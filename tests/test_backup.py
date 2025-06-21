@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 import gzip
 import sqlite3
+import time
 
 import pytest
 from PySide6.QtCore import QTimer
@@ -28,9 +29,20 @@ def test_backup_rotation(tmp_path):
             now=now + timedelta(minutes=i), backup_dir=tmp_path, max_backups=30
         )
         if i == 0:
-            with sqlite3.connect(backup) as conn:
+            conn = sqlite3.connect(backup)
+            try:
                 conn.execute("SELECT name FROM sqlite_master").fetchall()
-            backup.unlink()
+            finally:
+                conn.close()
+
+            for _ in range(5):
+                try:
+                    backup.unlink()
+                    break
+                except PermissionError:
+                    time.sleep(0.1)
+            else:
+                backup.unlink()
     backups = sorted(p for p in tmp_path.glob("*.db") if p.name != "fuel.db")
     assert len(backups) == 30
     first = backups[0].stem
