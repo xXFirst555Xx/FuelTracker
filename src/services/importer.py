@@ -43,9 +43,11 @@ class Importer:
                     amount_val = float(amount) if amount else None
                 except ValueError:
                     amount_val = None
+                fuel_type = row.get("fuel_type") or None
                 entry = FuelEntry(
                     entry_date=entry_date,
                     vehicle_id=0,  # updated by ``import_csv``
+                    fuel_type=fuel_type,
                     odo_before=odo_before,
                     odo_after=odo_after_val,
                     amount_spent=amount_val,

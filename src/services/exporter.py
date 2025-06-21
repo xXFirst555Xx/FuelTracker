@@ -24,6 +24,7 @@ class Exporter:
             writer.writerow(
                 [
                     "date",
+                    "fuel_type",
                     "odo_before",
                     "odo_after",
                     "distance",
@@ -36,6 +37,7 @@ class Exporter:
                 writer.writerow(
                     [
                         e.entry_date.isoformat(),
+                        e.fuel_type or "",
                         e.odo_before,
                         e.odo_after,
                         dist,
@@ -51,7 +53,10 @@ class Exporter:
         y = 780
         for e in entries:
             dist = e.odo_after - e.odo_before if e.odo_after is not None else 0
-            line = f"{e.entry_date} - {dist} km, {e.liters or 0} L, THB {e.amount_spent or 0}"
+            line = (
+                f"{e.entry_date} - {dist} km, {e.liters or 0} L, THB {e.amount_spent or 0},"
+                f" {e.fuel_type or ''}"
+            )
             c.drawString(50, y, line)
             y -= 20
         c.save()
@@ -64,6 +69,7 @@ class Exporter:
             data.append(
                 {
                     "date": e.entry_date,
+                    "fuel_type": e.fuel_type,
                     "odo_before": e.odo_before,
                     "odo_after": e.odo_after,
                     "distance": dist,

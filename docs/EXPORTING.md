@@ -10,3 +10,13 @@
 การส่งออกเป็น Excel ต้องติดตั้งไลบรารี `openpyxl`.
 
 ทั้งสองเมทอดรับค่าเดือน ปี และเส้นทางปลายทางแบบ `Path`
+
+ไฟล์ CSV และ Excel จะมีคอลัมน์ดังนี้
+
+- `date`
+- `fuel_type`
+- `odo_before`
+- `odo_after`
+- `distance`
+- `liters`
+- `amount_spent`

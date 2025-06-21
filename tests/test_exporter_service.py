@@ -34,3 +34,10 @@ def test_exporter_creates_files(
     assert pdf_path.exists()
     assert xls_path.exists()
     assert pdf_path.stat().st_size > 0
+
+    import pandas as pd
+
+    df_csv = pd.read_csv(csv_path)
+    assert "fuel_type" in df_csv.columns
+    df_xls = pd.read_excel(xls_path)
+    assert "fuel_type" in df_xls.columns
