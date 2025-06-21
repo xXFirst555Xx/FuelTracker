@@ -8,7 +8,7 @@ from sqlmodel import Field, SQLModel
 from sqlalchemy import Index
 
 
-class FuelPrice(SQLModel, table=True):  # type: ignore[misc]
+class FuelPrice(SQLModel, table=True):
     """ราคาน้ำมันรายวันของสถานีและประเภทเชื้อเพลิง"""
 
     id: Optional[int] = Field(default=None, primary_key=True)

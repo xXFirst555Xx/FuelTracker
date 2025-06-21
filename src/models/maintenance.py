@@ -7,7 +7,7 @@ from sqlmodel import Field, SQLModel
 from sqlalchemy import Index
 
 
-class Maintenance(SQLModel, table=True):  # type: ignore[misc]
+class Maintenance(SQLModel, table=True):
     """งานบำรุงรักษาที่กำหนดไว้ของยานพาหนะ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
