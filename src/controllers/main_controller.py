@@ -46,7 +46,7 @@ from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QSystemTrayIcon
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast, Optional
 
 if TYPE_CHECKING:
     from win10toast import ToastNotifier
@@ -109,8 +109,8 @@ from ..hotkey import GlobalHotkey
 logger = logging.getLogger(__name__)
 
 
-def get_price(*args, **kwargs):
-    """Wrapper to access :func:`src.services.oil_service.get_price`."""
+def get_price(*args: Any, **kwargs: Any) -> Optional[Decimal]:
+    """Wrapper for src.services.oil_service.get_price."""
     return _get_price(*args, **kwargs)
 
 
