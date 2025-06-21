@@ -14,14 +14,14 @@ from PySide6.QtWidgets import QDialog
 import pytest
 
 
-def _new_storage():
+def _new_storage(default_station: str = "ptt"):
     engine = create_engine(
         "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
     SQLModel.metadata.create_all(engine)
-    return StorageService(engine=engine)
+    return StorageService(engine=engine, default_station=default_station)
 
 
 def test_importer_roundtrip(tmp_path: Path):
@@ -185,3 +185,43 @@ def test_import_csv_fills_liters_when_prices_exist(
 
     saved = storage.list_entries()
     assert saved[0].liters == pytest.approx(2.0)
+
+
+def test_import_csv_uses_default_station(tmp_path: Path) -> None:
+    storage = _new_storage(default_station="bcp")
+    storage.add_vehicle(
+        Vehicle(name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40)
+    )
+
+    with Session(storage.engine) as s:
+        s.add(
+            FuelPrice(
+                date=date(2024, 6, 1),
+                station="bcp",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("50"),
+            )
+        )
+        s.commit()
+
+    csv_path = tmp_path / "data.csv"
+    with open(csv_path, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(
+            [
+                "date",
+                "fuel_type",
+                "odo_before",
+                "odo_after",
+                "liters",
+                "amount_spent",
+            ]
+        )
+        writer.writerow(["2024-06-01", "e20", "0", "100", "", "80"])
+
+    importer = Importer(storage)
+    importer.import_csv(csv_path, 1)
+
+    saved = storage.list_entries()
+    assert saved[0].liters == pytest.approx(1.6)
