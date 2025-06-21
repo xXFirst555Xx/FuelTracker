@@ -749,6 +749,7 @@ class MainController(QObject):
             try:
                 amount = Decimal(text)
             except Exception:
+                dialog.litersEdit.setEnabled(True)
                 return
 
             with Session(self.storage.engine) as session:
@@ -759,12 +760,16 @@ class MainController(QObject):
                     dialog.dateEdit.date().toPython(),
                 )
 
-            if price is not None:
-                liters = amount / price
-                dialog.litersEdit.setText(str(liters))
-                dialog.litersEdit.setEnabled(False)
+            if price is None:
+                dialog.litersEdit.setEnabled(True)
+                return
+
+            liters = amount / price
+            dialog.litersEdit.setText(str(liters))
+            dialog.litersEdit.setEnabled(False)
 
         dialog.amountEdit.editingFinished.connect(_auto_fill_liters)
+        dialog.autoFillCheckBox.toggled.connect(lambda _c: _auto_fill_liters())
 
         def _prefill() -> None:
             vid = dialog.vehicleComboBox.currentData()
