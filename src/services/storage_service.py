@@ -8,6 +8,7 @@ import shutil
 import gzip
 from getpass import getpass
 from decimal import Decimal
+from contextlib import closing
 
 from ..settings import Settings
 
@@ -560,15 +561,11 @@ class StorageService:
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
 
-        source_conn = cast(sqlcipher.Connection, self.engine.raw_connection())
-        dest_conn = sqlcipher.connect(str(backup_path))
-        try:
+        with closing(cast(sqlcipher.Connection, self.engine.raw_connection())) as source_conn, \
+                closing(sqlcipher.connect(str(backup_path))) as dest_conn:
             if encrypted and _SQLCIPHER_AVAILABLE and self._password:
                 dest_conn.execute(f"PRAGMA key='{self._password}';")
             source_conn.backup(dest_conn)
-        finally:
-            dest_conn.close()
-            source_conn.close()
 
         if compress:
             gz_path = backup_path.with_suffix(backup_path.suffix + ".gz")
