@@ -255,7 +255,11 @@ class MainController(QObject):
         self._price_timer_started = False
         self.window.installEventFilter(self)
         app = QApplication.instance()
-        self.theme_manager = ThemeManager(app) if app else None
+        self.theme_manager = (
+            ThemeManager(cast(QApplication, app))
+            if isinstance(app, QApplication)
+            else None
+        )
         if app:
             app.aboutToQuit.connect(self.cleanup)
             app.aboutToQuit.connect(self.shutdown)
