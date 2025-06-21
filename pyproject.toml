@@ -60,7 +60,7 @@ line-length = 88
 [tool.poe.tasks]
 _ruff = { cmd = "ruff check .", help = "Run ruff linter" }
 _mypy = { cmd = "mypy src/ --strict", help = "Run mypy type checking" }
-_vulture = { cmd = "vulture src .vulture-whitelist.py", help = "Detect dead code" }
+_vulture = { cmd = "vulture src tests .vulture-whitelist.py", help = "Detect dead code" }
 
 lint = { sequence = ["_ruff", "_mypy", "_vulture"], help = "Run all linters" }
 migrate = { cmd = "python -m fueltracker migrate", env = { PYTHONPATH = "src" }, help = "Run database migrations" }
