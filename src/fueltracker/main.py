@@ -59,7 +59,11 @@ def run(argv: list[str] | None = None) -> None:
 
     # Use Arabic numerals in calendar widgets
     QLocale.setDefault(
-        QLocale(QLocale.Thai, QLocale.Script.LatinScript, QLocale.Thailand)
+        QLocale(
+            QLocale.Language.Thai,
+            QLocale.Script.LatinScript,
+            QLocale.Country.Thailand,
+        )
     )
 
     # FIX: set Thai-compatible font
