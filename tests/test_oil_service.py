@@ -278,3 +278,23 @@ def test_fetch_latest_updates_missing_liters(monkeypatch, in_memory_storage):
         updated = s.get(FuelEntry, entry.id)
         assert updated is not None
         assert updated.liters == pytest.approx(2.0)
+
+
+def test_get_price_fallback(in_memory_storage):
+    day1 = date(2024, 6, 1)
+    day2 = date(2024, 6, 3)
+    with Session(in_memory_storage.engine) as s:
+        s.add(
+            FuelPrice(
+                date=day1,
+                station="ptt",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("40"),
+            )
+        )
+        s.commit()
+
+        price = oil_service.get_price(s, "e20", "ptt", day2)
+        assert price == Decimal("40")
+

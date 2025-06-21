@@ -172,7 +172,11 @@ class StorageService:
                         prev.entry_date,
                     )
                     if price is not None:
-                        prev.liters = Decimal(str(prev.amount_spent)) / price
+                        prev.liters = float(
+                            (Decimal(str(prev.amount_spent)) / price).quantize(
+                                Decimal("0.01")
+                            )
+                        )
                 session.add(prev)
 
             # Auto-calculate liters for the current entry if possible
@@ -184,7 +188,11 @@ class StorageService:
                     entry.entry_date,
                 )
                 if price is not None:
-                    entry.liters = Decimal(str(entry.amount_spent)) / price
+                    entry.liters = float(
+                        (Decimal(str(entry.amount_spent)) / price).quantize(
+                            Decimal("0.01")
+                        )
+                    )
 
             session.add(entry)
             session.commit()

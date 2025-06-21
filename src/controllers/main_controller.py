@@ -65,7 +65,6 @@ else:
 
 from pathlib import Path
 import logging
-logger = logging.getLogger(__name__)
 import os
 import sys
 from datetime import datetime
@@ -107,6 +106,7 @@ from ..views import (
 from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
 
+logger = logging.getLogger(__name__)
 DEFAULT_FUEL_TYPE = "e20"
 
 
@@ -764,12 +764,13 @@ class MainController(QObject):
                 dialog.litersEdit.setEnabled(True)
                 return
 
-            liters = amount / price
+            liters = (amount / price).quantize(Decimal("0.01"))
             dialog.litersEdit.setText(str(liters))
             dialog.litersEdit.setEnabled(False)
 
         dialog.amountEdit.editingFinished.connect(_auto_fill_liters)
         dialog.autoFillCheckBox.toggled.connect(lambda _c: _auto_fill_liters())
+        dialog.dateEdit.dateChanged.connect(lambda _d: _auto_fill_liters())
 
         def _prefill() -> None:
             vid = dialog.vehicleComboBox.currentData()
