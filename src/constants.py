@@ -9,7 +9,6 @@ FUEL_TYPE_TH: dict[str, str] = {
     "diesel": "ดีเซล B7",
     "premium_diesel": "ดีเซลพรีเมียม",
     "diesel_b20": "ดีเซล B20",
-    "diesel_premium": "ดีเซลพรีเมียม",
     "ngv": "เอ็นจีวี",
 }
 
