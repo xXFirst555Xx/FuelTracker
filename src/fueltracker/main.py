@@ -50,12 +50,17 @@ def run(argv: list[str] | None = None) -> None:
     if args.check:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from PySide6.QtWidgets import QApplication
-    from PySide6.QtCore import QCoreApplication, Qt
+    from PySide6.QtCore import QCoreApplication, Qt, QLocale
     from PySide6.QtGui import QFont, QFontDatabase
 
     app = QApplication.instance()
     if not isinstance(app, QApplication):
         app = QApplication(sys.argv[:1])
+
+    # Use Arabic numerals in calendar widgets
+    QLocale.setDefault(
+        QLocale(QLocale.Thai, QLocale.Script.LatinScript, QLocale.Thailand)
+    )
 
     # FIX: set Thai-compatible font
     font_dir = os.environ.get("QT_QPA_FONTDIR")
