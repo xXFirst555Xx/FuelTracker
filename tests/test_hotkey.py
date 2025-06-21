@@ -45,9 +45,9 @@ def test_start_stop(monkeypatch):
 
     original = GlobalHotkey._wrapped_callback
 
-    def patched(self: GlobalHotkey) -> int:
+    def patched(self: GlobalHotkey) -> None:
         calls["callback"] += 1
-        return original(self)
+        original(self)
 
     monkeypatch.setattr(GlobalHotkey, "_wrapped_callback", patched)
 
@@ -69,14 +69,14 @@ def test_hotkey_returns_int(monkeypatch):
     assert gh._callback_adapter() == 1
     assert called == [True]
     called.clear()
-    assert gh._wrapped_callback() == 1
+    gh._wrapped_callback()
     assert called == [True]
 
 
 def test_hotkey_adapter_handles_exception(monkeypatch):
     gh = GlobalHotkey("Ctrl+Shift+N")
 
-    def boom(*args: object) -> int:
+    def boom(*args: object) -> None:
         raise RuntimeError("fail")
 
     monkeypatch.setattr(gh, "_wrapped_callback", boom)
