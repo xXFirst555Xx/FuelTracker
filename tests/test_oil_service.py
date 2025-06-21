@@ -298,3 +298,56 @@ def test_get_price_fallback(in_memory_storage):
         price = oil_service.get_price(s, "e20", "ptt", day2)
         assert price == Decimal("40")
 
+
+def test_update_missing_liters_caches_prices(monkeypatch, in_memory_storage):
+    day = date(2024, 6, 1)
+    with Session(in_memory_storage.engine) as s:
+        s.add(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
+        s.add(
+            FuelPrice(
+                date=day,
+                station="ptt",
+                fuel_type="e20",
+                name_th="E20",
+                price=Decimal("40"),
+            )
+        )
+        s.commit()
+
+        e1 = FuelEntry(
+            entry_date=day,
+            vehicle_id=1,
+            fuel_type="e20",
+            odo_before=0.0,
+            amount_spent=80.0,
+            liters=None,
+        )
+        e2 = FuelEntry(
+            entry_date=day,
+            vehicle_id=1,
+            fuel_type="e20",
+            odo_before=10.0,
+            amount_spent=40.0,
+            liters=None,
+        )
+        s.add(e1)
+        s.add(e2)
+        s.commit()
+
+        calls: list[tuple[str, str, date]] = []
+        orig_get_price = oil_service.get_price
+
+        def fake_get_price(session, fuel_type, station, eday, fallback_days=7):
+            calls.append((fuel_type, station, eday))
+            return orig_get_price(session, fuel_type, station, eday, fallback_days)
+
+        monkeypatch.setattr(oil_service, "get_price", fake_get_price)
+
+        oil_service.update_missing_liters(s, station="ptt")
+
+        assert len(calls) == 1
+        updated1 = s.get(FuelEntry, e1.id)
+        updated2 = s.get(FuelEntry, e2.id)
+        assert updated1.liters == pytest.approx(2.0)
+        assert updated2.liters == pytest.approx(1.0)
+
