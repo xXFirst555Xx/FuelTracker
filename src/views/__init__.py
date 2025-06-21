@@ -3,6 +3,7 @@
 from pathlib import Path
 import sys
 from PySide6.QtCore import QDir
+from PySide6.QtWidgets import QApplication
 
 from .main_window import MainWindow
 from .dialogs import (
@@ -28,6 +29,11 @@ def asset_path(*parts: str) -> Path:
 
 # Allow Qt to resolve ``icons:`` paths inside .ui files.
 QDir.addSearchPath("icons", str(asset_path("icons")))
+
+
+def supports_shadow() -> bool:
+    """Return True if the current Qt platform supports drop shadows."""
+    return QApplication.platformName() not in {"offscreen", "minimal"}
 
 
 def load_add_entry_dialog() -> AddEntryDialog:
@@ -60,4 +66,5 @@ __all__ = [
     "load_add_entry_dialog",
     "load_add_vehicle_dialog",
     "load_about_dialog",
+    "supports_shadow",
 ]
