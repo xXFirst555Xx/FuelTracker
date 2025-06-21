@@ -17,7 +17,7 @@ def _ensure_keyboard() -> None:
     if keyboard is not _NOT_LOADED:
         return
     try:  # pragma: no cover - optional dependency
-        import keyboard as kb  # type: ignore
+        import keyboard as kb
         keyboard = kb
     except Exception:
         keyboard = None
