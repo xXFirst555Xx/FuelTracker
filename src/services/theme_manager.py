@@ -61,8 +61,6 @@ class ThemeManager(QObject):
         if dark_mode_override is not None:
             theme = "dark" if dark_mode_override else "light"
 
-        self.current_theme = theme
-
         if theme == "system":
             scheme = self.app.styleHints().colorScheme()
             theme = "dark" if scheme == Qt.ColorScheme.Dark else "light"
@@ -81,16 +79,6 @@ class ThemeManager(QObject):
             self.app.setStyleSheet(self._qss_cache[theme])
         except OSError:
             pass
-
-    def reapply_theme(self) -> None:
-        """Reapply the last requested theme."""
-
-        self.apply_theme(
-            theme_override=self._last_args.get("theme_override"),
-            env_theme=self._last_args.get("env_theme"),
-            config_theme=self._last_args.get("config_theme"),
-            dark_mode_override=self._last_args.get("dark_mode_override"),
-        )
 
     # ------------------------------------------------------------------
     # Internal helpers
