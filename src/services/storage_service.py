@@ -175,6 +175,17 @@ class StorageService:
                         prev.liters = Decimal(str(prev.amount_spent)) / price
                 session.add(prev)
 
+            # Auto-calculate liters for the current entry if possible
+            if entry.amount_spent is not None and entry.liters is None:
+                price = get_price(
+                    session,
+                    entry.fuel_type or "e20",
+                    "ptt",
+                    entry.entry_date,
+                )
+                if price is not None:
+                    entry.liters = Decimal(str(entry.amount_spent)) / price
+
             session.add(entry)
             session.commit()
             # FIX: prevent hang when entry.id is None
