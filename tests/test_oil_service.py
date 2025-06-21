@@ -132,6 +132,63 @@ def test_amount_edit_triggers_autofill(main_controller, monkeypatch):
     assert not dialog.litersEdit.isEnabled()
 
 
+def test_autofill_toggle_enables_edit(main_controller, monkeypatch):
+    ctrl = main_controller
+    ctrl.storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+
+    dialog = load_add_entry_dialog()
+
+    def fake_load():
+        return dialog
+
+    monkeypatch.setattr(
+        "src.controllers.main_controller.load_add_entry_dialog", fake_load
+    )
+    monkeypatch.setattr(
+        "src.controllers.main_controller.get_price", lambda *a, **k: Decimal("50")
+    )
+
+    def fake_exec():
+        dialog.autoFillCheckBox.setChecked(False)
+        return QDialog.Rejected
+
+    monkeypatch.setattr(dialog, "exec", fake_exec)
+
+    ctrl.open_add_entry_dialog()
+    assert dialog.litersEdit.isEnabled()
+
+
+def test_missing_price_enables_manual_liters(main_controller, monkeypatch):
+    ctrl = main_controller
+    ctrl.storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+
+    dialog = load_add_entry_dialog()
+
+    def fake_load():
+        return dialog
+
+    monkeypatch.setattr(
+        "src.controllers.main_controller.load_add_entry_dialog", fake_load
+    )
+    monkeypatch.setattr(
+        "src.controllers.main_controller.get_price", lambda *a, **k: None
+    )
+
+    def fake_exec():
+        dialog.amountEdit.setText("100")
+        dialog.amountEdit.editingFinished.emit()
+        return QDialog.Rejected
+
+    monkeypatch.setattr(dialog, "exec", fake_exec)
+
+    ctrl.open_add_entry_dialog()
+    assert dialog.litersEdit.isEnabled()
+
+
 def test_price_update_handles_error(main_controller, monkeypatch):
     ctrl = main_controller
 
