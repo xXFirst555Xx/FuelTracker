@@ -6,15 +6,21 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-kb_module: Any
-try:
-    import keyboard as kb
-    kb_module = kb
-except Exception:  # pragma: no cover - optional dependency
-    kb_module = None
+_NOT_LOADED = object()
 
-# Optional keyboard module, may be ``None`` when dependency is missing
-keyboard: Any | None = kb_module
+# Optional keyboard module, initialized lazily to avoid import side effects
+keyboard: Any | None = _NOT_LOADED
+
+def _ensure_keyboard() -> None:
+    """Load the optional ``keyboard`` module on demand."""
+    global keyboard
+    if keyboard is not _NOT_LOADED:
+        return
+    try:  # pragma: no cover - optional dependency
+        import keyboard as kb  # type: ignore
+        keyboard = kb
+    except Exception:
+        keyboard = None
 
 
 class GlobalHotkey(QObject):
@@ -55,6 +61,8 @@ class GlobalHotkey(QObject):
         return 1  # Must return int to avoid WPARAM errors on Windows
 
     def start(self) -> None:
+        if keyboard is _NOT_LOADED:
+            _ensure_keyboard()
         if keyboard is None or self._registered:
             return
         try:
@@ -74,6 +82,8 @@ class GlobalHotkey(QObject):
         self._registered = True
 
     def stop(self) -> None:
+        if keyboard is _NOT_LOADED:
+            _ensure_keyboard()
         if keyboard is None or not self._registered:
             return
 
@@ -111,3 +121,4 @@ class GlobalHotkey(QObject):
         """Normalize Qt style hotkey string to keyboard module format."""
         tokens = [t.strip().lower() for t in seq.split("+") if t.strip()]
         return "+".join(tokens)
+
