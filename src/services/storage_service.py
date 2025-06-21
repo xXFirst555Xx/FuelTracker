@@ -91,6 +91,7 @@ class StorageService:
         engine: Engine | None = None,
         password: str | None = None,
         vacuum_threshold: int = 100,
+        default_station: str = "ptt",
     ) -> None:
         """เริ่มต้นบริการจัดเก็บข้อมูล
 
@@ -103,9 +104,12 @@ class StorageService:
         vacuum_threshold:
             เรียก :meth:`vacuum` หลังจากเพิ่มข้อมูลด้วย :meth:`add_entry`
             ครบจำนวนครั้งที่กำหนด ค่าเริ่มต้น ``100``
+        default_station:
+            สถานีบริการน้ำมันเริ่มต้นสำหรับคำสั่งคำนวณอัตโนมัติ
         """
 
         self._vacuum_threshold = vacuum_threshold
+        self.default_station = default_station
         self._entry_counter = 0
 
         if engine is not None:
@@ -168,7 +172,7 @@ class StorageService:
                     price = get_price(
                         session,
                         prev.fuel_type or "e20",
-                        "ptt",
+                        self.default_station,
                         prev.entry_date,
                     )
                     if price is not None:
@@ -184,7 +188,7 @@ class StorageService:
                 price = get_price(
                     session,
                     entry.fuel_type or "e20",
-                    "ptt",
+                    self.default_station,
                     entry.entry_date,
                 )
                 if price is not None:

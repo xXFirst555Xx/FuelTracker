@@ -188,7 +188,10 @@ class MainController(QObject):
         self.env = Settings()
         self.config_path = Path(config_path) if config_path else None
         self.config = AppConfig.load(self.config_path)
-        self.storage = StorageService(db_path or self.env.db_path)
+        self.storage = StorageService(
+            db_path or self.env.db_path,
+            default_station=self.config.default_station,
+        )
         self._dark_mode = dark_mode
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
