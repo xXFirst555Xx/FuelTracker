@@ -72,6 +72,6 @@ class Importer:
             for e in entries:
                 if e.id is not None:
                     session.refresh(e)
-            update_missing_liters(session)
+            update_missing_liters(session, self.storage.default_station)
 
         return entries
