@@ -16,13 +16,11 @@ class TrayIconManager(QObject):
         self,
         parent: QWidget | None,
         show_action: Callable[[], None],
-        hide_action: Callable[[], None],
         add_entry_action: Callable[[], None],
         quit_action: Callable[[], None],
     ) -> None:
         super().__init__(parent)
         self._show_action = show_action
-        self._hide_action = hide_action
         self._add_entry_action = add_entry_action
         self._quit_action = quit_action
 

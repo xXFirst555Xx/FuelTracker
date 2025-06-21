@@ -270,7 +270,6 @@ class MainController(QObject):
         self.tray_manager = TrayIconManager(
             self.window,
             self.window.show,
-            self.window.hide,
             self.open_add_entry_dialog,
             self._tray_quit,
         )
