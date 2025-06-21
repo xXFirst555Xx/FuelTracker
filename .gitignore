@@ -31,3 +31,7 @@ dist/
 
 # Misc
 assets/ui.png
+
+# Temporary databases created during testing
+fuel.db
+file:memdb1*
