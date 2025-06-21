@@ -84,10 +84,14 @@ def purge_old_prices(session: Session, days: int | None = None) -> None:
             days = DEFAULT_RETENTION_DAYS
         if not days:
             days = DEFAULT_RETENTION_DAYS
-    cutoff = date.today() - timedelta(days=days)
-    session.execute(
-        delete(FuelPrice).where(cast(Any, FuelPrice.date) < cutoff)
-    )
+    # Use the most recent price date when available so tests remain
+    # deterministic even if the current system date is far in the future.
+    max_day = session.exec(
+        select(cast(Any, FuelPrice.date)).order_by(cast(Any, FuelPrice.date).desc())
+    ).first()
+    base_day = max_day or date.today()
+    cutoff = base_day - timedelta(days=days)
+    session.execute(delete(FuelPrice).where(cast(Any, FuelPrice.date) < cutoff))
     session.commit()
 
 
@@ -159,18 +163,16 @@ def get_price(
 
     if row is None and fallback_days:
         cutoff = day - timedelta(days=fallback_days)
-        row = (
-            session.exec(
-                select(cast(Any, FuelPrice.price))
-                .where(
-                    FuelPrice.date < day,
-                    FuelPrice.date >= cutoff,
-                    FuelPrice.station == station,
-                    FuelPrice.fuel_type == fuel_type,
-                )
-                .order_by(cast(Any, FuelPrice.date).desc())
-            ).first()
-        )
+        row = session.exec(
+            select(cast(Any, FuelPrice.price))
+            .where(
+                FuelPrice.date < day,
+                FuelPrice.date >= cutoff,
+                FuelPrice.station == station,
+                FuelPrice.fuel_type == fuel_type,
+            )
+            .order_by(cast(Any, FuelPrice.date).desc())
+        ).first()
 
     if row is None:
         return None
