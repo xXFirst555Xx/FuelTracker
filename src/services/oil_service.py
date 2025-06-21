@@ -98,15 +98,18 @@ def update_missing_liters(session: Session, station: str = "ptt") -> None:
     )
     entries = session.exec(stmt).all()
 
+    prices: dict[tuple[str, date], Optional[Decimal]] = {}
+
     for entry in entries:
-        price = get_price(
-            session,
-            entry.fuel_type or "e20",
-            station,
-            entry.entry_date,
-        )
+        ftype = entry.fuel_type or "e20"
+        key = (ftype, entry.entry_date)
+        if key not in prices:
+            prices[key] = get_price(session, ftype, station, entry.entry_date)
+        price = prices[key]
+
         if price is None or entry.amount_spent is None:
             continue
+
         entry.liters = float(
             (Decimal(str(entry.amount_spent)) / price).quantize(Decimal("0.01"))
         )
