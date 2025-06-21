@@ -42,7 +42,7 @@ from PySide6.QtCore import (
     QDate,
     Slot,
 )
-from shiboken6 import isValid  # type: ignore[attr-defined]
+from shiboken6 import isValid
 from concurrent.futures import ThreadPoolExecutor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QSystemTrayIcon
 
@@ -273,7 +273,7 @@ class MainController(QObject):
         )
         self.tray_manager.show()
         self._setup_hotkey()
-        self.window.closeEvent = self._close_event  # type: ignore[method-assign]
+        self.window.closeEvent = self._close_event
         if hasattr(self.window, "budgetEdit"):
             self.window.budgetEdit.setValidator(QDoubleValidator(0.0, 1e9, 2))
         self.refresh_vehicle_list()
