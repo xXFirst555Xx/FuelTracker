@@ -59,46 +59,49 @@ class _Worker(QThread):
         self._vehicle_id = vehicle_id
 
     def run(self) -> None:
-        yearly = self._service.last_year_summary()
-        pie = self._service.liters_by_type()
-        monthly = self._service.monthly_summary()
-        table = self._service._monthly_df(date.today(), self._vehicle_id)
-        # Build charts
-        fig1 = Figure(figsize=(4, 3))
-        ax1 = fig1.add_subplot(111)
-        if not yearly.empty:
-            ax1.plot(yearly["month"].astype(str), yearly["km_per_l"], marker="o")
-        ax1.set_ylabel("km/L")
+        try:
+            yearly = self._service.last_year_summary()
+            pie = self._service.liters_by_type()
+            monthly = self._service.monthly_summary()
+            table = self._service._monthly_df(date.today(), self._vehicle_id)
+            # Build charts
+            fig1 = Figure(figsize=(4, 3))
+            ax1 = fig1.add_subplot(111)
+            if not yearly.empty:
+                ax1.plot(yearly["month"].astype(str), yearly["km_per_l"], marker="o")
+            ax1.set_ylabel("km/L")
 
-        fig2 = Figure(figsize=(4, 3))
-        ax2 = fig2.add_subplot(111)
-        if not yearly.empty:
-            ax2.bar(yearly["month"].astype(str), yearly["amount_spent"])
-        ax2.set_ylabel("บาท")
+            fig2 = Figure(figsize=(4, 3))
+            ax2 = fig2.add_subplot(111)
+            if not yearly.empty:
+                ax2.bar(yearly["month"].astype(str), yearly["amount_spent"])
+            ax2.set_ylabel("บาท")
 
-        fig3 = Figure(figsize=(4, 3))
-        ax3 = fig3.add_subplot(111)
-        if not pie.empty:
-            ax3.pie(pie, labels=pie.index.tolist())
+            fig3 = Figure(figsize=(4, 3))
+            ax3 = fig3.add_subplot(111)
+            if not pie.empty:
+                ax3.pie(pie, labels=pie.index.tolist())
 
-        fig4 = Figure(figsize=(6, 4))
-        ax4_1 = fig4.add_subplot(311)
-        if not monthly.empty:
-            ax4_1.bar(monthly["month"].astype(str), monthly["distance"])
-        ax4_1.set_ylabel("km")
+            fig4 = Figure(figsize=(6, 4))
+            ax4_1 = fig4.add_subplot(311)
+            if not monthly.empty:
+                ax4_1.bar(monthly["month"].astype(str), monthly["distance"])
+            ax4_1.set_ylabel("km")
 
-        ax4_2 = fig4.add_subplot(312)
-        if not monthly.empty:
-            ax4_2.bar(monthly["month"].astype(str), monthly["liters"])
-        ax4_2.set_ylabel("L")
+            ax4_2 = fig4.add_subplot(312)
+            if not monthly.empty:
+                ax4_2.bar(monthly["month"].astype(str), monthly["liters"])
+            ax4_2.set_ylabel("L")
 
-        ax4_3 = fig4.add_subplot(313)
-        if not monthly.empty:
-            ax4_3.plot(monthly["month"].astype(str), monthly["km_per_l"], marker="o")
-        ax4_3.set_ylabel("km/L")
-        fig4.tight_layout()
+            ax4_3 = fig4.add_subplot(313)
+            if not monthly.empty:
+                ax4_3.plot(monthly["month"].astype(str), monthly["km_per_l"], marker="o")
+            ax4_3.set_ylabel("km/L")
+            fig4.tight_layout()
 
-        self.data_ready.emit(fig1, fig2, fig3, fig4, table)
+            self.data_ready.emit(fig1, fig2, fig3, fig4, table)
+        finally:
+            pass
 
 
 class ReportsPage(QWidget):
