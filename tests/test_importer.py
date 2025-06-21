@@ -96,7 +96,7 @@ def test_import_many_single_transaction(tmp_path: Path):
 
     event.listen(Session, "after_commit", count_commit)
     start = commit_count
-    entries = importer.import_csv(csv_path, 1)
+    importer.import_csv(csv_path, 1)
     event.remove(Session, "after_commit", count_commit)
 
     saved = storage.list_entries()
