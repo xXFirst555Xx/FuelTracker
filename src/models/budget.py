@@ -6,7 +6,7 @@ from sqlmodel import Field, SQLModel
 from sqlalchemy import Index
 
 
-class Budget(SQLModel, table=True):
+class Budget(SQLModel, table=True):  # type: ignore[misc]
     """งบประมาณรายเดือนของยานพาหนะ"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
