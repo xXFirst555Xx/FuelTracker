@@ -23,8 +23,13 @@
 
 ## ความต้องการ
 
- - Python 3.11 or later
+- Python 3.11 or later
 - ติดตั้งแพ็กเกจที่ระบุใน `requirements.txt`
+- ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้
+
+```bash
+sudo apt-get install libegl1
+```
 
 ## การติดตั้ง
 
