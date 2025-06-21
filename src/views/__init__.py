@@ -12,6 +12,7 @@ from .dialogs import (
     ImportCsvDialog,
     AboutDialog,
 )
+from ..constants import FUEL_TYPE_TH
 
 BASE_PATH = Path(__file__).resolve().parent
 
@@ -30,7 +31,11 @@ QDir.addSearchPath("icons", str(asset_path("icons")))
 
 def load_add_entry_dialog() -> AddEntryDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเพิ่มข้อมูลการเติมน้ำมัน"""
-    return AddEntryDialog()
+    dialog = AddEntryDialog()
+    dialog.fuelTypeComboBox.clear()
+    for key, name in FUEL_TYPE_TH.items():
+        dialog.fuelTypeComboBox.addItem(name, key)
+    return dialog
 
 
 def load_add_vehicle_dialog() -> AddVehicleDialog:

@@ -107,7 +107,6 @@ from ..views.reports_page import ReportsPage
 from ..hotkey import GlobalHotkey
 
 logger = logging.getLogger(__name__)
-DEFAULT_FUEL_TYPE = "e20"
 
 
 def get_price(*args, **kwargs):
@@ -752,10 +751,14 @@ class MainController(QObject):
                 dialog.litersEdit.setEnabled(True)
                 return
 
+            fuel_type = dialog.fuelTypeComboBox.currentData()
+            if fuel_type is None:
+                fuel_type = "e20"
+
             with Session(self.storage.engine) as session:
                 price = get_price(
                     session,
-                    DEFAULT_FUEL_TYPE,
+                    fuel_type,
                     self.config.default_station,
                     dialog.dateEdit.date().toPython(),
                 )
@@ -781,6 +784,12 @@ class MainController(QObject):
                 dialog.odoBeforeEdit.setText(str(last.odo_after))
             else:
                 dialog.odoBeforeEdit.clear()
+            if last is not None and last.fuel_type:
+                idx = dialog.fuelTypeComboBox.findData(last.fuel_type)
+                if idx >= 0:
+                    dialog.fuelTypeComboBox.setCurrentIndex(idx)
+            else:
+                dialog.fuelTypeComboBox.setCurrentIndex(0)
             dialog.amountEdit.clear()
 
         for v in self.storage.list_vehicles():
@@ -795,6 +804,7 @@ class MainController(QObject):
                 entry = FuelEntry(
                     entry_date=dialog.dateEdit.date().toPython(),
                     vehicle_id=vehicle_id,
+                    fuel_type=dialog.fuelTypeComboBox.currentData(),
                     odo_before=float(dialog.odoBeforeEdit.text()),
                     odo_after=None,
                     amount_spent=float(amount_text) if amount_text else None,

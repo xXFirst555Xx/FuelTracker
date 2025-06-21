@@ -12,7 +12,13 @@ def test_first_fill(in_memory_storage: StorageService) -> None:
     storage = in_memory_storage
     vehicle = Vehicle(name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40)
     storage.add_vehicle(vehicle)
-    entry = FuelEntry(entry_date=date(2024, 1, 1), vehicle_id=vehicle.id, odo_before=1000.0, amount_spent=800.0)
+    entry = FuelEntry(
+        entry_date=date(2024, 1, 1),
+        vehicle_id=vehicle.id,
+        fuel_type="e20",
+        odo_before=1000.0,
+        amount_spent=800.0,
+    )
     storage.add_entry(entry)
     fetched = storage.get_entry(entry.id)
     assert fetched.odo_after is None
