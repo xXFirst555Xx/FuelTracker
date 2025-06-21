@@ -14,4 +14,6 @@ class Settings(BaseSettings):
     ft_cloud_dir: Path | None = None
     appdata: Path | None = Field(default=None, validation_alias="APPDATA")
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, env_prefix="")
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=False, env_prefix=""
+    )

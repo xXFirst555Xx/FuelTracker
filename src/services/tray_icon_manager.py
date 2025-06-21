@@ -59,7 +59,9 @@ class TrayIconManager(QObject):
         self.tray_icon.setToolTip(text)
 
     def show_message(self, title: str, message: str, msecs: int = 10000) -> None:
-        self.tray_icon.showMessage(title, message, QSystemTrayIcon.MessageIcon.NoIcon, msecs)
+        self.tray_icon.showMessage(
+            title, message, QSystemTrayIcon.MessageIcon.NoIcon, msecs
+        )
 
     # ------------------------------------------------------------------
     # Internal callbacks
@@ -67,4 +69,3 @@ class TrayIconManager(QObject):
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self._show_action()
-

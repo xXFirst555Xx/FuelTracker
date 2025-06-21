@@ -18,10 +18,12 @@ class FuelEntryRepository:
             stmt = (
                 select(FuelEntry)
                 .where(FuelEntry.vehicle_id == vehicle_id)
-                .order_by(cast(Any, FuelEntry.entry_date).desc(), cast(Any, FuelEntry.id).desc())
+                .order_by(
+                    cast(Any, FuelEntry.entry_date).desc(),
+                    cast(Any, FuelEntry.id).desc(),
+                )
             )
             return sess.exec(stmt).first()
-
 
     def add(self, entry: FuelEntry) -> FuelEntry:
         with Session(self.engine) as sess:

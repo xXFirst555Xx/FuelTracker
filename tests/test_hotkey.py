@@ -61,6 +61,7 @@ def test_start_stop(monkeypatch):
     gh.stop()
     assert calls["listener_stop"] == 1
 
+
 def test_hotkey_returns_int(monkeypatch):
     gh = GlobalHotkey("Ctrl+Shift+N")
     called = []
@@ -74,8 +75,10 @@ def test_hotkey_returns_int(monkeypatch):
 
 def test_hotkey_adapter_handles_exception(monkeypatch):
     gh = GlobalHotkey("Ctrl+Shift+N")
+
     def boom(*args: object) -> int:
         raise RuntimeError("fail")
+
     monkeypatch.setattr(gh, "_wrapped_callback", boom)
     # Should return 1 even if the wrapped callback raises an error
     assert gh._callback_adapter() == 1

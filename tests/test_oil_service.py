@@ -260,7 +260,9 @@ def test_fetch_latest_updates_missing_liters(monkeypatch, in_memory_storage):
     monkeypatch.setattr(oil_service._HTTP_SESSION, "get", fake_get)
     with Session(in_memory_storage.engine) as s:
         s.add(
-            Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+            Vehicle(
+                name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1
+            )
         )
         s.commit()
         entry = FuelEntry(
@@ -302,7 +304,11 @@ def test_get_price_fallback(in_memory_storage):
 def test_update_missing_liters_caches_prices(monkeypatch, in_memory_storage):
     day = date(2024, 6, 1)
     with Session(in_memory_storage.engine) as s:
-        s.add(Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1))
+        s.add(
+            Vehicle(
+                name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1
+            )
+        )
         s.add(
             FuelPrice(
                 date=day,
@@ -350,4 +356,3 @@ def test_update_missing_liters_caches_prices(monkeypatch, in_memory_storage):
         updated2 = s.get(FuelEntry, e2.id)
         assert updated1.liters == pytest.approx(2.0)
         assert updated2.liters == pytest.approx(1.0)
-

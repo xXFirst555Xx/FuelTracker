@@ -25,6 +25,7 @@ def asset_path(*parts: str) -> Path:
     root = Path(getattr(sys, "_MEIPASS", BASE_PATH.parents[1]))
     return root.joinpath("assets", *parts)
 
+
 # Allow Qt to resolve ``icons:`` paths inside .ui files.
 QDir.addSearchPath("icons", str(asset_path("icons")))
 
@@ -46,6 +47,8 @@ def load_add_vehicle_dialog() -> AddVehicleDialog:
 def load_about_dialog() -> AboutDialog:
     """ตัวช่วยโหลดกล่องโต้ตอบเกี่ยวกับโปรแกรม"""
     return AboutDialog()
+
+
 __all__ = [
     "MainWindow",
     "AddEntryDialog",

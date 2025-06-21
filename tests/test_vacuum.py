@@ -75,4 +75,3 @@ def test_vacuum_executes_sql(monkeypatch) -> None:
     _add_entry(storage, 0, 100)
 
     assert any(sql.strip().upper().startswith("VACUUM") for sql in executed)
-

@@ -561,8 +561,12 @@ class StorageService:
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
 
-        with closing(cast(sqlcipher.Connection, self.engine.raw_connection())) as source_conn, \
-                closing(sqlcipher.connect(str(backup_path))) as dest_conn:
+        with (
+            closing(
+                cast(sqlcipher.Connection, self.engine.raw_connection())
+            ) as source_conn,
+            closing(sqlcipher.connect(str(backup_path))) as dest_conn,
+        ):
             if encrypted and _SQLCIPHER_AVAILABLE and self._password:
                 dest_conn.execute(f"PRAGMA key='{self._password}';")
             source_conn.backup(dest_conn)

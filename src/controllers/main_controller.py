@@ -221,9 +221,7 @@ class MainController(QObject):
         self.window.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea, self.maint_dock
         )
-        self.window.addDockWidget(
-            Qt.DockWidgetArea.RightDockWidgetArea, self.oil_dock
-        )
+        self.window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.oil_dock)
         if hasattr(self.window, "reportsContainer"):
             self.reports_page = ReportsPage(self.report_service, self.window)
             self.window.reportsLayout.replaceWidget(
@@ -553,7 +551,6 @@ class MainController(QObject):
             config_theme=self.config.theme,
             dark_mode_override=self._dark_mode,
         )
-
 
     def _tray_quit(self) -> None:
         self.shutdown()
@@ -934,7 +931,9 @@ class MainController(QObject):
         dialog.setWindowTitle("แก้ไขงานบำรุงรักษา")
         today = date.today()
         if task.due_date:
-            dialog.dateEdit.setDate(QDate(task.due_date.year, task.due_date.month, task.due_date.day))
+            dialog.dateEdit.setDate(
+                QDate(task.due_date.year, task.due_date.month, task.due_date.day)
+            )
         else:
             dialog.dateEdit.setDate(QDate(today.year, today.month, today.day))
         dialog.odoLineEdit.setValidator(QDoubleValidator(0.0, 1e9, 0))
@@ -1074,7 +1073,9 @@ class MainController(QObject):
     def _load_prices(self) -> None:
         with Session(self.storage.engine) as session:
             rows = session.exec(
-                select(FuelPrice).order_by(cast(Any, FuelPrice.date).desc()).limit(90 * 6)
+                select(FuelPrice)
+                .order_by(cast(Any, FuelPrice.date).desc())
+                .limit(90 * 6)
             ).all()
         self.oil_dock.table.setRowCount(len(rows))
         self.oil_dock.figure.clear()

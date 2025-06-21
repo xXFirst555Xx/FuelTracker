@@ -18,6 +18,4 @@ class Maintenance(SQLModel, table=True):
     note: Optional[str] = None
     is_done: bool = False
 
-    __table_args__ = (
-        Index("ix_maintenance_vehicle_id", "vehicle_id"),
-    )
+    __table_args__ = (Index("ix_maintenance_vehicle_id", "vehicle_id"),)

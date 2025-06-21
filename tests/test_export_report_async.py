@@ -49,7 +49,9 @@ def test_export_report_runs_async(qtbot, main_controller, tmp_path, monkeypatch)
         pass
 
 
-def test_export_report_failure_shows_error(qtbot, main_controller, tmp_path, monkeypatch):
+def test_export_report_failure_shows_error(
+    qtbot, main_controller, tmp_path, monkeypatch
+):
     ctrl = main_controller
     qtbot.addWidget(ctrl.window)
 
@@ -62,8 +64,12 @@ def test_export_report_failure_shows_error(qtbot, main_controller, tmp_path, mon
     def fail_csv(self, *_a, **_k):
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(ctrl.exporter, "monthly_csv", MethodType(fail_csv, ctrl.exporter))
-    monkeypatch.setattr(ctrl.exporter, "monthly_pdf", MethodType(lambda *a, **k: None, ctrl.exporter))
+    monkeypatch.setattr(
+        ctrl.exporter, "monthly_csv", MethodType(fail_csv, ctrl.exporter)
+    )
+    monkeypatch.setattr(
+        ctrl.exporter, "monthly_pdf", MethodType(lambda *a, **k: None, ctrl.exporter)
+    )
 
     csv_path = tmp_path / "out.csv"
     pdf_path = tmp_path / "out.pdf"
