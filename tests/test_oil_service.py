@@ -43,7 +43,7 @@ SAMPLE = {
 called: dict[str, str] = {}
 
 
-def fake_get(url: str, timeout: int | None = None):
+def fake_get(url: str, _timeout: int | None = None, **_kwargs):
     called["url"] = url
 
     class R:

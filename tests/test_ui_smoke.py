@@ -12,7 +12,7 @@ def test_mainwindow_launch(monkeypatch):
 
     # prevent blocking by skipping the event loop
     monkeypatch.setattr(QApplication, "exec", lambda self: 0)
-    monkeypatch.setattr(sys, "exit", lambda *a, **kw: None)
+    monkeypatch.setattr(sys, "exit", lambda *a, **_kw: None)
     shown = []
     monkeypatch.setattr(QMainWindow, "show", lambda self: shown.append(True))
 
