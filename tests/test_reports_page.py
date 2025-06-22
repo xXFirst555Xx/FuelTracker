@@ -25,9 +25,12 @@ def test_refresh_clears_worker(qtbot, main_controller):
     ctrl = main_controller
     page = ctrl.reports_page
     qtbot.addWidget(page)
-    with qtbot.waitSignal(page.refresh_requested, timeout=2000):
-        page.refresh_button.click()
-    qtbot.waitUntil(lambda: page._worker is None, timeout=2000)
+    page.refresh_button.click()
+    worker = page._worker
+    assert worker is not None
+    with qtbot.waitSignal(worker.finished, timeout=2000):
+        pass
+    assert page._worker is None
 
 
 def test_vehicle_selection_updates_monthly(qtbot, main_controller, monkeypatch):
