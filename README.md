@@ -20,6 +20,8 @@
 - **CSV/PDF/Excel exporting** creates monthly reports, described in
   [EXPORTING.md](docs/EXPORTING.md).
 - Excel export requires the `openpyxl` library.
+- **Oil price API** fetches daily fuel prices using `OilPriceService`.
+  See [API.md](docs/API.md) for usage details.
 
 ## ความต้องการ
 
