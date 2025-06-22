@@ -18,7 +18,7 @@ def test_monthly_tab_populates(qtbot, main_controller):
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
         page.refresh_button.click()
-    assert page.monthly_layout.count() > 0
+    qtbot.waitUntil(lambda: page.monthly_layout.count() > 0)
 
 
 def test_refresh_clears_worker(qtbot, main_controller):
