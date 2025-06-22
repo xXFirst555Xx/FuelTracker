@@ -1,4 +1,5 @@
-from src.models import Vehicle
+from src.models import Vehicle, FuelEntry
+from datetime import date
 from src.services.report_service import ReportService
 import pandas as pd
 
@@ -14,6 +15,25 @@ def test_refresh_updates_summary(qtbot, main_controller):
 
 def test_monthly_tab_populates(qtbot, main_controller):
     ctrl = main_controller
+    storage = ctrl.storage
+    storage.add_vehicle(
+        Vehicle(
+            name="v1",
+            vehicle_type="t",
+            license_plate="x",
+            tank_capacity_liters=1,
+        )
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date.today(),
+            vehicle_id=1,
+            odo_before=0.0,
+            odo_after=100.0,
+            amount_spent=50.0,
+            liters=5.0,
+        )
+    )
     page = ctrl.reports_page
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
