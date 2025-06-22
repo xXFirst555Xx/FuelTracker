@@ -48,7 +48,7 @@ class GlobalHotkey(QObject):
         except Exception as exc:  # pragma: no cover - defensive
             logger.exception("Hotkey adapter error: %s", exc)
         finally:
-            # Windows hooks require a numeric return value
+            # Always return ``1`` to satisfy the Win32 hook requirement
             return 1
 
     def _wrapped_callback(self, *args: object) -> None:
