@@ -20,6 +20,8 @@
 - **CSV/PDF/Excel exporting** creates monthly reports, described in
   [EXPORTING.md](docs/EXPORTING.md).
 - Excel export requires the `openpyxl` library.
+- **System tray icon** provides quick actions and keeps the app running in the background.
+- **Global hotkey** (default `Ctrl+Shift+N`) instantly opens the Add Entry dialog.
 - **Oil price API** fetches daily fuel prices using `OilPriceService`.
   See [API.md](docs/API.md) for usage details.
 
@@ -110,6 +112,8 @@ pre-commit run --all-files
 ```bash
 python -m fueltracker
 ```
+
+ใช้ `--start-minimized` เพื่อเปิดโปรแกรมแบบย่อโดยอัตโนมัติ
 
 โปรแกรมจะอัปเกรดฐานข้อมูลเป็นเวอร์ชันล่าสุดให้อัตโนมัติ หากไม่ได้ใช้ `--check`
 
