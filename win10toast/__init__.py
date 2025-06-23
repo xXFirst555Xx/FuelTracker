@@ -55,12 +55,12 @@ class ToastNotifier(object):
     from: https://github.com/jithurjacob/Windows-10-Toast-Notifications
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize."""
         self._thread = None
 
     def _show_toast(self, title, msg,
-                    icon_path, duration):
+                    icon_path, duration) -> None:
         """Notification settings.
 
         :title: notification title
@@ -117,7 +117,7 @@ class ToastNotifier(object):
         return None
 
     def show_toast(self, title="Notification", msg="Here comes the message",
-                    icon_path=None, duration=5, threaded=False):
+                    icon_path=None, duration=5, threaded=False) -> bool:
         """Notification settings.
 
         :title: notification title
@@ -136,14 +136,14 @@ class ToastNotifier(object):
             self._thread.start()
         return True
 
-    def notification_active(self):
+    def notification_active(self) -> bool:
         """See if we have an active notification showing"""
         if self._thread is not None and self._thread.is_alive():
             # We have an active notification, let is finish we don't spam them
             return True
         return False
 
-    def on_destroy(self, hwnd, msg, wparam, lparam):
+    def on_destroy(self, hwnd, msg, wparam, lparam) -> int:
         """Clean after notification ended.
 
         :hwnd:
