@@ -11,6 +11,7 @@ from decimal import Decimal
 from contextlib import closing
 
 from ..settings import Settings
+from appdirs import user_data_dir
 
 try:
     from pysqlcipher3 import dbapi2 as sqlcipher
@@ -88,7 +89,7 @@ class _ConnProxy:
 class StorageService:
     def __init__(
         self,
-        db_path: str | Path = "fuel.db",
+        db_path: str | Path = Path(user_data_dir("FuelTracker", "YourOrg")) / "fuel.db",
         engine: Engine | None = None,
         password: str | None = None,
         vacuum_threshold: int = 100,

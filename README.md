@@ -98,7 +98,7 @@ pre-commit run --all-files
 เมื่อรันโปรแกรม [`python-dotenv`](https://pypi.org/project/python-dotenv/) จะโหลดตัวแปรจากไฟล์นี้ให้โดยอัตโนมัติ
 
 - `DB_PATH` กำหนดตำแหน่งฐานข้อมูล SQLite (ค่าเริ่มต้นคือ
-  `appdirs.user_data_dir("FuelTracker")/fuel.db`)
+  `appdirs.user_data_dir("FuelTracker", "YourOrg")/fuel.db`)
 - `FT_THEME` เลือกธีม `light`, `dark` หรือ `modern`
 - `FT_DB_PASSWORD` ตั้งรหัสผ่านเพื่อเปิดใช้ SQLCipher (ปล่อยว่างได้ถ้าไม่ต้องการ)
 - `OIL_API_BASE` กำหนด URL พื้นฐานสำหรับ API ราคาน้ำมัน (เขียนทับค่าที่ตั้งไว้)
