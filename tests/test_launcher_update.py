@@ -1,4 +1,3 @@
-import os
 import zipfile
 from pathlib import Path
 
@@ -9,7 +8,9 @@ class DummyUpdater:
         self.download_dir = Path(launcher.APP_DIR)
         self.extract_dir = self.download_dir / "extract"
         self.extract_dir.mkdir(parents=True, exist_ok=True)
-        self.new_archive_meta = type("Meta", (), {"version": "0.2.0"})()
+        from packaging.version import Version
+
+        self.new_archive_meta = type("Meta", (), {"version": Version("0.2.0")})()
         self.archive = self.download_dir / "FuelTracker-0.2.0-win64.zip"
         with zipfile.ZipFile(self.archive, "w") as zf:
             zf.writestr("FuelTracker.exe", b"")
@@ -25,6 +26,28 @@ class DummyUpdater:
 
 def test_update_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "APP_DIR", tmp_path)
+    monkeypatch.setattr(launcher, "LOG_FILE", tmp_path / "launcher.log")
+    class DummyApp:
+        def processEvents(self):
+            pass
+
+    class DummySplash:
+        def finish(self, _):
+            pass
+
+    class DummyBar:
+        def setRange(self, *_args):
+            pass
+
+        def setValue(self, *_args):
+            pass
+
+    monkeypatch.setattr(
+        launcher,
+        "show_splash",
+        lambda: (DummyApp(), DummySplash(), DummyBar()),
+    )
+    monkeypatch.setattr(launcher, "run_app", lambda: None)
     monkeypatch.setattr(launcher, "AppUpdater", DummyUpdater)
     launcher.install_version("0.1.0", tmp_path)
     assert (tmp_path / "current").exists()
