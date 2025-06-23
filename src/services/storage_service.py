@@ -133,7 +133,7 @@ class StorageService:
             self._password = password or ""
 
             def _connect() -> sqlcipher.Connection:
-                raw = sqlcipher.connect(str(db_path))
+                raw = sqlcipher.connect(str(db_path), check_same_thread=False)
                 if _SQLCIPHER_AVAILABLE:
                     raw.execute(f"PRAGMA key='{password}';")
                 return _ConnProxy(raw)
