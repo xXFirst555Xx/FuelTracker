@@ -42,6 +42,9 @@ _ = (
     tests.test_launcher_update.DummyApp.processEvents,
     tests.test_launcher_update.DummySplash.finish,
     tests.test_launcher_update.DummyBar.setRange,
+    tests.test_launcher_update.qt_widgets.QProgressBar,
+    tests.test_launcher_update.qt_widgets.QSplashScreen,
+    tests.test_launcher_update.qt_gui.QPixmap,
 )
 
 __all__ = ["_"]
