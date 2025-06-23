@@ -1042,7 +1042,7 @@ class MainController(QObject):
                 try:
                     with Session(self.controller.storage.engine) as sess:
                         fetch_latest(sess, self.controller.config.default_station)
-                        if shiboken6.isValid(self.controller):  # type: ignore[attr-defined]
+                        if shiboken6.Shiboken.isValid(self.controller):
                             # ``invokeMethod`` expects the member name as a
                             # Python ``str`` in newer PySide versions. Using a
                             # ``bytes`` object causes a ``ValueError`` which in
