@@ -14,7 +14,7 @@ sys.modules.setdefault("PyQt6", types.ModuleType("PyQt6"))
 sys.modules["PyQt6.QtWidgets"] = qt_widgets
 sys.modules["PyQt6.QtGui"] = qt_gui
 
-import launcher
+import launcher  # noqa: E402
 
 
 class DummyUpdater:
