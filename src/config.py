@@ -2,10 +2,11 @@ import json
 import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from appdirs import user_config_dir
 
 from .settings import Settings
 
-CONFIG_PATH = Path.home() / ".fueltracker" / "config.json"
+CONFIG_PATH = Path(user_config_dir("FuelTracker")) / "config.json"
 
 
 @dataclass
