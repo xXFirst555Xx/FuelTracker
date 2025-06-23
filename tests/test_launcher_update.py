@@ -3,6 +3,7 @@ from pathlib import Path
 
 import launcher
 
+
 class DummyUpdater:
     def __init__(self):
         self.download_dir = Path(launcher.APP_DIR)
@@ -27,6 +28,7 @@ class DummyUpdater:
 def test_update_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "APP_DIR", tmp_path)
     monkeypatch.setattr(launcher, "LOG_FILE", tmp_path / "launcher.log")
+
     class DummyApp:
         def processEvents(self):
             pass
@@ -51,7 +53,11 @@ def test_update_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "AppUpdater", DummyUpdater)
     launcher.install_version("0.1.0", tmp_path)
     assert (tmp_path / "current").exists()
-    result = launcher.main.__wrapped__ if hasattr(launcher.main, "__wrapped__") else launcher.main
+    result = (
+        launcher.main.__wrapped__
+        if hasattr(launcher.main, "__wrapped__")
+        else launcher.main
+    )
     result()  # run update flow
     assert (tmp_path / "FuelTracker-0.2.0-win64.zip").exists()
     assert (tmp_path / "0.2.0" / "FuelTracker.exe").exists()

@@ -5,6 +5,7 @@ import time
 
 def test_no_wparam_crash(monkeypatch):
     import os
+
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     # Stub win32api module
     win32api = types.SimpleNamespace(
@@ -56,6 +57,7 @@ def test_no_wparam_crash(monkeypatch):
     monkeypatch.setattr("pkg_resources.Requirement.parse", lambda *a, **k: None)
 
     from win10toast import ToastNotifier
+
     tn = ToastNotifier()
     tn.show_toast("hi", "body", threaded=True)
     time.sleep(0.2)
