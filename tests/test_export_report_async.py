@@ -18,15 +18,19 @@ def test_export_report_runs_async(qtbot, main_controller, tmp_path, monkeypatch)
         assert Path(path) == csv_path
         time.sleep(0.2)
 
-    def slow_pdf(self, month, year, path):
-        assert Path(path) == pdf_path
+    def slow_pdf(self, month, vehicle_id):
+        assert vehicle_id is None
+        pdf_path.write_text("dummy")
         time.sleep(0.2)
+        return pdf_path
 
     monkeypatch.setattr(
         ctrl.exporter, "monthly_csv", MethodType(slow_csv, ctrl.exporter)
     )
     monkeypatch.setattr(
-        ctrl.exporter, "monthly_pdf", MethodType(slow_pdf, ctrl.exporter)
+        ctrl.export_service,
+        "export_monthly_pdf",
+        MethodType(slow_pdf, ctrl.export_service),
     )
 
     calls = []
@@ -68,7 +72,9 @@ def test_export_report_failure_shows_error(
         ctrl.exporter, "monthly_csv", MethodType(fail_csv, ctrl.exporter)
     )
     monkeypatch.setattr(
-        ctrl.exporter, "monthly_pdf", MethodType(lambda *a, **k: None, ctrl.exporter)
+        ctrl.export_service,
+        "export_monthly_pdf",
+        MethodType(lambda *a, **k: pdf_path, ctrl.export_service),
     )
 
     csv_path = tmp_path / "out.csv"
