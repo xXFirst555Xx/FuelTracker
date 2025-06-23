@@ -40,6 +40,7 @@ sudo apt-get install libegl1
 ```bash
 pip install -e .[dev]
 ```
+คำสั่งนี้จะติดตั้งไทป์สตับที่จำเป็นสำหรับการพัฒนา เช่น `types-setuptools` เพื่อให้การตรวจสอบชนิดด้วย `mypy` ทำงานได้ครบถ้วน
 
 ## Using Poe the Poet
 
