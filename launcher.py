@@ -55,9 +55,21 @@ def setup_logging() -> None:
 
 
 def read_current_version() -> str:
+    """Return the installed application version.
+
+    The launcher normally keeps a ``current`` symlink pointing to the
+    installed version directory.  On platforms where symlinks are not
+    available, a ``current_version`` text file is written instead.  This
+    helper checks for both mechanisms and falls back to ``CURRENT_VERSION``
+    when nothing is found.
+    """
+
     cur = APP_DIR / "current"
-    if cur.exists():
+    if cur.is_symlink():
         return cur.resolve().name
+    version_file = APP_DIR / "current_version"
+    if version_file.exists():
+        return version_file.read_text().strip()
     return CURRENT_VERSION
 
 
@@ -104,6 +116,7 @@ def install_version(version: str, extracted: Path) -> Path:
         current.symlink_to(dest, target_is_directory=True)
     except OSError:
         shutil.copytree(dest, current, dirs_exist_ok=True)
+    (APP_DIR / "current_version").write_text(version)
     versions = sorted(
         [p for p in APP_DIR.iterdir() if p.is_dir() and p.name[0].isdigit()],
         key=lambda p: Version(p.name),

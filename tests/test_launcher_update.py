@@ -1,6 +1,19 @@
 import zipfile
 from pathlib import Path
 
+import sys
+import types
+
+qt_widgets = types.ModuleType("QtWidgets")
+qt_widgets.QApplication = object
+qt_widgets.QProgressBar = object
+qt_widgets.QSplashScreen = object
+qt_gui = types.ModuleType("QtGui")
+qt_gui.QPixmap = object
+sys.modules.setdefault("PyQt6", types.ModuleType("PyQt6"))
+sys.modules["PyQt6.QtWidgets"] = qt_widgets
+sys.modules["PyQt6.QtGui"] = qt_gui
+
 import launcher
 
 
@@ -62,4 +75,8 @@ def test_update_install(monkeypatch, tmp_path):
     result()  # run update flow
     assert (tmp_path / "FuelTracker-0.2.0-win64.zip").exists()
     assert (tmp_path / "0.2.0" / "FuelTracker.exe").exists()
-    assert (tmp_path / "current").resolve().name == "0.2.0"
+    current = tmp_path / "current"
+    if current.is_symlink():
+        assert current.resolve().name == "0.2.0"
+    else:
+        assert (tmp_path / "current_version").read_text().strip() == "0.2.0"
