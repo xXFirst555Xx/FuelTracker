@@ -60,3 +60,24 @@ def test_export_service_outputs(
         assert field in df_summary.columns
 
     assert matplotlib.get_backend().lower() == "agg"
+
+
+
+def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
+    storage = in_memory_storage
+    _populate(storage, count=10)
+    service = ExportService(storage)
+    pdf_path = service.export_monthly_pdf("2024-01", None)
+    xls_path = service.export_monthly_xlsx("2024-01")
+
+    # capture temporary directories before cleanup
+    tmp_dirs = [Path(tmp.name) for tmp in service._tmpdirs]
+    assert pdf_path.exists()
+    assert xls_path.exists()
+    assert all(p.exists() for p in tmp_dirs)
+
+    service.cleanup()
+
+    for p in tmp_dirs:
+        assert not p.exists()
+    assert service._tmpdirs == []

@@ -6,7 +6,16 @@ from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy.pool import StaticPool
 from alembic.config import Config
 from alembic import command
+from PySide6 import QtWidgets, QtGui
 from PySide6.QtWidgets import QApplication
+
+# Provide Qt5-style reexports for Qt6 compatibility
+if not hasattr(QtWidgets, "QAction"):
+    QtWidgets.QAction = QtGui.QAction  # type: ignore[attr-defined]
+if not hasattr(QtWidgets, "QStandardItemModel"):
+    QtWidgets.QStandardItemModel = QtGui.QStandardItemModel  # type: ignore[attr-defined]
+if not hasattr(QtWidgets, "QStandardItem"):
+    QtWidgets.QStandardItem = QtGui.QStandardItem  # type: ignore[attr-defined]
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 

@@ -60,7 +60,9 @@ class ExportService:
         charts: list[Path] = []
 
         def p1(c: Canvas, f: str) -> None:
-            charts.extend(self._page_summary(c, f, df, month, vehicle_id, out_path.parent))
+            charts.extend(
+                self._page_summary(c, f, df, month, vehicle_id, out_path.parent)
+            )
 
         def p2(c: Canvas, f: str) -> None:
             charts.extend(self._page_weekly(c, f, df, out_path.parent))
@@ -166,7 +168,9 @@ class ExportService:
         ax2.legend(loc="upper right")
         fig.tight_layout()
 
-    def _build_pdf(self, path: Path, pages: Iterable[Callable[[Canvas, str], None]]) -> None:
+    def _build_pdf(
+        self, path: Path, pages: Iterable[Callable[[Canvas, str], None]]
+    ) -> None:
         """Render each page builder to the PDF."""
         font_name = self._get_font()
         canvas = Canvas(str(path), pagesize=A4)
@@ -229,10 +233,9 @@ class ExportService:
         temp["iso_week"] = temp["date"].apply(
             lambda d: f"{d.isocalendar().year}-W{d.isocalendar().week:02d}"
         )
-        pivot = (
-            temp.pivot_table(index="iso_week", columns="weekday", values="liters", aggfunc="sum")
-            .fillna(0)
-        )
+        pivot = temp.pivot_table(
+            index="iso_week", columns="weekday", values="liters", aggfunc="sum"
+        ).fillna(0)
         cols = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         for col in cols:
             if col not in pivot.columns:
@@ -300,9 +303,7 @@ class ExportService:
         if df.empty:
             return []
 
-        data = (
-            df.groupby("vehicle_id")[["distance", "liters"]].sum()
-        )
+        data = df.groupby("vehicle_id")[["distance", "liters"]].sum()
         data["km_per_l"] = data["distance"] / data["liters"]
         data.sort_values("km_per_l", ascending=False, inplace=True)
 
@@ -310,7 +311,13 @@ class ExportService:
         fig = plt.Figure(figsize=(6, 4))
         ax1 = fig.add_subplot(111)
         ax2 = ax1.twinx()
-        ax1.bar(data.index.astype(str), data["liters"], color="tab:blue", alpha=0.6, label="L")
+        ax1.bar(
+            data.index.astype(str),
+            data["liters"],
+            color="tab:blue",
+            alpha=0.6,
+            label="L",
+        )
         ax2.plot(
             data.index.astype(str),
             data["km_per_l"],
@@ -342,7 +349,7 @@ class ExportService:
     def _write_excel(self, path: Path, df: pd.DataFrame) -> None:
         wb = Workbook()
         ws_month = wb.active
-        ws_month.title = "Monthly"
+        ws_month.title = "Summary"
 
         total_distance = float(df["distance"].fillna(0).sum())
         total_liters = float(df["liters"].fillna(0).sum())
@@ -363,15 +370,21 @@ class ExportService:
 
         start = ws_month.max_row - len(daily) + 1
         chart = BarChart()
-        data = Reference(ws_month, min_col=2, min_row=start, max_row=start + len(daily) - 1)
-        cats = Reference(ws_month, min_col=1, min_row=start, max_row=start + len(daily) - 1)
+        data = Reference(
+            ws_month, min_col=2, min_row=start, max_row=start + len(daily) - 1
+        )
+        cats = Reference(
+            ws_month, min_col=1, min_row=start, max_row=start + len(daily) - 1
+        )
         chart.add_data(data, titles_from_data=False)
         chart.set_categories(cats)
         chart.y_axis.title = "Liters"
 
         line = LineChart()
         line.add_data(
-            Reference(ws_month, min_col=3, min_row=start, max_row=start + len(daily) - 1),
+            Reference(
+                ws_month, min_col=3, min_row=start, max_row=start + len(daily) - 1
+            ),
             titles_from_data=False,
         )
         line.y_axis.axId = 200
