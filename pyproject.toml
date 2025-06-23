@@ -52,6 +52,7 @@ dev = [
 
 [project.scripts]
 fueltracker = "fueltracker.main:run"
+fueltracker-launcher = "launcher:main"
 
 [tool.black]
 line-length = 88
