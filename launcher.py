@@ -10,12 +10,11 @@ import sys
 from contextlib import contextmanager
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 from packaging.version import Version
 from PyQt6.QtWidgets import QApplication, QProgressBar, QSplashScreen
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
 from tufup.client import Client
 
 APP_NAME = "FuelTracker"
@@ -35,14 +34,18 @@ MUTEX_NAME = "FuelTrackerLauncherMutex"
 @contextmanager
 def single_instance(name: str):
     """Prevent concurrent launcher instances using a Windows mutex."""
-    handle = ctypes.windll.kernel32.CreateMutexW(None, False, name)
-    if ctypes.GetLastError() == 183:
-        sys.exit("Another instance is already running.")
-    try:
+    if hasattr(ctypes, "windll"):
+        handle = ctypes.windll.kernel32.CreateMutexW(None, False, name)
+        if ctypes.GetLastError() == 183:
+            sys.exit("Another instance is already running.")
+        try:
+            yield
+        finally:
+            ctypes.windll.kernel32.ReleaseMutex(handle)
+            ctypes.windll.kernel32.CloseHandle(handle)
+    else:
+        # Non-Windows platforms: mutex not required
         yield
-    finally:
-        ctypes.windll.kernel32.ReleaseMutex(handle)
-        ctypes.windll.kernel32.CloseHandle(handle)
 
 
 def setup_logging() -> None:
