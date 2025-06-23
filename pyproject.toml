@@ -23,6 +23,7 @@ dependencies = [
     "openpyxl",
     "pydantic-settings",
     "rich",
+    "appdirs",
 ]
 
 [project.optional-dependencies]
