@@ -10,7 +10,8 @@ def test_refresh_updates_summary(qtbot, main_controller):
     qtbot.addWidget(page)
     with qtbot.waitSignal(page.refresh_requested, timeout=2000):
         page.refresh_button.click()
-    assert "km" in page.cards["distance"].value_label.text()
+    distance_text = page.cards["distance"].value_label.text()
+    assert ("km" in distance_text) or ("กม." in distance_text)
 
 
 def test_monthly_tab_populates(qtbot, main_controller):
