@@ -3,6 +3,7 @@
 from .report_service import ReportService
 from .storage_service import StorageService
 from .exporter import Exporter
+from .export_service import ExportService
 from .importer import Importer
 from .oil_service import (
     fetch_latest,
@@ -17,6 +18,7 @@ __all__ = [
     "ReportService",
     "StorageService",
     "Exporter",
+    "ExportService",
     "Importer",
     "fetch_latest",
     "get_price",
