@@ -15,7 +15,7 @@ class AddEntryCommand(QUndoCommand):
         entry: FuelEntry,
         signal: Signal | None = None,
     ) -> None:
-        super().__init__("Add Entry")
+        super().__init__("เพิ่มรายการ")
         self.storage = storage
         self.entry = entry
         self.signal = signal
@@ -55,7 +55,7 @@ class DeleteEntryCommand(QUndoCommand):
         entry_id: int,
         signal: Signal | None = None,
     ) -> None:
-        super().__init__("Delete Entry")
+        super().__init__("ลบรายการ")
         self.storage = storage
         self.signal = signal
         self.entry = storage.get_entry(entry_id)
@@ -90,7 +90,7 @@ class AddVehicleCommand(QUndoCommand):
         vehicle: Vehicle,
         signal: Signal | None = None,
     ) -> None:
-        super().__init__("Add Vehicle")
+        super().__init__("เพิ่มยานพาหนะ")
         self.storage = storage
         self.vehicle = vehicle
         self.signal = signal
@@ -125,7 +125,7 @@ class DeleteVehicleCommand(QUndoCommand):
         vehicle_id: int,
         signal: Signal | None = None,
     ) -> None:
-        super().__init__("Delete Vehicle")
+        super().__init__("ลบยานพาหนะ")
         self.storage = storage
         self.signal = signal
         self.vehicle = storage.get_vehicle(vehicle_id)
@@ -161,7 +161,7 @@ class UpdateVehicleCommand(QUndoCommand):
         before: Vehicle,
         signal: Signal | None = None,
     ) -> None:
-        super().__init__("Update Vehicle")
+        super().__init__("แก้ไขยานพาหนะ")
         self.storage = storage
         self.vehicle = vehicle
         self.before = before
