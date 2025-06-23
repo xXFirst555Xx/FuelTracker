@@ -69,6 +69,7 @@ import os
 import sys
 from datetime import datetime
 import requests
+import shutil
 
 from ..settings import Settings
 
@@ -82,6 +83,7 @@ from ..services import (
     ReportService,
     StorageService,
     Exporter,
+    ExportService,
     Importer,
     ThemeManager,
     TrayIconManager,
@@ -196,6 +198,7 @@ class MainController(QObject):
         self._theme_override = theme.lower() if theme else None
         self.report_service = ReportService(self.storage)
         self.exporter = Exporter(self.storage)
+        self.export_service = ExportService(self.storage)
         self.importer = Importer(self.storage)
         self.window: MainWindow = MainWindow()
         self.global_hotkey: GlobalHotkey | None = None
@@ -1003,7 +1006,10 @@ class MainController(QObject):
         def job() -> None:
             try:
                 self.exporter.monthly_csv(today.month, today.year, out_csv)
-                self.exporter.monthly_pdf(today.month, today.year, out_pdf)
+                tmp = self.export_service.export_monthly_pdf(
+                    today.strftime("%Y-%m"), None
+                )
+                shutil.copy(tmp, out_pdf)
             except Exception as exc:  # pragma: no cover - handled in tests
                 self.export_failed.emit(str(exc))
             else:
