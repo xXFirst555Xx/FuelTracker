@@ -11,11 +11,16 @@ from pandas import DataFrame, Series
 import pandas as pd
 from fpdf import FPDF
 import matplotlib
+from matplotlib import font_manager
 from io import BytesIO
 import logging
 
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
+if any(f.name == "Noto Sans Thai" for f in font_manager.fontManager.ttflist):
+    matplotlib.rcParams["font.family"] = "Noto Sans Thai"
+else:
+    matplotlib.rcParams["font.family"] = "Tahoma"
 import matplotlib.pyplot as plt
 from matplotlib import dates as mdates
 from typing import Callable, cast
