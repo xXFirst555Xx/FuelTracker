@@ -24,6 +24,10 @@
 - **Global hotkey** (default `Ctrl+Shift+N`) instantly opens the Add Entry dialog.
 - **Oil price API** fetches daily fuel prices using `OilPriceService`.
   See [API.md](docs/API.md) for usage details.
+- **Reports page** summarises fuel usage with graphs and tables.
+  See [REPORTS.md](docs/REPORTS.md) for screenshots.
+- **Signed updates** use the `tufup` CLI and The Update Framework.
+  Setup instructions in [UPDATER_SETUP.md](docs/UPDATER_SETUP.md).
 
 ## ความต้องการ
 
@@ -170,5 +174,12 @@ pip install pydeps ruff vulture mypy
 ```bash
 poe validate
 ```
+
+## การตั้งค่าคลังอัปเดต
+
+โปรเจ็กต์รองรับการอัปเดตแบบลงนามด้วย [TUF](https://theupdateframework.io)
+ผ่านเครื่องมือ `tufup`. ดูเอกสาร [UPDATER_SETUP.md](docs/UPDATER_SETUP.md)
+และสคริปต์ `scripts/init_repo.sh` เพื่อสร้างคลังอัปเดตเริ่มต้น
+และกุญแจสำหรับลงนาม.
 
 โปรเจ็กต์นี้ใช้สัญญาอนุญาต MIT ดูรายละเอียดได้ที่ไฟล์ [LICENSE](LICENSE)
