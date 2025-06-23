@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-__all__ = ['ToastNotifier']
+__all__ = ["ToastNotifier"]
 
 # #############################################################################
 # ########## Libraries #############
@@ -10,6 +10,7 @@ __all__ = ['ToastNotifier']
 # standard library
 import logging
 import threading
+from typing import Optional
 from os import path
 from time import sleep
 from pkg_resources import Requirement
@@ -57,10 +58,15 @@ class ToastNotifier(object):
 
     def __init__(self) -> None:
         """Initialize."""
-        self._thread = None
+        self._thread: Optional[threading.Thread] = None
 
-    def _show_toast(self, title, msg,
-                    icon_path, duration) -> None:
+    def _show_toast(
+        self,
+        title: str,
+        msg: str,
+        icon_path: str | None,
+        duration: int,
+    ) -> None:
         """Notification settings.
 
         :title: notification title
@@ -68,7 +74,9 @@ class ToastNotifier(object):
         :icon_path: path to the .ico file to custom notification
         :duration: delay in seconds before notification self-destruction
         """
-        message_map = {WM_DESTROY: self.on_destroy, }
+        message_map = {
+            WM_DESTROY: self.on_destroy,
+        }
 
         # Register the window class.
         self.wc = WNDCLASS()
@@ -82,42 +90,67 @@ class ToastNotifier(object):
             logging.debug("RegisterClass failed: %s", exc)
             self.classAtom = self.wc.lpszClassName
         style = WS_OVERLAPPED | WS_SYSMENU
-        self.hwnd = CreateWindow(self.classAtom, "Taskbar", style,
-                                 0, 0, CW_USEDEFAULT,
-                                 CW_USEDEFAULT,
-                                 0, 0, self.hinst, None)
+        self.hwnd = CreateWindow(
+            self.classAtom,
+            "Taskbar",
+            style,
+            0,
+            0,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            0,
+            0,
+            self.hinst,
+            None,
+        )
         UpdateWindow(self.hwnd)
 
         # icon
         if icon_path is not None:
             icon_path = path.realpath(icon_path)
         else:
-            icon_path =  resource_filename(Requirement.parse("win10toast"), "win10toast/data/python.ico")
+            icon_path = resource_filename(
+                Requirement.parse("win10toast"), "win10toast/data/python.ico"
+            )
         icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
         try:
-            hicon = LoadImage(self.hinst, icon_path,
-                              IMAGE_ICON, 0, 0, icon_flags)
+            hicon = LoadImage(self.hinst, icon_path, IMAGE_ICON, 0, 0, icon_flags)
         except Exception as e:
-            logging.error("Some trouble with the icon ({}): {}"
-                          .format(icon_path, e))
+            logging.error("Some trouble with the icon ({}): {}".format(icon_path, e))
             hicon = LoadIcon(0, IDI_APPLICATION)
 
         # Taskbar icon
         flags = NIF_ICON | NIF_MESSAGE | NIF_TIP
         nid = (self.hwnd, 0, flags, WM_USER + 20, hicon, "Tooltip")
         Shell_NotifyIcon(NIM_ADD, nid)
-        Shell_NotifyIcon(NIM_MODIFY, (self.hwnd, 0, NIF_INFO,
-                                      WM_USER + 20,
-                                      hicon, "Balloon Tooltip", msg, 200,
-                                      title))
+        Shell_NotifyIcon(
+            NIM_MODIFY,
+            (
+                self.hwnd,
+                0,
+                NIF_INFO,
+                WM_USER + 20,
+                hicon,
+                "Balloon Tooltip",
+                msg,
+                200,
+                title,
+            ),
+        )
         # take a rest then destroy
         sleep(duration)
         DestroyWindow(self.hwnd)
         UnregisterClass(self.wc.lpszClassName, None)
         return None
 
-    def show_toast(self, title="Notification", msg="Here comes the message",
-                    icon_path=None, duration=5, threaded=False) -> bool:
+    def show_toast(
+        self,
+        title: str = "Notification",
+        msg: str = "Here comes the message",
+        icon_path: str | None = None,
+        duration: int = 5,
+        threaded: bool = False,
+    ) -> bool:
         """Notification settings.
 
         :title: notification title
@@ -132,8 +165,12 @@ class ToastNotifier(object):
                 # We have an active notification, let is finish so we don't spam them
                 return False
 
-            self._thread = threading.Thread(target=self._show_toast, args=(title, msg, icon_path, duration))
-            self._thread.start()
+            t = threading.Thread(
+                target=self._show_toast,
+                args=(title, msg, icon_path, duration),
+            )
+            self._thread = t
+            t.start()
         return True
 
     def notification_active(self) -> bool:
@@ -143,7 +180,13 @@ class ToastNotifier(object):
             return True
         return False
 
-    def on_destroy(self, hwnd, msg, wparam, lparam) -> int:
+    def on_destroy(
+        self,
+        hwnd: int,
+        msg: int,
+        wparam: int,
+        lparam: int,
+    ) -> int:
         """Clean after notification ended.
 
         :hwnd:
@@ -156,4 +199,3 @@ class ToastNotifier(object):
         PostQuitMessage(0)
 
         return 0
-
