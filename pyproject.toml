@@ -50,6 +50,12 @@ dev = [
     "types-setuptools",
 ]
 
+
+win = [
+    "pyinstaller>=6.0",
+    "tufup>=0.9",
+]
+
 [project.scripts]
 fueltracker = "fueltracker.main:run"
 fueltracker-launcher = "launcher:main"

@@ -26,6 +26,8 @@ ENV/
 
 # PyInstaller build artifacts
 build/
+!build/
+!build/*.bat
 dist/
 *.spec
 
