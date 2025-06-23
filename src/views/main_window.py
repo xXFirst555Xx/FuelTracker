@@ -1,7 +1,8 @@
 from typing import Callable, cast
 
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QAction, QMainWindow
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QMainWindow
 from .ui_main_window import Ui_MainWindow
 
 
