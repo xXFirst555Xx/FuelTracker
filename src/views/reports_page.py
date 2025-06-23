@@ -195,7 +195,7 @@ class ReportsPage(QWidget):
         canvas = FigureCanvas(fig4)
         self.monthly_layout.addWidget(canvas)
         stats = self._service.calc_overall_stats()
-        self.cards["distance"].set_value(f"{stats['total_distance']:.0f} กม.")
+        self.cards["distance"].set_value(f"{stats['total_distance']:.0f} km")
         self.cards["liters"].set_value(f"{stats['total_liters']:.0f} ลิตร")
         self.cards["price"].set_value(f"{stats['total_price']:.0f} ฿")
         self.cards["kmpl"].set_value(f"{stats['avg_consumption']:.2f}")
