@@ -38,6 +38,12 @@ date2num = cast(Callable[[date], float], mdates.date2num)
 class ReportService:
     def __init__(self, storage: StorageService) -> None:
         self.storage = storage
+        self._monthly_cache: dict[tuple[str, int], DataFrame] = {}
+        self._monthly_cache_ts: float | None = None
+        self._weekly_cache: dict[tuple[str, int], DataFrame] = {}
+        self._weekly_cache_ts: float | None = None
+        self._bench_cache: dict[str, dict[str, float]] | None = None
+        self._bench_cache_ts: float | None = None
 
     def calc_overall_stats(self) -> Dict[str, float]:
         total_distance, total_liters, total_price = self.storage.get_overall_totals()
@@ -71,7 +77,12 @@ class ReportService:
 
     # FIX: mypy clean
     def _monthly_df(self, month: date, vehicle_id: int) -> DataFrame:
-        """คืนค่า DataFrame ของรายการประจำเดือน"""
+        """Return monthly entries as a :class:`pandas.DataFrame`."""
+        key = (month.strftime("%Y-%m"), vehicle_id)
+        ts = getattr(self.storage, "last_modified", None)
+        if key in self._monthly_cache and self._monthly_cache_ts == ts:
+            return self._monthly_cache[key].copy()
+
         entries = self._filter_entries(month, vehicle_id)
         vehicles: Dict[int, Vehicle | None] = {}
         data = []
@@ -98,7 +109,7 @@ class ReportService:
             )
 
         if not data:
-            return pd.DataFrame(
+            df = pd.DataFrame(
                 columns=[
                     "date",
                     "vehicle",
@@ -109,12 +120,19 @@ class ReportService:
                     "amount_spent",
                     "km_per_l",
                     "thb_per_km",
+                    "weekday",
                 ]
             )
+            self._monthly_cache[key] = df
+            self._monthly_cache_ts = ts
+            return df.copy()
 
         df = pd.DataFrame(data)
         df.sort_values("date", inplace=True)
-        return df
+        df["weekday"] = pd.to_datetime(df["date"]).dt.day_name().str[:3]
+        self._monthly_cache[key] = df
+        self._monthly_cache_ts = ts
+        return df.copy()
 
     def get_monthly_stats(self, month: date, vehicle_id: int) -> Dict[str, float]:
         """คำนวณผลรวมและค่าเฉลี่ยของเดือนสำหรับยานพาหนะ"""
@@ -236,3 +254,88 @@ class ReportService:
             for ft, liters in self.storage.liters_by_fuel_type().items()
         }
         return pd.Series(data)
+
+    # ------------------------------------------------------------------
+    # Weekly breakdown and benchmarks
+    # ------------------------------------------------------------------
+
+    def weekly_breakdown(self, month: str, vehicle_id: int) -> DataFrame:
+        """Return distance breakdown by ISO week and weekday."""
+
+        key = (month, vehicle_id)
+        ts = getattr(self.storage, "last_modified", None)
+        if key in self._weekly_cache and self._weekly_cache_ts == ts:
+            return self._weekly_cache[key].copy()
+
+        month_date = date.fromisoformat(f"{month}-01")
+        df = self._monthly_df(month_date, vehicle_id)
+        if df.empty:
+            empty = pd.DataFrame(
+                columns=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                index=pd.Index([], name="iso_week"),
+            )
+            self._weekly_cache[key] = empty
+            self._weekly_cache_ts = ts
+            return empty.copy()
+
+        df["iso_week"] = df["date"].apply(
+            lambda d: f"{d.isocalendar().year}-W{d.isocalendar().week:02d}"
+        )
+        pivot = (
+            df.pivot_table(
+                index="iso_week",
+                columns="weekday",
+                values="distance",
+                aggfunc="sum",
+            )
+            .fillna(0)
+        )
+        cols = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for col in cols:
+            if col not in pivot.columns:
+                pivot[col] = 0
+        pivot = pivot[cols]
+        pivot.sort_index(inplace=True)
+
+        self._weekly_cache[key] = pivot
+        self._weekly_cache_ts = ts
+        return pivot.copy()
+
+    def vehicle_type_benchmarks(self) -> dict[str, dict[str, float]]:
+        """Calculate benchmark metrics grouped by vehicle type."""
+
+        ts = getattr(self.storage, "last_modified", None)
+        if self._bench_cache is not None and self._bench_cache_ts == ts:
+            return {k: v.copy() for k, v in self._bench_cache.items()}
+
+        totals: dict[str, dict[str, Any]] = {}
+        for v in self.storage.list_vehicles():
+            entries = self.storage.get_entries_by_vehicle(v.id)
+            if not entries:
+                continue
+            stat = totals.setdefault(
+                v.vehicle_type,
+                {"distance": 0.0, "liters": 0.0, "fills": 0, "months": set()},
+            )
+            for e in entries:
+                if e.odo_after is not None:
+                    stat["distance"] += e.odo_after - e.odo_before
+                if e.liters is not None:
+                    stat["liters"] += e.liters
+                    stat["fills"] += 1
+                stat["months"].add(e.entry_date.strftime("%Y-%m"))
+
+        benchmarks: dict[str, dict[str, float]] = {}
+        for t, s in totals.items():
+            liters = s["liters"]
+            months_count = len(s["months"]) or 1
+            km_per_l = s["distance"] / liters if liters else 0.0
+            benchmarks[t] = {
+                "km_per_l": km_per_l,
+                "liters_per_month": liters / months_count,
+                "fills_per_month": s["fills"] / months_count,
+            }
+
+        self._bench_cache = benchmarks
+        self._bench_cache_ts = ts
+        return {k: v.copy() for k, v in benchmarks.items()}
