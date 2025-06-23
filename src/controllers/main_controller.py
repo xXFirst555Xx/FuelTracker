@@ -121,8 +121,8 @@ class StatsDock(QDockWidget):
         super().__init__("สถิติ", parent)
         # ADDED: ensure unique object name for saveState
         self.setObjectName("statsDock")
-        self.kml_label = QLabel("km/L: -")
-        self.cost_label = QLabel("฿/km: -")
+        self.kml_label = QLabel("กม./ลิตร: -")
+        self.cost_label = QLabel("บาท/กม.: -")
         widget = QWidget()
         layout = QVBoxLayout(widget)
         layout.addWidget(self.kml_label)
@@ -443,14 +443,14 @@ class MainController(QObject):
     def _update_stats_panel(self) -> None:
         vid = self._selected_vehicle_id
         if vid is None:
-            self.stats_dock.kml_label.setText("km/L: -")
-            self.stats_dock.cost_label.setText("฿/km: -")
+            self.stats_dock.kml_label.setText("กม./ลิตร: -")
+            self.stats_dock.cost_label.setText("บาท/กม.: -")
             return
         total_distance, total_liters, total_price = self.storage.get_vehicle_stats(vid)
         kmpl = total_distance / total_liters if total_liters else 0.0
         cost = total_price / total_distance if total_distance else 0.0
-        self.stats_dock.kml_label.setText(f"km/L: {kmpl:.2f}")
-        self.stats_dock.cost_label.setText(f"฿/km: {cost:.2f}")
+        self.stats_dock.kml_label.setText(f"กม./ลิตร: {kmpl:.2f}")
+        self.stats_dock.cost_label.setText(f"บาท/กม.: {cost:.2f}")
         self._update_tray_tooltip()
 
     def _update_tray_tooltip(self) -> None:
