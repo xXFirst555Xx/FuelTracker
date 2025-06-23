@@ -206,6 +206,8 @@ class MainController(QObject):
         state = self.settings.value("windowState")
         if isinstance(state, (QByteArray, bytes, bytearray, memoryview)):
             self.window.restoreState(state)
+        if hasattr(self.window, "startDateEdit"):
+            self.window.startDateEdit.setDate(QDate.currentDate())
         self.undo_stack = QUndoStack(self.window)
         self.sync_enabled = False
         self.cloud_path: Path | None = (
