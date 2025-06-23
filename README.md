@@ -32,7 +32,7 @@
 ## ความต้องการ
 
 - Python 3.11 or later
-- ติดตั้งแพ็กเกจที่ระบุใน `requirements.txt`
+ - ติดตั้งแพ็กเกจที่ระบุใน `requirements.lock`
 - ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้
 
 ```bash
@@ -65,6 +65,9 @@ pip install poethepoet
 - `poe report` - รัน `lint`, `test` และ `runtime-check` เพื่อรายงานผลโดยรวม
 
 คำสั่งเหล่านี้กำหนดไว้ในไฟล์ `pyproject.toml` สามารถเรียกใช้ได้ตามต้องการ
+
+หากปรับแก้รายการแพ็กเกจใน `pyproject.toml` ให้รัน `make lock` เพื่ออัปเดต
+ไฟล์ `requirements.lock`
 
 ## Development setup
 
@@ -165,8 +168,8 @@ poe build
 ```bat
 python -m venv .venv
 \.venv\Scripts\activate
-pip install -r requirements.txt
-rem requirements.txt รวม `pytest-qt` ซึ่งให้ฟิกซ์เจอร์ `qtbot` สำหรับทดสอบ Qt
+pip install -r requirements.lock
+rem requirements.lock รวม `pytest-qt` ซึ่งให้ฟิกซ์เจอร์ `qtbot` สำหรับทดสอบ Qt
 pip install -e .
 pytest
 ```
