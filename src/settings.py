@@ -8,7 +8,7 @@ from appdirs import user_data_dir
 
 def data_dir() -> Path:
     """Return the per-user data directory for FuelTracker."""
-    return Path(user_data_dir("FuelTracker"))
+    return Path(user_data_dir("FuelTracker", "YourOrg"))
 
 
 class Settings(BaseSettings):
