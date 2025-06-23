@@ -69,7 +69,7 @@ class _Worker(QThread):
             ax1 = fig1.add_subplot(111)
             if not yearly.empty:
                 ax1.plot(yearly["month"].astype(str), yearly["km_per_l"], marker="o")
-            ax1.set_ylabel("km/L")
+            ax1.set_ylabel("กม./ลิตร")
 
             fig2 = Figure(figsize=(4, 3))
             ax2 = fig2.add_subplot(111)
@@ -86,17 +86,17 @@ class _Worker(QThread):
             ax4_1 = fig4.add_subplot(311)
             if not monthly.empty:
                 ax4_1.bar(monthly["month"].astype(str), monthly["distance"])
-            ax4_1.set_ylabel("km")
+            ax4_1.set_ylabel("กม.")
 
             ax4_2 = fig4.add_subplot(312)
             if not monthly.empty:
                 ax4_2.bar(monthly["month"].astype(str), monthly["liters"])
-            ax4_2.set_ylabel("L")
+            ax4_2.set_ylabel("ลิตร")
 
             ax4_3 = fig4.add_subplot(313)
             if not monthly.empty:
                 ax4_3.plot(monthly["month"].astype(str), monthly["km_per_l"], marker="o")
-            ax4_3.set_ylabel("km/L")
+            ax4_3.set_ylabel("กม./ลิตร")
             fig4.tight_layout()
 
             self.data_ready.emit(fig1, fig2, fig3, fig4, table)
@@ -193,8 +193,8 @@ class ReportsPage(QWidget):
         canvas = FigureCanvas(fig4)
         self.monthly_layout.addWidget(canvas)
         stats = self._service.calc_overall_stats()
-        self.cards["distance"].set_value(f"{stats['total_distance']:.0f} km")
-        self.cards["liters"].set_value(f"{stats['total_liters']:.0f} L")
+        self.cards["distance"].set_value(f"{stats['total_distance']:.0f} กม.")
+        self.cards["liters"].set_value(f"{stats['total_liters']:.0f} ลิตร")
         self.cards["price"].set_value(f"{stats['total_price']:.0f} ฿")
         self.cards["kmpl"].set_value(f"{stats['avg_consumption']:.2f}")
         self.refresh_requested.emit()
