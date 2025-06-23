@@ -1156,6 +1156,7 @@ class MainController(QObject):
         backup = self.storage.auto_backup()
         if self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
+        self.export_service.cleanup()
         self._unregister_hotkey()
         self.executor.shutdown(wait=False)
 
