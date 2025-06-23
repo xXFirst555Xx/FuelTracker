@@ -12,22 +12,23 @@ import pandas as pd
 from fpdf import FPDF
 import matplotlib
 from matplotlib import font_manager
+from typing import Any, Callable, cast
 from io import BytesIO
 import logging
 
 # Use a non-interactive backend for headless environments
 matplotlib.use("Agg")
-if any(f.name == "Noto Sans Thai" for f in font_manager.fontManager.ttflist):
+fm = cast(Any, font_manager.fontManager)
+if any(f.name == "Noto Sans Thai" for f in fm.ttflist):
     matplotlib.rcParams["font.family"] = "Noto Sans Thai"
 else:
     matplotlib.rcParams["font.family"] = "Tahoma"
-import matplotlib.pyplot as plt
-from matplotlib import dates as mdates
-from typing import Callable, cast
+import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib import dates as mdates  # noqa: E402
 
-from ..models import FuelEntry, Vehicle
-from .storage_service import StorageService
-from ..constants import FUEL_TYPE_TH
+from ..models import FuelEntry, Vehicle  # noqa: E402
+from .storage_service import StorageService  # noqa: E402
+from ..constants import FUEL_TYPE_TH  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
