@@ -67,6 +67,9 @@ migrate = { cmd = "python -m fueltracker migrate", env = { PYTHONPATH = "src" },
 test = { cmd = "python -m pytest -q", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite" }
 runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen", PYTHONPATH = "src" }, help = "Run app in headless mode" }
 build = { cmd = "python -m PyInstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build standalone executable" }
+build-app = { cmd = "python -m PyInstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build main FuelTracker.exe" }
+build-launcher = { cmd = "python -m PyInstaller --noconfirm --clean --onefile launcher.spec", help = "Build the launcher executable" }
+release = { shell = "poe build-app && poe build-launcher && zip -j dist/FuelTracker-${VERSION}-win64.zip dist/FuelTracker.exe && tufup repo targets add ${VERSION} dist/FuelTracker-${VERSION}-win64.zip && tufup repo sign timestamp && gh release create ${VERSION} dist/FuelTracker-${VERSION}-win64.zip --draft", help = "Create release" }
 validate = { sequence = ["lint", "test"], help = "Run linters then tests" }
 report = { sequence = ["lint", "test", "runtime-check"], help = "Run all checks" }
 
