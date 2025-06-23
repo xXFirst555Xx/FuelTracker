@@ -17,8 +17,8 @@
   exceeded. Usage in [BUDGET.md](docs/BUDGET.md).
 - **Maintenance scheduler** highlights overdue tasks. Learn more in
   [MAINTENANCE.md](docs/MAINTENANCE.md).
-- **CSV/PDF/Excel exporting** creates monthly reports, described in
-  [EXPORTING.md](docs/EXPORTING.md).
+- **CSV/PDF/Excel exporting** via `ExportService` creates monthly reports,
+  described in [EXPORTING.md](docs/EXPORTING.md).
 - Excel export requires the `openpyxl` library.
 - **System tray icon** provides quick actions and keeps the app running in the background.
 - **Global hotkey** (default `Ctrl+Shift+N`) instantly opens the Add Entry dialog.
