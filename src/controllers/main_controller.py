@@ -263,7 +263,6 @@ class MainController(QObject):
         )
         if app:
             app.aboutToQuit.connect(self.cleanup)
-            app.aboutToQuit.connect(self.shutdown)
             if self.theme_manager is not None:
                 self.theme_manager.palette_changed.connect(self._on_palette_changed)
         self.entry_changed.connect(self._update_stats_panel)
@@ -558,7 +557,7 @@ class MainController(QObject):
         )
 
     def _tray_quit(self) -> None:
-        self.shutdown()
+        self.cleanup()
         app = QApplication.instance()
         if app:
             app.quit()
@@ -1154,6 +1153,9 @@ class MainController(QObject):
         except RuntimeError:
             # Window already destroyed
             pass
+        backup = self.storage.auto_backup()
+        if self.sync_enabled and self.cloud_path is not None:
+            self.storage.sync_to_cloud(backup.parent, self.cloud_path)
         self._unregister_hotkey()
         self.executor.shutdown(wait=False)
 
@@ -1163,11 +1165,6 @@ class MainController(QObject):
             self.cleanup()
         except Exception:
             pass
-
-    def shutdown(self) -> None:
-        backup = self.storage.auto_backup()
-        if self.sync_enabled and self.cloud_path is not None:
-            self.storage.sync_to_cloud(backup.parent, self.cloud_path)
 
     def _close_event(self, event: QCloseEvent) -> None:
         if (
