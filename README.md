@@ -32,7 +32,7 @@
 ## ความต้องการ
 
 - Python 3.11 or later
- - ติดตั้งแพ็กเกจที่ระบุใน `requirements.lock`
+- ติดตั้งแพ็กเกจที่ระบุใน `requirements.lock` (เช่น `SQLModel`)
 - ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้
 
 ```bash
@@ -84,6 +84,24 @@ pre-commit install
 
 ```bash
 pre-commit run --all-files
+```
+
+## Running tests
+
+ก่อนรัน `pytest` จำเป็นต้องติดตั้งแพ็กเกจจาก `requirements.lock`
+ซึ่งรวม `SQLModel` และไลบรารีหลักอื่น ๆ ไว้ครบถ้วน:
+
+```bash
+pip install -r requirements.lock
+pip install -e .[dev]
+pytest
+```
+
+สามารถเรียกสคริปต์ `scripts/dev_setup.sh` เพื่อทำขั้นตอนติดตั้งให้อัตโนมัติได้เช่นกัน:
+
+```bash
+./scripts/dev_setup.sh
+pytest
 ```
 
 ## การแก้ปัญหา
