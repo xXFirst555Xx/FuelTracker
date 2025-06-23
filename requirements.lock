@@ -5,7 +5,6 @@
 #    pip-compile --output-file=requirements.lock pyproject.toml
 #
 alembic==1.16.2
-    --hash=sha256:9e5fbd2c3da5ce11518e6b7d44f64c9443a3d91a8a9b3a4cb6a4249c5b8ebc32
     # via fueltracker (pyproject.toml)
 annotated-types==0.7.0
     # via pydantic
