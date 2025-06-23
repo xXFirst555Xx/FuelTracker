@@ -12,6 +12,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from matplotlib import font_manager
 
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.ttfonts import TTFont
@@ -83,30 +84,35 @@ class ExportService:
         return df
 
     def _get_font(self) -> str:
-        font_file = Path(__file__).resolve().parents[2] / "fonts" / "NotoSansThai-Regular.ttf"
-        if not font_file.exists():
-            url = "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansthai/NotoSansThai-Regular.ttf"
-            try:
-                import requests
-
-                resp = requests.get(url, timeout=10)
-                resp.raise_for_status()
-                font_file.parent.mkdir(parents=True, exist_ok=True)
-                font_file.write_bytes(resp.content)
-            except Exception as exc:  # pragma: no cover - network failure
-                logger.warning("failed to download font: %s", exc)
-                return "Helvetica"
         try:
-            pdfmetrics.registerFont(TTFont("NotoSansThai", str(font_file), subsetting=True))
-            return "NotoSansThai"
-        except Exception as exc:  # pragma: no cover - bad font
-            logger.warning("failed to register font: %s", exc)
+            font_path = font_manager.findfont(
+                "Noto Sans Thai", fallback_to_default=False
+            )  # type: ignore[operator]
+        except Exception as exc:  # pragma: no cover - not found
+            logger.debug("Noto Sans Thai not found: %s", exc)
+            font_path = ""
+
+        if font_path and Path(font_path).exists():
+            try:
+                pdfmetrics.registerFont(
+                    TTFont("NotoSansThai", font_path, subsetting=True)
+                )
+                return "NotoSansThai"
+            except Exception as exc:  # pragma: no cover - bad font
+                logger.warning("failed to register NotoSansThai: %s", exc)
+
+        try:
+            fallback_path = font_manager.findfont("Tahoma")  # type: ignore[operator]
+            pdfmetrics.registerFont(TTFont("Tahoma", fallback_path, subsetting=True))
+            return "Tahoma"
+        except Exception as exc:  # pragma: no cover - fallback issue
+            logger.warning("failed to register fallback font: %s", exc)
             return "Helvetica"
 
     def _plot_dual_axis(self, df: pd.DataFrame, path: Path) -> None:
         if df.empty:
             fig, _ = plt.subplots()
-            fig.savefig(path, format="png")
+            fig.savefig(str(path), format="png")
             plt.close(fig)
             return
 
@@ -123,10 +129,12 @@ class ExportService:
         ax1.set_xlabel("Date")
         fig.autofmt_xdate()
         fig.tight_layout()
-        fig.savefig(path, format="png")
+        fig.savefig(str(path), format="png")
         plt.close(fig)
 
-    def _build_pdf(self, path: Path, df: pd.DataFrame, month: str, vehicle_id: int | None) -> None:
+    def _build_pdf(
+        self, path: Path, df: pd.DataFrame, month: str, vehicle_id: int | None
+    ) -> None:
         font_name = self._get_font()
         chart = path.with_suffix(".png")
         try:
@@ -152,7 +160,13 @@ class ExportService:
                     canvas.showPage()
                     canvas.setFont(font_name, 12)
                     y = 800
-            canvas.drawImage(ImageReader(str(chart)), 40, max(100, y - 260), width=500, preserveAspectRatio=True)
+            canvas.drawImage(
+                ImageReader(str(chart)),
+                40,
+                max(100, y - 260),
+                width=500,
+                preserveAspectRatio=True,
+            )
             canvas.save()
         finally:
             if chart.exists():
