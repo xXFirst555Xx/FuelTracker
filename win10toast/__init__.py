@@ -13,8 +13,7 @@ import threading
 from typing import Optional
 from os import path
 from time import sleep
-from pkg_resources import Requirement
-from pkg_resources import resource_filename
+from pathlib import Path
 
 # 3rd party modules
 from win32api import GetModuleHandle
@@ -109,9 +108,7 @@ class ToastNotifier(object):
         if icon_path is not None:
             icon_path = path.realpath(icon_path)
         else:
-            icon_path = resource_filename(
-                Requirement.parse("win10toast"), "win10toast/data/python.ico"
-            )
+            icon_path = str(Path(__file__).resolve().parent / "data" / "python.ico")
         icon_flags = LR_LOADFROMFILE | LR_DEFAULTSIZE
         try:
             hicon = LoadImage(self.hinst, icon_path, IMAGE_ICON, 0, 0, icon_flags)
