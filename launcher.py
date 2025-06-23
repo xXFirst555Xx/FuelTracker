@@ -20,9 +20,7 @@ from tufup.client import Client
 APP_NAME = "FuelTracker"
 PACKAGE = "fueltracker"
 CURRENT_VERSION = "0.1.0"
-UPDATE_URL = (
-    "https://raw.githubusercontent.com/org/fueltracker-updates/main/"
-)
+UPDATE_URL = "https://raw.githubusercontent.com/org/fueltracker-updates/main/"
 ROOT_KEY_HEX = "6ab4…c3"  # truncated example
 
 LOCALAPPDATA = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"))

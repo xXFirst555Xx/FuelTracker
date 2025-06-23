@@ -95,7 +95,9 @@ class _Worker(QThread):
 
             ax4_3 = fig4.add_subplot(313)
             if not monthly.empty:
-                ax4_3.plot(monthly["month"].astype(str), monthly["km_per_l"], marker="o")
+                ax4_3.plot(
+                    monthly["month"].astype(str), monthly["km_per_l"], marker="o"
+                )
             ax4_3.set_ylabel("กม./ลิตร")
             fig4.tight_layout()
 
