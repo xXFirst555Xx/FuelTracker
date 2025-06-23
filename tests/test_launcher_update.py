@@ -28,6 +28,7 @@ class DummyUpdater:
 def test_update_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "APP_DIR", tmp_path)
     monkeypatch.setattr(launcher, "LOG_FILE", tmp_path / "launcher.log")
+    monkeypatch.setattr(launcher, "read_current_version", lambda: "0.1.0")
 
     class DummyApp:
         def processEvents(self):
