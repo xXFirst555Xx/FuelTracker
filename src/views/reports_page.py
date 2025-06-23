@@ -71,7 +71,7 @@ class WeeklyReportTab(QWidget):
         layout.addWidget(self.table)
         layout.addWidget(self.chart_container)
 
-    def update(self, df: pd.DataFrame, fig: Figure) -> None:
+    def update(self, df: pd.DataFrame, fig: Figure) -> None:  # type: ignore[override]
         model = QStandardItemModel(df.shape[0], df.shape[1])
         model.setHorizontalHeaderLabels(df.columns.tolist())
         for r in range(df.shape[0]):

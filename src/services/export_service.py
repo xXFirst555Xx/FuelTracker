@@ -39,6 +39,12 @@ class ExportService:
         self.storage = storage
         self._tmpdirs: list[TemporaryDirectory[str]] = []
 
+    def cleanup(self) -> None:
+        """Remove any temporary directories created during exports."""
+        for tmp in self._tmpdirs:
+            tmp.cleanup()
+        self._tmpdirs.clear()
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
