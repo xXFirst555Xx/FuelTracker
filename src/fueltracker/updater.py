@@ -5,6 +5,9 @@ import logging
 from PySide6.QtWidgets import QMessageBox, QWidget
 from tufup.client import Client
 
+from threading import Thread
+import time
+
 from ..settings import data_dir
 
 logger = logging.getLogger(__name__)
@@ -13,10 +16,41 @@ APP_NAME = "FuelTracker"
 UPDATE_URL = "https://raw.githubusercontent.com/org/fueltracker-updates/main/"
 
 
-def start_async() -> None:
+_update_thread: Thread | None = None
+
+
+def _update_loop(interval: int) -> None:
+    app_dir = data_dir()
+    client = Client(
+        app_name=APP_NAME,
+        app_install_dir=app_dir,
+        current_version="0.1.0",
+        metadata_dir=app_dir / "metadata",
+        metadata_base_url=f"{UPDATE_URL}metadata/",
+        target_dir=app_dir / "targets",
+        target_base_url=f"{UPDATE_URL}targets/",
+    )
+    while True:
+        try:
+            meta = client.check_for_updates()
+            if meta and meta.version > client.current_version:
+                client.download_and_apply_update()
+        except Exception as exc:  # pragma: no cover - best effort logging
+            logger.error("Background update check failed: %s", exc)
+        time.sleep(interval)
+
+
+def start_async(interval_hours: int = 24) -> None:
     """Start background update checking."""
-    # Existing functionality preserved (defined elsewhere)
-    pass
+    global _update_thread
+    if _update_thread and _update_thread.is_alive():
+        return
+    _update_thread = Thread(
+        target=_update_loop,
+        args=(int(interval_hours * 3600),),
+        daemon=True,
+    )
+    _update_thread.start()
 
 
 def prompt_and_update(parent: QWidget) -> None:
