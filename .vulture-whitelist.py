@@ -8,6 +8,7 @@ from src.services import (
     storage_service,
 )
 from src import settings
+import tests.test_launcher_update
 
 _ = (
     # --- Attributes/Methods from main_controller.py that are used by Qt ---
@@ -35,6 +36,12 @@ _ = (
     storage_service.update_entry,
     # --- Variables used by Pydantic ---
     settings.model_config,
+    # --- Test helpers referenced dynamically ---
+    tests.test_launcher_update.DummyUpdater.check_for_update,
+    tests.test_launcher_update.DummyUpdater.download_and_extract,
+    tests.test_launcher_update.DummyApp.processEvents,
+    tests.test_launcher_update.DummySplash.finish,
+    tests.test_launcher_update.DummyBar.setRange,
 )
 
 __all__ = ["_"]

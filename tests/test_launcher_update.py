@@ -19,7 +19,7 @@ class DummyUpdater:
     def check_for_update(self):
         return self.new_archive_meta
 
-    def download_and_extract(self, progress):
+    def download_and_extract(self, _progress):
         with zipfile.ZipFile(self.archive) as zf:
             zf.extractall(self.extract_dir)
         return self.extract_dir, self.new_archive_meta.version
