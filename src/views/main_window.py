@@ -19,6 +19,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def on_check_updates(self) -> None:
-        from .. import updater
+        from ..fueltracker import updater
 
         updater.prompt_and_update(self)
