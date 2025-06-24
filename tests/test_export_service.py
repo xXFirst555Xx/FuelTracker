@@ -42,6 +42,9 @@ def test_export_service_outputs(
 
     reader = PdfReader(pdf_path)
     assert len(reader.pages) >= 3
+    text = "".join(page.extract_text() or "" for page in reader.pages)
+    assert "fills_count" in text
+    assert "avg_price_per_liter" in text
 
     xls = pd.ExcelFile(xls_path)
     assert len(xls.sheet_names) >= 2
@@ -56,7 +59,13 @@ def test_export_service_outputs(
         assert col in df_weekly.columns
 
     df_summary = pd.read_excel(xls_path, sheet_name=summary_sheet)
-    for field in ["distance", "liters", "km_per_l"]:
+    for field in [
+        "distance",
+        "liters",
+        "km_per_l",
+        "fills_count",
+        "avg_price_per_liter",
+    ]:
         assert field in df_summary.columns
 
     assert matplotlib.get_backend().lower() == "agg"
