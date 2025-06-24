@@ -33,6 +33,7 @@ dist/
 
 # Misc
 assets/ui.png
+assets/app.ico
 
 # Temporary databases created during testing
 fuel.db
