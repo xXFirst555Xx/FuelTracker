@@ -58,6 +58,7 @@ pip install poethepoet
 
 - `poe lint` - รัน `ruff`, `mypy` และ `vulture` เพื่อตรวจสอบคุณภาพโค้ด
 - `poe test` - รันชุดทดสอบด้วย `pytest` หลังจากอัปเกรดฐานข้อมูล
+- `poe cover` - รันชุดทดสอบพร้อมรายงาน coverage
 - `poe migrate` - รันสคริปต์ `alembic` เพื่ออัปเกรดฐานข้อมูล
 - `poe runtime-check` - เปิดโปรแกรมแบบไม่สร้างหน้าต่างเพื่อตรวจสอบการทำงาน
 - `poe build` - สร้างไฟล์ปฏิบัติการแบบ standalone ด้วย `PyInstaller`
@@ -110,6 +111,12 @@ pytest
 ```bash
 ./scripts/dev_setup.sh
 pytest
+```
+
+หากต้องการดูรายงาน coverage ใช้คำสั่ง:
+
+```bash
+poe cover
 ```
 
 ## การแก้ปัญหา
