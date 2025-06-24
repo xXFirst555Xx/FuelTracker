@@ -13,8 +13,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._setup_menus()
 
     def _setup_menus(self) -> None:
-        help_menu = self.menuBar().addMenu("Help")
-        self.check_updates_action = QAction("Check for Updates…", self)
+        help_menu = self.menuBar().addMenu("ช่วยเหลือ")
+        self.check_updates_action = QAction("ตรวจสอบการอัปเดต…", self)
         help_menu.addAction(self.check_updates_action)
         self.check_updates_action.triggered.connect(self.on_check_updates)
 
