@@ -355,8 +355,33 @@ class ExportService:
     # ------------------------------------------------------------------
     def _write_excel(self, path: Path, df: pd.DataFrame) -> None:
         wb = Workbook()
-        ws_month = wb.active
-        ws_month.title = "Summary"
+        ws_data = wb.active
+        ws_data.title = "Entries"
+
+        headers = [
+            "date",
+            "fuel_type",
+            "odo_before",
+            "odo_after",
+            "distance",
+            "liters",
+            "amount_spent",
+        ]
+        ws_data.append(headers)
+        for r in df.itertuples(index=False):
+            ws_data.append(
+                [
+                    r.date,
+                    r.fuel_type,
+                    r.odo_before,
+                    r.odo_after,
+                    r.distance,
+                    r.liters,
+                    r.amount_spent,
+                ]
+            )
+
+        ws_month = wb.create_sheet("Summary")
 
         total_distance = float(df["distance"].fillna(0).sum())
         total_liters = float(df["liters"].fillna(0).sum())
