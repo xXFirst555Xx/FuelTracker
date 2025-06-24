@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 from sqlmodel import SQLModel, Session, create_engine
+from contextlib import contextmanager
 from sqlalchemy.pool import StaticPool
 from alembic.config import Config
 from alembic import command
@@ -57,9 +58,9 @@ def in_memory_storage():
     return storage
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def migrated_db_session():
-    """Return a Session connected to a migrated in-memory database."""
+    """Return a context manager yielding sessions on a migrated in-memory database."""
     engine = create_engine(
         "sqlite:///file:memdb1?mode=memory&cache=shared",
         connect_args={"check_same_thread": False, "uri": True},
@@ -69,15 +70,26 @@ def migrated_db_session():
     cfg = Config(str(ALEMBIC_INI))
     cfg.set_main_option("sqlalchemy.url", str(engine.url))
     command.upgrade(cfg, "head")
-    with Session(engine) as session:
-        yield session
-    # Clear data after each test to avoid cross-test contamination
-    with Session(engine) as cleanup:
+
+    @contextmanager
+    def get_session() -> Session:
+        with Session(engine) as session:
+            yield session
+
+    yield get_session
+
+    keeper.close()
+    engine.dispose()
+
+
+@pytest.fixture(autouse=True)
+def _cleanup_db(migrated_db_session):
+    """Truncate all tables after each test to keep isolation."""
+    yield
+    with migrated_db_session() as cleanup:
         for table in reversed(SQLModel.metadata.sorted_tables):
             cleanup.execute(table.delete())
         cleanup.commit()
-    keeper.close()
-    engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -98,7 +110,8 @@ def main_controller(qapp, migrated_db_session, monkeypatch):
     if not PYSIDE_AVAILABLE:
         pytest.skip("PySide6 not available", allow_module_level=True)
 
-    engine = migrated_db_session.get_bind()
+    with migrated_db_session() as tmp:
+        engine = tmp.get_bind()
 
     def _storage_service(*_args, **_kwargs):
         return StorageService(engine=engine)
