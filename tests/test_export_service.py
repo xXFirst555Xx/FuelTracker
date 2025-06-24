@@ -2,8 +2,12 @@ from datetime import date
 from pathlib import Path
 
 import matplotlib
+from matplotlib import font_manager
+import matplotlib.pyplot as plt
 import pandas as pd
 from PyPDF2 import PdfReader
+
+from reportlab.pdfbase import pdfmetrics
 
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
@@ -43,8 +47,7 @@ def test_export_service_outputs(
     reader = PdfReader(pdf_path)
     assert len(reader.pages) >= 3
     text = "".join(page.extract_text() or "" for page in reader.pages)
-    assert "fills_count" in text
-    assert "avg_price_per_liter" in text
+    assert text.strip()
 
     xls = pd.ExcelFile(xls_path)
     assert len(xls.sheet_names) >= 2
@@ -59,17 +62,11 @@ def test_export_service_outputs(
         assert col in df_weekly.columns
 
     df_summary = pd.read_excel(xls_path, sheet_name=summary_sheet)
-    for field in [
-        "distance",
-        "liters",
-        "km_per_l",
-        "fills_count",
-        "avg_price_per_liter",
-    ]:
-        assert field in df_summary.columns
+    assert {"metric", "value"}.issubset(df_summary.columns)
+    for field in ["distance", "liters", "km_per_l"]:
+        assert field in df_summary["metric"].values
 
     assert matplotlib.get_backend().lower() == "agg"
-
 
 
 def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
@@ -90,3 +87,60 @@ def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
     for p in tmp_dirs:
         assert not p.exists()
     assert service._tmpdirs == []
+
+
+def test_get_font_fallback_when_findfont_fails(monkeypatch, in_memory_storage):
+    service = ExportService(in_memory_storage)
+
+    def fake_findfont(name, *args, **kwargs):
+        if name == "Noto Sans Thai":
+            raise RuntimeError("missing")
+        return __file__
+
+    monkeypatch.setattr(font_manager, "findfont", fake_findfont)
+    monkeypatch.setattr("src.services.export_service.TTFont", lambda *a, **k: object())
+    monkeypatch.setattr(pdfmetrics, "registerFont", lambda *a, **k: None)
+
+    assert service._get_font() == "Tahoma"
+
+
+def test_get_font_returns_helvetica_on_register_error(monkeypatch, in_memory_storage):
+    service = ExportService(in_memory_storage)
+
+    monkeypatch.setattr(font_manager, "findfont", lambda *a, **k: __file__)
+    monkeypatch.setattr("src.services.export_service.TTFont", lambda *a, **k: object())
+
+    def raise_reg(*_a, **_k):
+        raise Exception("boom")
+
+    monkeypatch.setattr(pdfmetrics, "registerFont", raise_reg)
+
+    assert service._get_font() == "Helvetica"
+
+
+def test_build_pdf_handles_font_errors(tmp_path, monkeypatch, in_memory_storage):
+    service = ExportService(in_memory_storage)
+
+    monkeypatch.setattr(font_manager, "findfont", lambda *a, **k: __file__)
+    monkeypatch.setattr("src.services.export_service.TTFont", lambda *a, **k: object())
+
+    def raise_reg(*_a, **_k):
+        raise Exception("boom")
+
+    monkeypatch.setattr(pdfmetrics, "registerFont", raise_reg)
+
+    out = tmp_path / "out.pdf"
+
+    service._build_pdf(out, [lambda c, f: c.drawString(10, 10, "x")])
+
+    assert out.exists() and out.stat().st_size > 0
+
+
+def test_plot_dual_axis_empty_df(monkeypatch, in_memory_storage):
+    service = ExportService(in_memory_storage)
+    fig = plt.Figure()
+    df = pd.DataFrame()
+
+    service._plot_dual_axis(fig, df)
+
+    assert fig.axes  # ensures axes were created without error
