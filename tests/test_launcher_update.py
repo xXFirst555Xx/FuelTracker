@@ -10,9 +10,9 @@ qt_widgets.QProgressBar = object
 qt_widgets.QSplashScreen = object
 qt_gui = types.ModuleType("QtGui")
 qt_gui.QPixmap = object
-sys.modules.setdefault("PyQt6", types.ModuleType("PyQt6"))
-sys.modules["PyQt6.QtWidgets"] = qt_widgets
-sys.modules["PyQt6.QtGui"] = qt_gui
+sys.modules.setdefault("PySide6", types.ModuleType("PySide6"))
+sys.modules["PySide6.QtWidgets"] = qt_widgets
+sys.modules["PySide6.QtGui"] = qt_gui
 
 import launcher  # noqa: E402
 
