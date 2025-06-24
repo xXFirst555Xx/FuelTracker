@@ -46,7 +46,7 @@ class GlobalHotkey(QObject):
         try:
             self._wrapped_callback(*args)
         except Exception as exc:  # pragma: no cover - defensive
-            logger.exception("Hotkey adapter error: %s", exc)
+            logger.exception("ข้อผิดพลาดตัวแปลงฮอตคีย์: %s", exc)
         finally:
             # Always return ``1`` to satisfy the Win32 hook requirement
             return 1
@@ -59,7 +59,7 @@ class GlobalHotkey(QObject):
         try:
             self.triggered.emit()
         except Exception as e:  # pragma: no cover - defensive
-            logger.exception("Hotkey error: %s", e)
+            logger.exception("ข้อผิดพลาดฮอตคีย์: %s", e)
 
     def start(self) -> None:
         if keyboard is _NOT_LOADED:
@@ -106,7 +106,7 @@ class GlobalHotkey(QObject):
                 except Exception:
                     pass
         except Exception as e:  # pragma: no cover - defensive
-            logger.exception("Hotkey stop error: %s", e)
+            logger.exception("ข้อผิดพลาดหยุดฮอตคีย์: %s", e)
         finally:
             self._registered = False
             self._stopping = False

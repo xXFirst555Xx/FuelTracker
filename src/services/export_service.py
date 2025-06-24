@@ -121,7 +121,7 @@ class ExportService:
                 "Noto Sans Thai", fallback_to_default=False
             )  # type: ignore[operator]
         except Exception as exc:  # pragma: no cover - not found
-            logger.debug("Noto Sans Thai not found: %s", exc)
+            logger.debug("ไม่พบ Noto Sans Thai: %s", exc)
             font_path = ""
 
         if font_path and Path(font_path).exists():
@@ -131,14 +131,14 @@ class ExportService:
                 )
                 return "NotoSansThai"
             except Exception as exc:  # pragma: no cover - bad font
-                logger.warning("failed to register NotoSansThai: %s", exc)
+                logger.warning("ไม่สามารถลงทะเบียน NotoSansThai ได้: %s", exc)
 
         try:
             fallback_path = font_manager.findfont("Tahoma")  # type: ignore[operator]
             pdfmetrics.registerFont(TTFont("Tahoma", fallback_path, subsetting=True))
             return "Tahoma"
         except Exception as exc:  # pragma: no cover - fallback issue
-            logger.warning("failed to register fallback font: %s", exc)
+            logger.warning("ไม่สามารถลงทะเบียนฟอนต์สำรองได้: %s", exc)
             return "Helvetica"
 
     def _plot_dual_axis(self, fig: Figure, df: pd.DataFrame) -> None:

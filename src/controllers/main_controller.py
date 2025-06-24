@@ -1061,7 +1061,7 @@ class MainController(QObject):
                                 Qt.ConnectionType.QueuedConnection,
                             )
                 except requests.RequestException as exc:  # pragma: no cover - network
-                    logger.error("Failed to update oil prices: %s", exc)
+                    logger.error("อัปเดตราคาน้ำมันไม่สำเร็จ: %s", exc)
                     if os.name == "nt":
                         try:
                             ToastNotifier().show_toast(
