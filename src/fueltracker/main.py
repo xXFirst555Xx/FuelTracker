@@ -97,7 +97,7 @@ def run(argv: list[str] | None = None) -> None:
     if args.check:
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_Use96Dpi, True)
         window.show()
-        print("MainWindow OK")
+        print("หน้าต่างหลักทำงานได้")
         return
 
     window.show()
