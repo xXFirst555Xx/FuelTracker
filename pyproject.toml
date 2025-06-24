@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Fuel tracker sample application"
 requires-python = ">=3.11"
 authors = [{name="Example", email="example@example.com"}]
+license = {text = "MIT"}
 dependencies = [
     "PySide6>=6.7",
     "SQLModel>=0.0.16",
@@ -87,6 +88,7 @@ report = { sequence = ["lint", "test", "runtime-check"], help = "Run all checks"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
