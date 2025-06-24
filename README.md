@@ -7,27 +7,28 @@
 
 ## Features
 
-- **Statistics panel** shows kilometres per litre and cost per kilometre. See
-  [USAGE.md](docs/USAGE.md) for details.
-- **Automatic backups** keep up to 30 daily copies under
-  `~/.fueltracker/backups/` (see [USAGE.md](docs/USAGE.md)).
-- **Graceful exit** removes the main window's event filter when the
-  application is about to quit.
-- **Monthly budget alerts** display a toast notification when the limit is
-  exceeded. Usage in [BUDGET.md](docs/BUDGET.md).
-- **Maintenance scheduler** highlights overdue tasks. Learn more in
+- **แผงสถิติ** แสดงกิโลเมตรต่อลิตรและต้นทุนต่อกิโลเมตร ดูรายละเอียดได้ที่
+  [USAGE.md](docs/USAGE.md).
+- **การสำรองข้อมูลอัตโนมัติ** เก็บสำเนารายวันได้สูงสุด 30 ชุดไว้ที่
+  `~/.fueltracker/backups/` (ดู [USAGE.md](docs/USAGE.md)).
+- **ออกจากโปรแกรมอย่างนุ่มนวล** จะลบตัวกรองอีเวนต์ของหน้าต่างหลักเมื่อ
+  แอปพลิเคชันกำลังจะปิด.
+- **การแจ้งเตือนงบประมาณรายเดือน** แสดงการแจ้งเตือนแบบ toast เมื่อเกินขีดจำกัด
+  วิธีใช้อยู่ใน [BUDGET.md](docs/BUDGET.md).
+- **ตัวจัดตารางบำรุงรักษา** จะเน้นงานที่ค้างกำหนด อ่านเพิ่มเติมที่
   [MAINTENANCE.md](docs/MAINTENANCE.md).
-- **CSV/PDF/Excel exporting** via `ExportService` creates monthly reports,
-  described in [EXPORTING.md](docs/EXPORTING.md).
-- Excel export requires the `openpyxl` library.
-- **System tray icon** provides quick actions and keeps the app running in the background.
-- **Global hotkey** (default `Ctrl+Shift+N`) instantly opens the Add Entry dialog.
-- **Oil price API** fetches daily fuel prices using `OilPriceService`.
-  See [API.md](docs/API.md) for usage details.
-- **Reports page** summarises fuel usage with graphs and tables.
-  See [REPORTS.md](docs/REPORTS.md) for screenshots.
-- **Signed updates** use the `tufup` CLI and The Update Framework.
-  Setup instructions in [UPDATER_SETUP.md](docs/UPDATER_SETUP.md).
+- **การส่งออก CSV/PDF/Excel** ผ่าน `ExportService` สร้างรายงานประจำเดือน
+  อธิบายไว้ใน [EXPORTING.md](docs/EXPORTING.md).
+- การส่งออก Excel ต้องใช้ไลบรารี `openpyxl`.
+- **ไอคอนใน System Tray** ให้คำสั่งด่วนและทำให้แอปทำงานต่อเนื่องเบื้องหลัง.
+- **ปุ่มลัดทั่วระบบ** (ค่าปริยาย `Ctrl+Shift+N`)
+  เปิดหน้าต่างเพิ่มรายการได้ทันที.
+- **API ราคาน้ำมัน** ดึงราคาน้ำมันประจำวันด้วย `OilPriceService`.
+  ดูวิธีใช้ที่ [API.md](docs/API.md).
+- **หน้ารายงาน** สรุปการใช้น้ำมันด้วยกราฟและตาราง.
+  ดูภาพตัวอย่างได้ที่ [REPORTS.md](docs/REPORTS.md).
+- **การอัปเดตแบบลงนาม** ใช้เครื่องมือ `tufup` และ The Update Framework.
+  วิธีตั้งค่าอยู่ใน [UPDATER_SETUP.md](docs/UPDATER_SETUP.md).
 
 ## ความต้องการ
 
