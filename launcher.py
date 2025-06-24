@@ -35,7 +35,7 @@ def single_instance(name: str):
     if hasattr(ctypes, "windll"):
         handle = ctypes.windll.kernel32.CreateMutexW(None, False, name)
         if ctypes.GetLastError() == 183:
-            sys.exit("Another instance is already running.")
+            sys.exit("มีโปรแกรมกำลังทำงานอยู่แล้ว")
         try:
             yield
         finally:
@@ -132,7 +132,7 @@ def run_app() -> None:
     if exe.exists():
         subprocess.Popen([str(exe)])
     else:
-        logging.error("Executable not found: %s", exe)
+        logging.error("ไม่พบไฟล์ปฏิบัติการ: %s", exe)
 
 
 def show_splash():
