@@ -17,7 +17,8 @@ from src.services.storage_service import _SQLCIPHER_AVAILABLE
 from src.models import Vehicle
 
 
-def test_backup_rotation(tmp_path):
+def test_backup_rotation(tmp_path, monkeypatch):
+    monkeypatch.setattr(time, "sleep", lambda *_args, **_kwargs: None)
     db = tmp_path / "fuel.db"
     storage = StorageService(db_path=db)
     storage.add_vehicle(
