@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import Callable
 
 from packaging.version import Version
-from PyQt6.QtWidgets import QApplication, QProgressBar, QSplashScreen
-from PyQt6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication, QProgressBar, QSplashScreen
+from PySide6.QtGui import QPixmap
 from tufup.client import Client
 
 APP_NAME = "FuelTracker"
