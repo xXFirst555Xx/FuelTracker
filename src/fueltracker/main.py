@@ -90,7 +90,8 @@ def run(argv: list[str] | None = None) -> None:
     else:
         from . import updater
 
-        updater.start_async(_controller.config.update_hours)
+        if _controller.config.update_hours > 0:
+            updater.start_async(_controller.config.update_hours)
     window = _controller.window
     # ----------------------------------------------------------
     if args.check:

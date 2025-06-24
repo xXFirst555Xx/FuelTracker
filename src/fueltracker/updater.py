@@ -43,6 +43,8 @@ def _update_loop(interval: int) -> None:
 def start_async(interval_hours: int = 24) -> None:
     """Start background update checking."""
     global _update_thread
+    if interval_hours <= 0:
+        return
     if _update_thread and _update_thread.is_alive():
         return
     _update_thread = Thread(
