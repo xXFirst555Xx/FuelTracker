@@ -87,6 +87,10 @@ def run(argv: list[str] | None = None) -> None:
     # tests upgrade it.
     if args.check:
         _controller._price_timer_started = True
+    else:
+        from . import updater
+
+        updater.start_async(_controller.config.update_hours)
     window = _controller.window
     # ----------------------------------------------------------
     if args.check:
