@@ -14,7 +14,7 @@ class AppConfig:
     """User preferences for FuelTracker."""
 
     default_station: str = "ptt"
-    update_hours: int = 24
+    update_hours: int = 24  # 0 disables automatic update checks
     theme: str = "system"
     hide_on_close: bool = os.name == "nt"
     global_hotkey_enabled: bool = True
