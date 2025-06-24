@@ -57,8 +57,8 @@ pip install poethepoet
 งานที่มีให้ใช้งานประกอบด้วย
 
 - `poe lint` - รัน `ruff`, `mypy` และ `vulture` เพื่อตรวจสอบคุณภาพโค้ด
-- `poe test` - รันชุดทดสอบด้วย `pytest` หลังจากอัปเกรดฐานข้อมูล
-- `poe cover` - รันชุดทดสอบพร้อมรายงาน coverage
+- `poe test` - รันชุดทดสอบด้วย `pytest -n auto` หลังจากอัปเกรดฐานข้อมูล
+- `poe cover` - รันชุดทดสอบพร้อมรายงาน coverage ด้วย `pytest -n auto`
 - `poe migrate` - รันสคริปต์ `alembic` เพื่ออัปเกรดฐานข้อมูล
 - `poe runtime-check` - เปิดโปรแกรมแบบไม่สร้างหน้าต่างเพื่อตรวจสอบการทำงาน
 - `poe build` - สร้างไฟล์ปฏิบัติการแบบ standalone ด้วย `PyInstaller`
@@ -88,7 +88,7 @@ pip install -e .[dev]
 คำสั่งนี้จะลงไทป์สตับ รวมถึง `types-requests` เพื่อให้ `mypy` ตรวจสอบ
 การนำเข้าไลบรารี `requests` ได้อย่างครบถ้วน
 
-ฮุคจะรัน `ruff`, `black`, `mypy` และ `pytest` ทุกครั้งที่คอมมิต
+ฮุคจะรัน `ruff`, `black`, `mypy` และ `pytest -n auto` ทุกครั้งที่คอมมิต
 หากต้องการรันทั้งหมดด้วยตนเองให้ใช้:
 
 ```bash
@@ -103,14 +103,14 @@ pre-commit run --all-files
 ```bash
 pip install -r requirements.lock
 pip install -e .[dev]
-pytest
+pytest -n auto
 ```
 
 สามารถเรียกสคริปต์ `scripts/dev_setup.sh` เพื่อทำขั้นตอนติดตั้งให้อัตโนมัติได้เช่นกัน:
 
 ```bash
 ./scripts/dev_setup.sh
-pytest
+pytest -n auto
 ```
 
 หากต้องการดูรายงาน coverage ใช้คำสั่ง:
@@ -195,7 +195,7 @@ poe build
 
 ## การทดสอบบน Windows
 
-หลังจากติดตั้งโปรเจ็กต์ตามขั้นตอนด้านบน สามารถรันทดสอบทั้งหมดได้ด้วย `pytest`
+หลังจากติดตั้งโปรเจ็กต์ตามขั้นตอนด้านบน สามารถรันทดสอบทั้งหมดได้ด้วย `pytest -n auto`
 โดยทำงานภายใน virtual environment:
 
 ```bat
@@ -204,11 +204,11 @@ python -m venv .venv
 pip install -r requirements.lock
 rem requirements.lock รวม `pytest-qt` ซึ่งให้ฟิกซ์เจอร์ `qtbot` สำหรับทดสอบ Qt
 pip install -e .
-pytest
+pytest -n auto
 ```
 
 ต้องการตรวจสอบแบบครบถ้วนยิ่งขึ้นสามารถใช้คำสั่ง `poe validate`
-ซึ่งจะติดตั้งแพ็กเกจแบบ editable รัน `pytest` และทดสอบการเปิดโปรแกรมแบบ
+ซึ่งจะติดตั้งแพ็กเกจแบบ editable รัน `pytest -n auto` และทดสอบการเปิดโปรแกรมแบบ
 offscreen ผลลัพธ์จะถูกบันทึกไว้ในโฟลเดอร์ `reports/` ทั้งหมด ก่อนใช้งานให้ติดตั้งเครื่องมือสำหรับนักพัฒนาดังนี้
 
 ```bash
