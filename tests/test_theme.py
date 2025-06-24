@@ -4,42 +4,31 @@ from PySide6.QtCore import Qt
 from src.controllers import MainController
 from src.config import AppConfig
 
+@pytest.mark.parametrize(
+    "env_theme, cli_arg, dark_flag, expected_colors",
+    [
+        (None, None, False, ["#FAFAFA"]),
+        (None, None, True, ["#101010", "#121212"]),
+        ("modern", None, None, ["#f5f7fa"]),
+        (None, "--theme=modern", None, ["#f5f7fa"]),
+        ("vivid", None, None, ["#FF9800"]),
+    ],
+)
+def test_theme_colors(qapp, tmp_path, monkeypatch, env_theme, cli_arg, dark_flag, expected_colors):
+    if env_theme is not None:
+        monkeypatch.setenv("FT_THEME", env_theme)
+    else:
+        monkeypatch.delenv("FT_THEME", raising=False)
 
-def test_light_theme(qapp, tmp_path, monkeypatch):
-    monkeypatch.delenv("FT_THEME", raising=False)
+    if cli_arg is not None:
+        monkeypatch.setattr(qapp, "arguments", lambda: ["prog", cli_arg])
+    else:
+        monkeypatch.setattr(qapp, "arguments", lambda: ["prog"])
+
     qapp.setStyleSheet("")
-    MainController(db_path=tmp_path / "t.db", dark_mode=False)
-    assert "#FAFAFA" in qapp.styleSheet()
-
-
-def test_dark_theme_flag(qapp, tmp_path, monkeypatch):
-    monkeypatch.delenv("FT_THEME", raising=False)
-    qapp.setStyleSheet("")
-    MainController(db_path=tmp_path / "t.db", dark_mode=True)
+    MainController(db_path=tmp_path / "t.db", dark_mode=dark_flag)
     style = qapp.styleSheet()
-    assert "#101010" in style or "#121212" in style
-
-
-def test_modern_theme_env(qapp, tmp_path, monkeypatch):
-    monkeypatch.setenv("FT_THEME", "modern")
-    qapp.setStyleSheet("")
-    MainController(db_path=tmp_path / "t.db")
-    assert "#f5f7fa" in qapp.styleSheet()
-
-
-def test_modern_theme_cli(qapp, tmp_path, monkeypatch):
-    monkeypatch.delenv("FT_THEME", raising=False)
-    monkeypatch.setattr(qapp, "arguments", lambda: ["prog", "--theme=modern"])
-    qapp.setStyleSheet("")
-    MainController(db_path=tmp_path / "t.db")
-    assert "#f5f7fa" in qapp.styleSheet()
-
-
-def test_vivid_theme_env(qapp, tmp_path, monkeypatch):
-    monkeypatch.setenv("FT_THEME", "vivid")
-    qapp.setStyleSheet("")
-    MainController(db_path=tmp_path / "t.db")
-    assert "#FF9800" in qapp.styleSheet()
+    assert any(c in style for c in expected_colors)
 
 
 def test_theme_persisted(qapp, tmp_path):
