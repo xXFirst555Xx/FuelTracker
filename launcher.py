@@ -160,7 +160,7 @@ def main() -> None:
         updater = AppUpdater()
         meta = updater.check_for_update()
         if meta and meta.version > Version(read_current_version()):
-            logging.info("Updating to %s", meta.version)
+            logging.info("กำลังอัปเดตเป็นเวอร์ชัน %s", meta.version)
             extracted, version = updater.download_and_extract(update_progress)
             install_version(str(version), extracted)
         splash.finish(None)
