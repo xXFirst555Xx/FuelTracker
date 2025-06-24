@@ -1,4 +1,3 @@
-import os
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 
@@ -7,7 +6,6 @@ from src.fueltracker import updater
 
 
 def test_run_starts_background_updater(monkeypatch):
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     # Prevent Qt event loop from blocking and exit calls from stopping the test
     monkeypatch.setattr(QApplication, "exec", lambda self: 0)
     monkeypatch.setattr(sys, "exit", lambda *a, **k: None)
