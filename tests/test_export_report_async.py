@@ -16,13 +16,13 @@ def test_export_report_runs_async(qtbot, main_controller, tmp_path, monkeypatch)
 
     def slow_csv(self, month, year, path):
         assert Path(path) == csv_path
-        time.sleep(0.2)
+        csv_path.write_text("csv")
 
     def slow_pdf(self, month, vehicle_id):
         assert vehicle_id is None
-        pdf_path.write_text("dummy")
-        time.sleep(0.2)
-        return pdf_path
+        tmp_pdf = tmp_path / "temp.pdf"
+        tmp_pdf.write_text("dummy")
+        return tmp_pdf
 
     monkeypatch.setattr(
         ctrl.exporter, "monthly_csv", MethodType(slow_csv, ctrl.exporter)
