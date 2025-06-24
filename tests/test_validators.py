@@ -15,7 +15,7 @@ def test_odo_after_less_than_before_raises():
         amount_spent=50.0,
         liters=5.0,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ค่าเลขไมล์หลังเติมต้องมากกว่าหรือเท่ากับก่อนเติม"):
         validate_entry(entry)
 
 
@@ -28,7 +28,7 @@ def test_liters_without_amount_raises():
         amount_spent=None,
         liters=5.0,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ต้องระบุจำนวนเงินเมื่อระบุจำนวนลิตร"):
         validate_entry(entry)
 
 

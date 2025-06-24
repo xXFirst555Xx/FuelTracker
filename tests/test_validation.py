@@ -17,7 +17,7 @@ def test_invalid_odometer(tmp_path):
         amount_spent=10.0,
         liters=1.0,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ค่าเลขไมล์หลังเติมต้องมากกว่าหรือเท่ากับก่อนเติม"):
         storage.add_entry(entry)
 
 
@@ -34,5 +34,5 @@ def test_liters_requires_amount(tmp_path):
         amount_spent=None,
         liters=5.0,
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ต้องระบุจำนวนเงินเมื่อระบุจำนวนลิตร"):
         storage.add_entry(entry)
