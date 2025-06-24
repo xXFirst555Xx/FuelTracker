@@ -36,7 +36,7 @@ def _update_loop(interval: int) -> None:
             if meta and meta.version > client.current_version:
                 client.download_and_apply_update()
         except Exception as exc:  # pragma: no cover - best effort logging
-            logger.error("Background update check failed: %s", exc)
+            logger.error("การตรวจสอบอัปเดตเบื้องหลังล้มเหลว: %s", exc)
         time.sleep(interval)
 
 

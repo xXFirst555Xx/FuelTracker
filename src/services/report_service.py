@@ -63,7 +63,7 @@ class ReportService:
 
     def generate_report(self) -> None:
         stats = self.calc_overall_stats()
-        logger.info("Generated report:")
+        logger.info("สร้างรายงานแล้ว:")
         for key, value in stats.items():
             logger.info("%s: %s", key, value)
 
