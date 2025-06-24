@@ -136,29 +136,18 @@ class ReportService:
 
     def get_monthly_stats(self, month: date, vehicle_id: int) -> Dict[str, float]:
         """คำนวณผลรวมและค่าเฉลี่ยของเดือนสำหรับยานพาหนะ"""
-        df = self._monthly_df(month, vehicle_id)
-        if df.empty:
-            return {
-                "total_distance": 0.0,
-                "total_liters": 0.0,
-                "total_price": 0.0,
-                "avg_consumption": 0.0,
-                "cost_per_km": 0.0,
-                "fills_count": 0,
-                "avg_price_per_liter": 0.0,
-            }
+        total_distance, total_liters, total_price = self.storage.vehicle_monthly_stats(
+            vehicle_id, month.year, month.month
+        )
+        fills_count = len(
+            self.storage.list_entries_for_month(month.year, month.month, vehicle_id)
+        )
 
-        total_distance = float(df["distance"].fillna(0).sum())
-        total_liters = float(df["liters"].fillna(0).sum())
-        total_price = float(df["amount_spent"].sum())
         avg_consumption = (
             (total_liters / total_distance * 100) if total_distance else 0.0
         )
         cost_per_km = (total_price / total_distance) if total_distance else 0.0
-        fills_count = len(df)
-        avg_price_per_liter = (
-            (total_price / total_liters) if total_liters else 0.0
-        )
+        avg_price_per_liter = (total_price / total_liters) if total_liters else 0.0
 
         return {
             "total_distance": total_distance,

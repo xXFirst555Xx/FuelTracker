@@ -24,7 +24,7 @@ except ModuleNotFoundError:  # pragma: no cover - fallback when dependency missi
 
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlalchemy.engine import Engine
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case
 
 from ..models import FuelEntry, Vehicle, Budget, Maintenance, FuelPrice
 from .validators import validate_entry
@@ -554,6 +554,40 @@ class StorageService:
             )
             total = session.exec(stmt).first()
             return float(total or 0.0)
+
+    def vehicle_monthly_stats(
+        self, vehicle_id: int, year: int, month: int
+    ) -> tuple[float, float, float]:
+        """Return total distance, liters and spending for a vehicle in a month."""
+        with Session(self.engine) as session:
+            month_range = (
+                f"{year}-{month:02d}-01",
+                f"{year}-{month:02d}-31",
+            )
+
+            stmt = select(
+                func.sum(
+                    case(
+                        (
+                            cast(Any, FuelEntry.odo_after).is_not(None),
+                            cast(Any, FuelEntry.odo_after) - FuelEntry.odo_before,
+                        ),
+                        else_=0,
+                    )
+                ),
+                func.sum(FuelEntry.liters),
+                func.sum(FuelEntry.amount_spent),
+            ).where(
+                FuelEntry.vehicle_id == vehicle_id,
+                cast(Any, FuelEntry.entry_date).between(*month_range),
+            )
+
+            dist, liters, spent = session.exec(stmt).one()
+            return (
+                float(dist or 0.0),
+                float(liters or 0.0),
+                float(spent or 0.0),
+            )
 
     # ------------------------------------------------------------------
     # Utilities

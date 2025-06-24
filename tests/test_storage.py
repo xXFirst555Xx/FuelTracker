@@ -130,3 +130,43 @@ def test_get_vehicle_stats(in_memory_storage: StorageService) -> None:
     assert dist == manual_distance
     assert liters == manual_liters
     assert price == manual_price
+
+
+def test_vehicle_monthly_stats(in_memory_storage: StorageService) -> None:
+    storage = in_memory_storage
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 1, 1),
+            vehicle_id=1,
+            odo_before=0,
+            odo_after=100,
+            amount_spent=20,
+            liters=10,
+        )
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 1, 15),
+            vehicle_id=1,
+            odo_before=100,
+            odo_after=None,
+            amount_spent=10,
+            liters=5,
+        )
+    )
+    storage.add_entry(
+        FuelEntry(
+            entry_date=date(2024, 2, 1),
+            vehicle_id=1,
+            odo_before=100,
+            odo_after=200,
+            amount_spent=16,
+            liters=8,
+        )
+    )
+
+    dist, liters, price = storage.vehicle_monthly_stats(1, 2024, 1)
+
+    assert dist == 100.0
+    assert liters == 15.0
+    assert price == 30.0
