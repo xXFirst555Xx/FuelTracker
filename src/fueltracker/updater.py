@@ -8,7 +8,7 @@ from tufup.client import Client
 from threading import Thread
 import time
 
-from ..settings import data_dir
+from src.settings import data_dir
 
 logger = logging.getLogger(__name__)
 

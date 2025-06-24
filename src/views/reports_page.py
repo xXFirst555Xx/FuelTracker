@@ -327,7 +327,7 @@ class ReportsPage(QWidget):
         distance = float(table["distance"].fillna(0).sum()) if not table.empty else 0.0
         fills = len(table)
         budget_remain = self._budget_remaining(month, self._current_vid)
-        self.cards["distance"].set_value(f"{distance:.0f}")
+        self.cards["distance"].set_value(f"{distance:.0f} km")
         self.cards["fills"].set_value(str(fills))
         if budget_remain is None:
             self.cards["budget"].set_value("-")

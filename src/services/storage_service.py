@@ -619,7 +619,10 @@ class StorageService:
             raise RuntimeError("StorageService is not file-based")
 
         now = now or datetime.now()
-        backup_dir = Path(backup_dir or Path.home() / ".fueltracker" / "backups")
+        from pathlib import PosixPath
+
+        home_path = PosixPath(os.path.expanduser("~"))
+        backup_dir = PosixPath(backup_dir or home_path / ".fueltracker" / "backups")
         backup_dir.mkdir(parents=True, exist_ok=True)
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")
