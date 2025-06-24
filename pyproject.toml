@@ -41,6 +41,7 @@ dev = [
     "pytest",
     "pytest-qt",
     "pytest-cov",
+    "pytest-xdist",
 
     # Type Stubs
     "types-requests",
@@ -74,8 +75,8 @@ _vulture = { cmd = "python -m vulture src tests .vulture-whitelist.py", help = "
 
 lint = { sequence = ["_ruff", "_mypy", "_vulture"], help = "Run all linters" }
 migrate = { cmd = "python -m fueltracker migrate", env = { PYTHONPATH = "src" }, help = "Run database migrations" }
-test = { cmd = "python -m pytest -q", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite" }
-cover = { cmd = "python -m pytest --cov=src --cov-report=term-missing", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite with coverage" }
+test = { cmd = "python -m pytest -n auto -q", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite" }
+cover = { cmd = "python -m pytest -n auto --cov=src --cov-report=term-missing", deps = ["migrate"], env = { PYTHONPATH = "src" }, help = "Run test suite with coverage" }
 runtime-check = { cmd = "python -m fueltracker --check", env = { QT_QPA_PLATFORM = "offscreen", PYTHONPATH = "src" }, help = "Run app in headless mode" }
 build = { cmd = "python -m PyInstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build standalone executable" }
 build-app = { cmd = "python -m PyInstaller --noconfirm --clean --onefile fueltracker.spec", help = "Build main FuelTracker.exe" }
