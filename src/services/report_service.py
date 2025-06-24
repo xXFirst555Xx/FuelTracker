@@ -203,7 +203,13 @@ class ReportService:
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Helvetica", "B", 16)
-        title = f"Fuel report {month.strftime('%Y-%m')} vehicle {vehicle_id}"
+        title = f"Fuel report {month.strftime('%Y-%m')}"
+        if vehicle_id is not None:
+            vehicle = self.storage.get_vehicle(vehicle_id)
+            if vehicle is not None:
+                title += f" - {vehicle.name}"
+            else:
+                title += f" - ID {vehicle_id}"
         pdf.cell(0, 10, title, ln=1)
 
         pdf.set_font("Helvetica", size=12)

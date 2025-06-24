@@ -206,7 +206,11 @@ class ExportService:
         canvas.setFont(font, 16)
         title = f"รายงานประจำเดือน {month}"
         if vehicle_id is not None:
-            title += f" ยานพาหนะ {vehicle_id}"
+            vehicle = self.storage.get_vehicle(vehicle_id)
+            if vehicle is not None:
+                title += f" ยานพาหนะ {vehicle.name}"
+            else:
+                title += f" ยานพาหนะ {vehicle_id}"
         canvas.drawString(40, 800, title)
 
         canvas.setFont(font, 12)
@@ -307,19 +311,22 @@ class ExportService:
         data["km_per_l"] = data["distance"] / data["liters"]
         data.sort_values("km_per_l", ascending=False, inplace=True)
 
+        names = {v.id: v.name for v in self.storage.list_vehicles()}
+        labels = [names.get(idx, str(idx)) for idx in data.index]
+
         chart = tmp_dir / f"{uuid.uuid4().hex}.png"
         fig = plt.Figure(figsize=(6, 4))
         ax1 = fig.add_subplot(111)
         ax2 = ax1.twinx()
         ax1.bar(
-            data.index.astype(str),
+            labels,
             data["liters"],
             color="tab:blue",
             alpha=0.6,
             label="L",
         )
         ax2.plot(
-            data.index.astype(str),
+            labels,
             data["km_per_l"],
             color="tab:red",
             marker="o",
