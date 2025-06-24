@@ -7,16 +7,21 @@ from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy.pool import StaticPool
 from alembic.config import Config
 from alembic import command
-from PySide6 import QtWidgets, QtGui
-from PySide6.QtWidgets import QApplication
+try:
+    from PySide6 import QtWidgets, QtGui
+    from PySide6.QtWidgets import QApplication
+    PYSIDE_AVAILABLE = True
+except Exception:  # pragma: no cover - platform dependent
+    PYSIDE_AVAILABLE = False
 
-# Provide Qt5-style reexports for Qt6 compatibility
-if not hasattr(QtWidgets, "QAction"):
-    QtWidgets.QAction = QtGui.QAction  # type: ignore[attr-defined]
-if not hasattr(QtWidgets, "QStandardItemModel"):
-    QtWidgets.QStandardItemModel = QtGui.QStandardItemModel  # type: ignore[attr-defined]
-if not hasattr(QtWidgets, "QStandardItem"):
-    QtWidgets.QStandardItem = QtGui.QStandardItem  # type: ignore[attr-defined]
+# Provide Qt5-style reexports for Qt6 compatibility when PySide6 is available
+if PYSIDE_AVAILABLE:
+    if not hasattr(QtWidgets, "QAction"):
+        QtWidgets.QAction = QtGui.QAction  # type: ignore[attr-defined]
+    if not hasattr(QtWidgets, "QStandardItemModel"):
+        QtWidgets.QStandardItemModel = QtGui.QStandardItemModel  # type: ignore[attr-defined]
+    if not hasattr(QtWidgets, "QStandardItem"):
+        QtWidgets.QStandardItem = QtGui.QStandardItem  # type: ignore[attr-defined]
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 
@@ -78,6 +83,8 @@ def migrated_db_session():
 @pytest.fixture(scope="session")
 def qapp():
     """Provide a QApplication instance for UI tests."""
+    if not PYSIDE_AVAILABLE:
+        pytest.skip("PySide6 not available", allow_module_level=True)
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -87,6 +94,9 @@ def qapp():
 @pytest.fixture
 def main_controller(qapp, migrated_db_session, monkeypatch):
     """Return a MainController bound to the migrated in-memory database."""
+
+    if not PYSIDE_AVAILABLE:
+        pytest.skip("PySide6 not available", allow_module_level=True)
 
     engine = migrated_db_session.get_bind()
 
