@@ -147,7 +147,7 @@ class ToastNotifier(object):
         icon_path: str | None = None,
         duration: int = 5,
         threaded: bool = False,
-    ) -> bool:
+    ) -> bool | threading.Thread:
         """Notification settings.
 
         :title: notification title
@@ -157,18 +157,19 @@ class ToastNotifier(object):
         """
         if not threaded:
             self._show_toast(title, msg, icon_path, duration)
-        else:
-            if self.notification_active():
-                # We have an active notification, let is finish so we don't spam them
-                return False
+            return True
 
-            t = threading.Thread(
-                target=self._show_toast,
-                args=(title, msg, icon_path, duration),
-            )
-            self._thread = t
-            t.start()
-        return True
+        if self.notification_active():
+            # We have an active notification, let it finish so we don't spam them
+            return False
+
+        t = threading.Thread(
+            target=self._show_toast,
+            args=(title, msg, icon_path, duration),
+        )
+        self._thread = t
+        t.start()
+        return t
 
     def notification_active(self) -> bool:
         """See if we have an active notification showing"""

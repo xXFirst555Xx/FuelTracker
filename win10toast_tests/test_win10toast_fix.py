@@ -1,6 +1,6 @@
 import sys
 import types
-import time
+import threading
 
 
 def test_no_wparam_crash(monkeypatch):
@@ -59,5 +59,6 @@ def test_no_wparam_crash(monkeypatch):
     from win10toast import ToastNotifier
 
     tn = ToastNotifier()
-    tn.show_toast("hi", "body", threaded=True)
-    time.sleep(0.2)
+    thread = tn.show_toast("hi", "body", duration=0, threaded=True)
+    assert isinstance(thread, threading.Thread)
+    thread.join(timeout=1)
