@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -29,6 +30,11 @@ sys.path.insert(0, str(ROOT / "src"))
 import src.hotkey as _hotkey  # noqa: E402
 
 _hotkey.keyboard = None
+
+
+def pytest_sessionstart(session):
+    """Ensure Qt runs in headless mode for all tests."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from src.services import StorageService  # noqa: E402
 from src.controllers.main_controller import MainController  # noqa: E402
@@ -72,9 +78,6 @@ def migrated_db_session():
 @pytest.fixture(scope="session")
 def qapp():
     """Provide a QApplication instance for UI tests."""
-    import os
-
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     app = QApplication.instance()
     if app is None:
         app = QApplication([])

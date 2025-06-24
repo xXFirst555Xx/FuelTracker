@@ -1,4 +1,3 @@
-import os
 import sys
 from datetime import date
 from PySide6.QtWidgets import QApplication, QMainWindow
@@ -7,7 +6,6 @@ from src.models import Vehicle, FuelEntry
 
 
 def test_mainwindow_launch(monkeypatch):
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     from fueltracker.main import run
 
     # prevent blocking by skipping the event loop
