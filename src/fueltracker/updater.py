@@ -69,14 +69,14 @@ def prompt_and_update(parent: QWidget) -> None:
     if not meta or meta.version <= client.current_version:
         QMessageBox.information(
             parent,
-            "Check for Updates",
-            "You are already running the latest version.",
+            "ตรวจสอบการอัปเดต",
+            "คุณกำลังใช้เวอร์ชันล่าสุดอยู่แล้ว",
         )
         return
     reply = QMessageBox.question(
         parent,
-        "Update Available",
-        f"Version {meta.version} is available. Install now?",
+        "มีการอัปเดตใหม่",
+        f"มีเวอร์ชัน {meta.version} ให้ใช้งาน ติดตั้งตอนนี้หรือไม่?",
     )
     if reply == QMessageBox.StandardButton.Yes:
         client.download_and_apply_update()
