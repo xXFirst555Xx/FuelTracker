@@ -37,6 +37,24 @@ def run(argv: list[str] | None = None) -> None:
     if args.command == "migrate":
         upgrade(Config(ALEMBIC_INI), "head")
         return
+    if args.command == "backup":
+        from src.services import StorageService
+
+        StorageService().auto_backup()
+        return
+    if args.command == "sync":
+        from src.services import StorageService
+        from src.settings import Settings
+
+        env = Settings()
+        if env.ft_cloud_dir is None:
+            raise SystemExit("FT_CLOUD_DIR not set")
+
+        StorageService().sync_to_cloud(
+            Path.home() / ".fueltracker" / "backups",
+            env.ft_cloud_dir,
+        )
+        return
 
     # Always apply any pending migrations before launching the app
     upgrade(Config(ALEMBIC_INI), "head")
