@@ -30,7 +30,6 @@ from . import supports_shadow
 FigureCanvas = cast(Callable[[Figure], QWidget], FigureCanvasQTAgg)
 
 
-
 class SummaryCard(QWidget):
     """Small card widget displaying a single numeric value."""
 
@@ -103,48 +102,51 @@ class _Worker(QThread):
         self._vehicle_id = vehicle_id
 
     def run(self) -> None:
-        try:
-            today = date.today()
-            yearly = self._service.last_year_summary()
-            pie = self._service.liters_by_type()
-            monthly = self._service.monthly_summary()
-            table = self._service._monthly_df(today, self._vehicle_id)  # type: ignore[arg-type]
+        today = date.today()
+        yearly = self._service.last_year_summary()
+        pie = self._service.liters_by_type()
+        monthly = self._service.monthly_summary()
+        table = self._service._monthly_df(today, self._vehicle_id)  # type: ignore[arg-type]
 
-            # Weekly breakdown by ISO week
-            weekly = self._weekly(table)
+        # Weekly breakdown by ISO week
+        weekly = self._weekly(table)
 
-            # Chart for weekly liters
-            week_fig = Figure(figsize=(4, 3))
-            w_ax = week_fig.add_subplot(111)
-            if not table.empty:
-                order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                daily = table.groupby("weekday")["liters"].sum().reindex(order, fill_value=0)
-                w_ax.bar(order, daily)
-            w_ax.set_ylabel("ลิตร")
+        # Chart for weekly liters
+        week_fig = Figure(figsize=(4, 3))
+        w_ax = week_fig.add_subplot(111)
+        if not table.empty:
+            order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            daily = (
+                table.groupby("weekday")["liters"]
+                .sum()
+                .reindex(order, fill_value=0)
+            )
+            w_ax.bar(order, daily)
+        w_ax.set_ylabel("ลิตร")
 
-            month_fig = self._monthly_chart(monthly, self._vehicle_id)
+        month_fig = self._monthly_chart(monthly, self._vehicle_id)
 
-            # Build charts
-            fig1 = Figure(figsize=(4, 3))
-            ax1 = fig1.add_subplot(111)
-            if not yearly.empty:
-                ax1.plot(yearly["month"].astype(str), yearly["km_per_l"], marker="o")
-            ax1.set_ylabel("กม./ลิตร")
+        # Build charts
+        fig1 = Figure(figsize=(4, 3))
+        ax1 = fig1.add_subplot(111)
+        if not yearly.empty:
+            ax1.plot(yearly["month"].astype(str), yearly["km_per_l"], marker="o")
+        ax1.set_ylabel("กม./ลิตร")
 
-            fig2 = Figure(figsize=(4, 3))
-            ax2 = fig2.add_subplot(111)
-            if not yearly.empty:
-                ax2.bar(yearly["month"].astype(str), yearly["amount_spent"])
-            ax2.set_ylabel("บาท")
+        fig2 = Figure(figsize=(4, 3))
+        ax2 = fig2.add_subplot(111)
+        if not yearly.empty:
+            ax2.bar(yearly["month"].astype(str), yearly["amount_spent"])
+        ax2.set_ylabel("บาท")
 
-            fig3 = Figure(figsize=(4, 3))
-            ax3 = fig3.add_subplot(111)
-            if not pie.empty:
-                ax3.pie(pie, labels=pie.index.tolist())
+        fig3 = Figure(figsize=(4, 3))
+        ax3 = fig3.add_subplot(111)
+        if not pie.empty:
+            ax3.pie(pie, labels=pie.index.tolist())
 
-            self.data_ready.emit(fig1, fig2, fig3, month_fig, week_fig, table, weekly, today)
-        finally:
-            pass
+        self.data_ready.emit(
+            fig1, fig2, fig3, month_fig, week_fig, table, weekly, today
+        )
 
     # ------------------------------------------------------------------
     # Helpers
@@ -156,11 +158,12 @@ class _Worker(QThread):
             return pd.DataFrame(columns=cols, index=pd.Index([], name="week"))
 
         df = df.copy()
-        df["week"] = df["date"].apply(lambda d: f"{d.isocalendar().year}-W{d.isocalendar().week:02d}")
-        pivot = (
-            df.pivot_table(index="week", columns="weekday", values="liters", aggfunc="sum")
-            .fillna(0)
+        df["week"] = df["date"].apply(
+            lambda d: f"{d.isocalendar().year}-W{d.isocalendar().week:02d}"
         )
+        pivot = df.pivot_table(
+            index="week", columns="weekday", values="liters", aggfunc="sum"
+        ).fillna(0)
         order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         for col in order:
             if col not in pivot.columns:
@@ -183,7 +186,13 @@ class _Worker(QThread):
                     if e.odo_after is None or e.liters is None:
                         continue
                     m = e.entry_date.strftime("%Y-%m")
-                    data.append({"month": m, "dist": e.odo_after - e.odo_before, "liters": e.liters})
+                    data.append(
+                        {
+                            "month": m,
+                            "dist": e.odo_after - e.odo_before,
+                            "liters": e.liters,
+                        }
+                    )
                 if not data:
                     continue
                 vdf = pd.DataFrame(data)
@@ -192,7 +201,13 @@ class _Worker(QThread):
                 ax2.plot(summ.index.astype(str), summ["kml"], marker="o", label=v.name)
         else:
             if not df.empty:
-                ax2.plot(df["month"].astype(str), df["km_per_l"], color="orange", marker="o", label="km/L")
+                ax2.plot(
+                    df["month"].astype(str),
+                    df["km_per_l"],
+                    color="orange",
+                    marker="o",
+                    label="km/L",
+                )
         ax2.set_ylabel("กม./ลิตร")
         ax.legend(loc="upper left")
         ax2.legend(loc="upper right")
@@ -344,7 +359,9 @@ class ReportsPage(QWidget):
                 return None
             spent = 0.0
             for v in self._service.storage.list_vehicles():
-                spent += self._service.storage.get_total_spent(v.id, month.year, month.month)
+                spent += self._service.storage.get_total_spent(
+                    v.id, month.year, month.month
+                )
             return total_budget - spent
         budget = self._service.storage.get_budget(vid)
         if budget is None:
