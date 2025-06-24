@@ -133,7 +133,7 @@ poe cover
 
 - `DB_PATH` กำหนดตำแหน่งฐานข้อมูล SQLite (ค่าเริ่มต้นคือ
   `appdirs.user_data_dir("FuelTracker", "YourOrg")/fuel.db`)
-- `FT_THEME` เลือกธีม `light`, `dark` หรือ `modern`
+- `FT_THEME` เลือกธีม `light`, `dark`, `modern`, `vivid` หรือ `system` (ค่าเริ่มต้นคือ `system`)
 - `FT_DB_PASSWORD` ตั้งรหัสผ่านเพื่อเปิดใช้ SQLCipher (ปล่อยว่างได้ถ้าไม่ต้องการ)
 - `OIL_API_BASE` กำหนด URL พื้นฐานสำหรับ API ราคาน้ำมัน (เขียนทับค่าที่ตั้งไว้)
 - `UPDATE_HOURS` กำหนดช่วงเวลาตรวจสอบอัปเดตอัตโนมัติ (หน่วยชั่วโมง)
