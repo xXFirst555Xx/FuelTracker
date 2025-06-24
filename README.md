@@ -34,10 +34,11 @@
 
 - Python 3.11 or later
 - ติดตั้งแพ็กเกจที่ระบุใน `requirements.lock` (เช่น `SQLModel`)
-- ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้
+- ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) และแพ็กเกจเสริม `libxkbcommon-x11-0`,
+  `libxcb-cursor0` เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้แม้ไม่มีหน้าจอ (headless)
 
 ```bash
-sudo apt-get install libegl1
+sudo apt-get install libegl1 libxkbcommon-x11-0 libxcb-cursor0
 ```
 
 ## การติดตั้ง
