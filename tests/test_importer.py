@@ -24,6 +24,52 @@ def _new_storage(default_station: str = "ptt"):
     return StorageService(engine=engine, default_station=default_station)
 
 
+@pytest.fixture
+def make_csv(tmp_path: Path):
+    """Return a helper to write CSV rows to ``tmp_path``."""
+
+    def _make(rows):
+        path = tmp_path / "data.csv"
+        with open(path, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(
+                [
+                    "date",
+                    "fuel_type",
+                    "odo_before",
+                    "odo_after",
+                    "liters",
+                    "amount_spent",
+                ]
+            )
+            for row in rows:
+                writer.writerow(row)
+        return path
+
+    return _make
+
+
+@pytest.fixture
+def make_importer():
+    """Factory for Importer objects bound to a new in-memory storage."""
+
+    def _make(*, default_station: str = "ptt", add_vehicle: bool = True):
+        storage = _new_storage(default_station=default_station)
+        if add_vehicle:
+            storage.add_vehicle(
+                Vehicle(
+                    name="Car",
+                    vehicle_type="sedan",
+                    license_plate="A",
+                    tank_capacity_liters=40,
+                )
+            )
+        importer = Importer(storage)
+        return importer, storage
+
+    return _make
+
+
 def test_importer_roundtrip(tmp_path: Path):
     src_storage = _new_storage()
     src_storage.add_vehicle(
@@ -62,31 +108,38 @@ def test_importer_roundtrip(tmp_path: Path):
     assert saved[0].fuel_type == "gasoline_95"
 
 
-def test_import_many_single_transaction(tmp_path: Path):
-    storage = _new_storage()
-    storage.add_vehicle(
-        Vehicle(
-            name="Car", vehicle_type="sedan", license_plate="A", tank_capacity_liters=40
-        )
+@pytest.mark.parametrize(
+    "row,expected",
+    [
+        (["2024-06-01", "e20", "0", "100", "20", "50"], {"odo_after": 100.0}),
+        (["bad-date", "e20", "0", "100", "20", "50"], None),
+        (["2024-06-01", "e20", "bad", "100", "20", "50"], None),
+        (["2024-06-01", "e20", "0", "bad", "20", "50"], {"odo_after": None}),
+        (["2024-06-01", "e20", "0", "100", "bad", "50"], {"liters": None}),
+        (["2024-06-01", "e20", "0", "100", "20", "bad"], {"amount_spent": None}),
+    ],
+)
+def test_read_csv_parsing(row, expected, make_importer, make_csv):
+    importer, _ = make_importer(add_vehicle=False)
+    csv_path = make_csv([row])
+    entries = importer.read_csv(csv_path)
+    if expected is None:
+        assert entries == []
+    else:
+        assert len(entries) == 1
+        entry = entries[0]
+        for key, value in expected.items():
+            assert getattr(entry, key) == value
+
+
+def test_import_many_single_transaction(make_importer, make_csv):
+    importer, storage = make_importer()
+    csv_path = make_csv(
+        [
+            ["2024-06-01", "gasoline_95", "0", "100", "20", "50"],
+            ["2024-06-02", "gasoline_95", "100", "200", "20", "50"],
+        ]
     )
-
-    csv_path = tmp_path / "data.csv"
-    with open(csv_path, "w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
-        writer.writerow(
-            [
-                "date",
-                "fuel_type",
-                "odo_before",
-                "odo_after",
-                "liters",
-                "amount_spent",
-            ]
-        )
-        writer.writerow(["2024-06-01", "gasoline_95", "0", "100", "20", "50"])
-        writer.writerow(["2024-06-02", "gasoline_95", "100", "200", "20", "50"])
-
-    importer = Importer(storage)
 
     commit_count = 0
 
@@ -143,15 +196,8 @@ def test_prefill_odometer(main_controller, monkeypatch):
     ctrl.open_add_entry_dialog()
 
 
-def test_import_csv_fills_liters_when_prices_exist(
-    tmp_path: Path, in_memory_storage: StorageService
-) -> None:
-    storage = in_memory_storage
-    storage.add_vehicle(
-        Vehicle(
-            name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40
-        )
-    )
+def test_import_csv_fills_liters_when_prices_exist(make_importer, make_csv) -> None:
+    importer, storage = make_importer()
 
     with Session(storage.engine) as s:
         s.add(
@@ -165,35 +211,15 @@ def test_import_csv_fills_liters_when_prices_exist(
         )
         s.commit()
 
-    csv_path = tmp_path / "data.csv"
-    with open(csv_path, "w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
-        writer.writerow(
-            [
-                "date",
-                "fuel_type",
-                "odo_before",
-                "odo_after",
-                "liters",
-                "amount_spent",
-            ]
-        )
-        writer.writerow(["2024-06-01", "e20", "0", "100", "", "80"])
-
-    importer = Importer(storage)
+    csv_path = make_csv([["2024-06-01", "e20", "0", "100", "", "80"]])
     importer.import_csv(csv_path, 1)
 
     saved = storage.list_entries()
     assert saved[0].liters == pytest.approx(2.0)
 
 
-def test_import_csv_uses_default_station(tmp_path: Path) -> None:
-    storage = _new_storage(default_station="bcp")
-    storage.add_vehicle(
-        Vehicle(
-            name="Car", vehicle_type="t", license_plate="x", tank_capacity_liters=40
-        )
-    )
+def test_import_csv_uses_default_station(make_importer, make_csv) -> None:
+    importer, storage = make_importer(default_station="bcp")
 
     with Session(storage.engine) as s:
         s.add(
@@ -207,22 +233,7 @@ def test_import_csv_uses_default_station(tmp_path: Path) -> None:
         )
         s.commit()
 
-    csv_path = tmp_path / "data.csv"
-    with open(csv_path, "w", newline="", encoding="utf-8") as fh:
-        writer = csv.writer(fh)
-        writer.writerow(
-            [
-                "date",
-                "fuel_type",
-                "odo_before",
-                "odo_after",
-                "liters",
-                "amount_spent",
-            ]
-        )
-        writer.writerow(["2024-06-01", "e20", "0", "100", "", "80"])
-
-    importer = Importer(storage)
+    csv_path = make_csv([["2024-06-01", "e20", "0", "100", "", "80"]])
     importer.import_csv(csv_path, 1)
 
     saved = storage.list_entries()
