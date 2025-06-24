@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+import datetime
 from decimal import Decimal
 from typing import Optional
 
@@ -12,7 +12,7 @@ class FuelPrice(SQLModel, table=True):
     """ราคาน้ำมันรายวันของสถานีและประเภทเชื้อเพลิง"""
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    date: date
+    date: datetime.date
     station: str
     fuel_type: str
     name_th: str
