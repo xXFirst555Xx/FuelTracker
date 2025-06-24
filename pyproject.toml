@@ -43,6 +43,8 @@ dev = [
     "pytest-qt",
     "pytest-cov",
     "pytest-xdist",
+    "PyPDF2",
+    "tufup",
 
     # Type Stubs
     "types-requests",
