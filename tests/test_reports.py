@@ -107,6 +107,8 @@ def test_get_monthly_stats(in_memory_storage):
     assert stats["total_liters"] == 13.0
     assert stats["avg_consumption"] == pytest.approx((13.0 / 200.0) * 100)
     assert stats["cost_per_km"] == pytest.approx(30.0 / 200.0)
+    assert stats["fills_count"] == 2
+    assert stats["avg_price_per_liter"] == pytest.approx(30.0 / 13.0)
 
 
 def test_export_csv(tmp_path, in_memory_storage):
@@ -148,7 +150,12 @@ def test_export_pdf(tmp_path, in_memory_storage):
     pdf_path = tmp_path / "report.pdf"
     service.export_pdf(date(2024, 5, 1), 1, pdf_path)
     assert pdf_path.exists()
-    assert pdf_path.stat().st_size > 0
+    from PyPDF2 import PdfReader
+
+    reader = PdfReader(pdf_path)
+    text = "".join(page.extract_text() or "" for page in reader.pages)
+    assert "fills_count" in text
+    assert "avg_price_per_liter" in text
 
 
 def test_export_excel(tmp_path, in_memory_storage):
@@ -167,6 +174,11 @@ def test_export_excel(tmp_path, in_memory_storage):
     xls_path = tmp_path / "report.xlsx"
     service.export_excel(date(2024, 5, 1), 1, xls_path)
     assert xls_path.exists()
+    import pandas as pd
+
+    df_summary = pd.read_excel(xls_path, sheet_name="summary")
+    assert "fills_count" in df_summary.columns
+    assert "avg_price_per_liter" in df_summary.columns
 
 
 def test_export_pdf_cleanup_on_error(tmp_path, in_memory_storage, monkeypatch):

@@ -144,6 +144,8 @@ class ReportService:
                 "total_price": 0.0,
                 "avg_consumption": 0.0,
                 "cost_per_km": 0.0,
+                "fills_count": 0,
+                "avg_price_per_liter": 0.0,
             }
 
         total_distance = float(df["distance"].fillna(0).sum())
@@ -153,6 +155,10 @@ class ReportService:
             (total_liters / total_distance * 100) if total_distance else 0.0
         )
         cost_per_km = (total_price / total_distance) if total_distance else 0.0
+        fills_count = len(df)
+        avg_price_per_liter = (
+            (total_price / total_liters) if total_liters else 0.0
+        )
 
         return {
             "total_distance": total_distance,
@@ -160,6 +166,8 @@ class ReportService:
             "total_price": total_price,
             "avg_consumption": avg_consumption,
             "cost_per_km": cost_per_km,
+            "fills_count": fills_count,
+            "avg_price_per_liter": avg_price_per_liter,
         }
 
     def export_csv(self, month: date, vehicle_id: int, path: Path) -> None:
