@@ -117,9 +117,7 @@ class _Worker(QThread):
         if not table.empty:
             order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             daily = (
-                table.groupby("weekday")["liters"]
-                .sum()
-                .reindex(order, fill_value=0)
+                table.groupby("weekday")["liters"].sum().reindex(order, fill_value=0)
             )
             w_ax.bar(order, daily)
         w_ax.set_ylabel("ลิตร")
@@ -209,8 +207,12 @@ class _Worker(QThread):
                     label="km/L",
                 )
         ax2.set_ylabel("กม./ลิตร")
-        ax.legend(loc="upper left")
-        ax2.legend(loc="upper right")
+        # Add legends only when something is labeled to avoid noisy warnings
+        if ax.get_legend_handles_labels()[0]:
+            ax.legend(loc="upper left")
+
+        if ax2.get_legend_handles_labels()[0]:
+            ax2.legend(loc="upper right")
         fig.tight_layout()
         return fig
 

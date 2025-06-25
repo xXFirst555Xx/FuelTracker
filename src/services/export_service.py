@@ -374,79 +374,85 @@ class ExportService:
     # ------------------------------------------------------------------
     def _write_excel(self, path: Path, df: pd.DataFrame) -> None:
         wb = Workbook()
-        ws_data = wb.active
-        ws_data.title = "Entries"
+        try:
+            ws_data = wb.active
+            ws_data.title = "Entries"
 
-        headers = [
-            "date",
-            "fuel_type",
-            "odo_before",
-            "odo_after",
-            "distance",
-            "liters",
-            "amount_spent",
-        ]
-        ws_data.append(headers)
-        for r in df.itertuples(index=False):
-            ws_data.append(
-                [
-                    r.date,
-                    r.fuel_type,
-                    r.odo_before,
-                    r.odo_after,
-                    r.distance,
-                    r.liters,
-                    r.amount_spent,
-                ]
+            headers = [
+                "date",
+                "fuel_type",
+                "odo_before",
+                "odo_after",
+                "distance",
+                "liters",
+                "amount_spent",
+            ]
+            ws_data.append(headers)
+            for r in df.itertuples(index=False):
+                ws_data.append(
+                    [
+                        r.date,
+                        r.fuel_type,
+                        r.odo_before,
+                        r.odo_after,
+                        r.distance,
+                        r.liters,
+                        r.amount_spent,
+                    ]
+                )
+
+            ws_month = wb.create_sheet("Summary")
+
+            total_distance = float(df["distance"].fillna(0).sum())
+            total_liters = float(df["liters"].fillna(0).sum())
+            km_per_l = total_distance / total_liters if total_liters else 0.0
+
+            ws_month.append(["metric", "value"])
+            ws_month.append(["distance", total_distance])
+            ws_month.append(["liters", total_liters])
+            ws_month.append(["km_per_l", km_per_l])
+
+            daily = df.groupby("date")[["distance", "liters"]].sum().reset_index()
+            daily["km_per_l"] = daily["distance"] / daily["liters"]
+
+            ws_month.append([])
+            ws_month.append(["date", "liters", "km_per_l"])
+            for r in daily.itertuples(index=False):
+                ws_month.append([r.date, r.liters, r.km_per_l])
+
+            start = ws_month.max_row - len(daily) + 1
+            chart = BarChart()
+            data = Reference(
+                ws_month, min_col=2, min_row=start, max_row=start + len(daily) - 1
             )
+            cats = Reference(
+                ws_month, min_col=1, min_row=start, max_row=start + len(daily) - 1
+            )
+            chart.add_data(data, titles_from_data=False)
+            chart.set_categories(cats)
+            chart.y_axis.title = "Liters"
 
-        ws_month = wb.create_sheet("Summary")
+            line = LineChart()
+            line.add_data(
+                Reference(
+                    ws_month,
+                    min_col=3,
+                    min_row=start,
+                    max_row=start + len(daily) - 1,
+                ),
+                titles_from_data=False,
+            )
+            line.y_axis.axId = 200
+            _ = line.y_axis.axId  # reference to avoid vulture warning
+            chart += line
+            ws_month.add_chart(chart, "E2")
 
-        total_distance = float(df["distance"].fillna(0).sum())
-        total_liters = float(df["liters"].fillna(0).sum())
-        km_per_l = total_distance / total_liters if total_liters else 0.0
+            ws_week = wb.create_sheet("Weekly")
+            pivot = self._weekly_pivot(df)
+            ws_week.append(["iso_week"] + pivot.columns.tolist())
+            for idx, row in pivot.iterrows():
+                ws_week.append([idx] + [float(row[c]) for c in pivot.columns])
 
-        ws_month.append(["metric", "value"])
-        ws_month.append(["distance", total_distance])
-        ws_month.append(["liters", total_liters])
-        ws_month.append(["km_per_l", km_per_l])
-
-        daily = df.groupby("date")[["distance", "liters"]].sum().reset_index()
-        daily["km_per_l"] = daily["distance"] / daily["liters"]
-
-        ws_month.append([])
-        ws_month.append(["date", "liters", "km_per_l"])
-        for r in daily.itertuples(index=False):
-            ws_month.append([r.date, r.liters, r.km_per_l])
-
-        start = ws_month.max_row - len(daily) + 1
-        chart = BarChart()
-        data = Reference(
-            ws_month, min_col=2, min_row=start, max_row=start + len(daily) - 1
-        )
-        cats = Reference(
-            ws_month, min_col=1, min_row=start, max_row=start + len(daily) - 1
-        )
-        chart.add_data(data, titles_from_data=False)
-        chart.set_categories(cats)
-        chart.y_axis.title = "Liters"
-
-        line = LineChart()
-        line.add_data(
-            Reference(
-                ws_month, min_col=3, min_row=start, max_row=start + len(daily) - 1
-            ),
-            titles_from_data=False,
-        )
-        line.y_axis.axId = 200
-        _ = line.y_axis.axId  # reference to avoid vulture warning
-        chart += line
-        ws_month.add_chart(chart, "E2")
-
-        ws_week = wb.create_sheet("Weekly")
-        pivot = self._weekly_pivot(df)
-        ws_week.append(["iso_week"] + pivot.columns.tolist())
-        for idx, row in pivot.iterrows():
-            ws_week.append([idx] + [float(row[c]) for c in pivot.columns])
-
-        wb.save(path)
+            wb.save(path)
+        finally:
+            wb.close()
