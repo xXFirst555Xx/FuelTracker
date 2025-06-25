@@ -9,6 +9,7 @@ from src.services import (
 )
 from src import settings
 import tests.test_launcher_update
+import tests.conftest
 
 _ = (
     # --- Attributes/Methods from main_controller.py that are used by Qt ---
