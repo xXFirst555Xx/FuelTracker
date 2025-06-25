@@ -420,6 +420,7 @@ class ExportService:
             titles_from_data=False,
         )
         line.y_axis.axId = 200
+        _ = line.y_axis.axId  # reference to avoid vulture warning
         chart += line
         ws_month.add_chart(chart, "E2")
 
