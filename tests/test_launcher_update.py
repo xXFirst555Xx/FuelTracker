@@ -3,16 +3,24 @@ from pathlib import Path
 
 import sys
 import types
+import importlib
 
-qt_widgets = types.ModuleType("QtWidgets")
-qt_widgets.QApplication = object
-qt_widgets.QProgressBar = object
-qt_widgets.QSplashScreen = object
-qt_gui = types.ModuleType("QtGui")
-qt_gui.QPixmap = object
-sys.modules.setdefault("PySide6", types.ModuleType("PySide6"))
-sys.modules["PySide6.QtWidgets"] = qt_widgets
-sys.modules["PySide6.QtGui"] = qt_gui
+
+def _patch_pyside(monkeypatch):
+    """Provide minimal PySide6 stubs used by the launcher."""
+
+    qt_widgets = types.ModuleType("QtWidgets")
+    qt_widgets.QApplication = object
+    qt_widgets.QProgressBar = object
+    qt_widgets.QSplashScreen = object
+
+    qt_gui = types.ModuleType("QtGui")
+    qt_gui.QPixmap = object
+
+    monkeypatch.setitem(sys.modules, "PySide6", types.ModuleType("PySide6"))
+    monkeypatch.setitem(sys.modules, "PySide6.QtWidgets", qt_widgets)
+    monkeypatch.setitem(sys.modules, "PySide6.QtGui", qt_gui)
+
 
 import launcher  # noqa: E402
 
@@ -39,6 +47,11 @@ class DummyUpdater:
 
 
 def test_update_install(monkeypatch, tmp_path):
+    _patch_pyside(monkeypatch)
+
+    import importlib
+    importlib.reload(launcher)
+
     monkeypatch.setattr(launcher, "APP_DIR", tmp_path)
     monkeypatch.setattr(launcher, "LOG_FILE", tmp_path / "launcher.log")
     monkeypatch.setattr(launcher, "read_current_version", lambda: "0.1.0")
