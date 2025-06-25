@@ -1,5 +1,7 @@
 from datetime import date
 from PySide6.QtWidgets import QMessageBox
+from pathlib import Path, PosixPath
+import tempfile
 
 from src.controllers import main_controller as main_module
 from src.models import Vehicle, Maintenance
@@ -18,11 +20,13 @@ def test_maintenance_notification(main_controller, monkeypatch):
     )
     show = {}
     monkeypatch.setattr(main_module.os, "name", "nt", raising=False)
+    monkeypatch.setattr(Path, "home", lambda: PosixPath(tempfile.gettempdir()))
     monkeypatch.setattr(
         main_module.ToastNotifier,
         "show_toast",
         lambda *a, **k: show.setdefault("t", True),
     )
     ctrl._notify_due_maintenance(1, 120, date.today())
+    monkeypatch.setattr(ctrl, "cleanup", lambda: None)
     assert notified.get("n")
     assert show.get("t")
