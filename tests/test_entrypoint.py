@@ -1,5 +1,9 @@
+import builtins
+import sys
 import tomllib
 from pathlib import Path, Path as _P
+
+import pytest
 
 from fueltracker.main import run
 
@@ -54,9 +58,6 @@ def test_sync_command(monkeypatch, tmp_path):
     )
 
 
-import builtins
-import sys
-import pytest
 
 
 def test_run_requires_pyside(monkeypatch, capsys, tmp_path):
