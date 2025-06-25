@@ -32,7 +32,7 @@
 
 ## ความต้องการ
 
-- Python 3.11 or later
+- Python 3.11–3.12
 - ติดตั้งแพ็กเกจที่ระบุใน `requirements.lock` (เช่น `SQLModel`)
 - ติดตั้งแพ็กเกจระบบ `libegl1` (หรือเทียบเท่า) และแพ็กเกจเสริม `libxkbcommon-x11-0`,
   `libxcb-cursor0` เพื่อให้การทดสอบที่ใช้ PySide6 ทำงานได้แม้ไม่มีหน้าจอ (headless)
@@ -47,6 +47,7 @@ sudo apt-get install libegl1 libxkbcommon-x11-0 libxcb-cursor0
 pip install -e .[dev]
 ```
 คำสั่งนี้จะติดตั้งไทป์สตับที่จำเป็นสำหรับการพัฒนา เช่น `types-setuptools` เพื่อให้การตรวจสอบชนิดด้วย `mypy` ทำงานได้ครบถ้วน
+หมายเหตุ: PySide6 มีไฟล์ wheel รองรับสูงสุด Python 3.12 จึงควรติดตั้งภายในช่วงเวอร์ชันนี้
 
 ## ใช้งาน Poe the Poet
 
