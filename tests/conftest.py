@@ -8,9 +8,16 @@ from contextlib import contextmanager
 from sqlalchemy.pool import StaticPool
 from alembic.config import Config
 from alembic import command
+
 try:
     from PySide6 import QtWidgets, QtGui
     from PySide6.QtWidgets import QApplication
+
+    # Import an extra Qt class to ensure the real Qt libraries are present
+    # (not just stub packages). This guards against environments where only
+    # type stubs are installed without the full runtime.
+    from PySide6.QtGui import QFont  # noqa: F401
+
     PYSIDE_AVAILABLE = True
 except Exception:  # pragma: no cover - platform dependent
     PYSIDE_AVAILABLE = False
@@ -41,6 +48,7 @@ _hotkey.keyboard = None
 def pytest_sessionstart(session):
     """Ensure Qt runs in headless mode for all tests."""
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 
 from src.services import StorageService  # noqa: E402
 from src.controllers.main_controller import MainController  # noqa: E402
