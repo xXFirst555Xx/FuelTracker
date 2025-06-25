@@ -38,7 +38,7 @@ date2num = cast(Callable[[date], float], mdates.date2num)
 class ReportService:
     def __init__(self, storage: StorageService) -> None:
         self.storage = storage
-        self._monthly_cache: dict[tuple[str, int], DataFrame] = {}
+        self._monthly_cache: dict[tuple[str, int | None], DataFrame] = {}
         self._monthly_cache_ts: float | None = None
         self._weekly_cache: dict[tuple[str, int], DataFrame] = {}
         self._weekly_cache_ts: float | None = None
