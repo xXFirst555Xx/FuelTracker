@@ -71,12 +71,12 @@ class ReportService:
     # New functionality for exporting monthly reports
     # ------------------------------------------------------------------
 
-    def _filter_entries(self, month: date, vehicle_id: int) -> List[FuelEntry]:
+    def _filter_entries(self, month: date, vehicle_id: int | None) -> List[FuelEntry]:
         """ดึงรายการของยานพาหนะในเดือนที่กำหนด"""
         return self.storage.list_entries_for_month(month.year, month.month, vehicle_id)
 
     # FIX: mypy clean
-    def _monthly_df(self, month: date, vehicle_id: int) -> DataFrame:
+    def _monthly_df(self, month: date, vehicle_id: int | None) -> DataFrame:
         """Return monthly entries as a :class:`pandas.DataFrame`."""
         key = (month.strftime("%Y-%m"), vehicle_id)
         ts = getattr(self.storage, "last_modified", None)

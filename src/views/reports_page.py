@@ -106,7 +106,7 @@ class _Worker(QThread):
         yearly = self._service.last_year_summary()
         pie = self._service.liters_by_type()
         monthly = self._service.monthly_summary()
-        table = self._service._monthly_df(today, self._vehicle_id)  # type: ignore[arg-type]
+        table = self._service._monthly_df(today, self._vehicle_id)
 
         # Weekly breakdown by ISO week
         weekly = self._weekly(table)
