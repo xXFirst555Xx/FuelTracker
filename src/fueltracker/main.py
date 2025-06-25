@@ -67,9 +67,13 @@ def run(argv: list[str] | None = None) -> None:
     )
     if args.check:
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-    from PySide6.QtWidgets import QApplication
-    from PySide6.QtCore import QCoreApplication, Qt, QLocale
-    from PySide6.QtGui import QFont, QFontDatabase
+    try:
+        from PySide6.QtWidgets import QApplication
+        from PySide6.QtCore import QCoreApplication, Qt, QLocale
+        from PySide6.QtGui import QFont, QFontDatabase
+    except ImportError:
+        print("PySide6 is required")
+        raise SystemExit(1)
 
     app = QApplication.instance()
     if not isinstance(app, QApplication):
