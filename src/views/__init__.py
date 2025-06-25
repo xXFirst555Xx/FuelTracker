@@ -8,11 +8,11 @@ from PySide6.QtWidgets import QApplication
 
 # Provide Qt5-style reexports for Qt6 compatibility
 if not hasattr(QtWidgets, "QAction"):
-    QtWidgets.QAction = QtGui.QAction  # type: ignore[attr-defined]
+    QtWidgets.QAction = QtGui.QAction
 if not hasattr(QtWidgets, "QStandardItemModel"):
-    QtWidgets.QStandardItemModel = QtGui.QStandardItemModel  # type: ignore[attr-defined]
+    QtWidgets.QStandardItemModel = QtGui.QStandardItemModel
 if not hasattr(QtWidgets, "QStandardItem"):
-    QtWidgets.QStandardItem = QtGui.QStandardItem  # type: ignore[attr-defined]
+    QtWidgets.QStandardItem = QtGui.QStandardItem
 
 from .main_window import MainWindow
 from .dialogs import (
