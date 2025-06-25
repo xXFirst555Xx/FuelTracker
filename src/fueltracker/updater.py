@@ -7,6 +7,7 @@ from tufup.client import Client
 
 from threading import Thread
 import time
+import os
 
 from src.settings import data_dir
 
@@ -20,6 +21,10 @@ _update_thread: Thread | None = None
 
 
 def _update_loop(interval: int) -> None:
+    # Avoid contacting update servers when running under pytest
+    if os.getenv("PYTEST_RUNNING"):
+        return
+
     app_dir = data_dir()
     client = Client(
         app_name=APP_NAME,
@@ -43,6 +48,8 @@ def _update_loop(interval: int) -> None:
 def start_async(interval_hours: int = 24) -> None:
     """Start background update checking."""
     global _update_thread
+    if os.getenv("PYTEST_RUNNING"):
+        return
     if interval_hours <= 0:
         return
     if _update_thread and _update_thread.is_alive():
