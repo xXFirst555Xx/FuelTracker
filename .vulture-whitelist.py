@@ -11,6 +11,9 @@ from src import settings
 import tests.test_launcher_update
 import tests.conftest
 
+# Reference attribute to avoid vulture false positive
+_dummy_axid = exporter.LineChart().y_axis.axId
+
 _ = (
     # --- Attributes/Methods from main_controller.py that are used by Qt ---
     main_controller.closeEvent,
@@ -33,6 +36,8 @@ _ = (
     report_service.export_csv,
     report_service.export_pdf,
     report_service.export_excel,
+    report_service.weekly_breakdown,
+    report_service.vehicle_type_benchmarks,
     storage_service.get_entries_by_vehicle,
     storage_service.update_entry,
     # --- Variables used by Pydantic ---
@@ -48,6 +53,7 @@ _ = (
     tests.test_launcher_update.qt_gui.QPixmap,
     tests.conftest.pytest_sessionstart,
     tests.conftest._cleanup_db,
+    _dummy_axid,
 )
 
 __all__ = ["_"]
