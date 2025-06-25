@@ -49,7 +49,6 @@ class DummyUpdater:
 def test_update_install(monkeypatch, tmp_path):
     _patch_pyside(monkeypatch)
 
-    import importlib
     importlib.reload(launcher)
 
     monkeypatch.setattr(launcher, "APP_DIR", tmp_path)
