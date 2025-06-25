@@ -13,6 +13,9 @@ try:
     from PySide6 import QtWidgets, QtGui
     from PySide6.QtWidgets import QApplication
 
+    # Expose QtWidgets under the legacy module name used by some tests
+    sys.modules["QtWidgets"] = QtWidgets
+
     # Import an extra Qt class to ensure the real Qt libraries are present
     # (not just stub packages). This guards against environments where only
     # type stubs are installed without the full runtime.
