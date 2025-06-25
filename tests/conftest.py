@@ -2,6 +2,9 @@ import os
 import sys
 from pathlib import Path
 
+# Ensure Qt runs in headless mode before importing PySide6
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
 import pytest
 from sqlmodel import SQLModel, Session, create_engine
 from contextlib import contextmanager
@@ -47,8 +50,9 @@ _hotkey.keyboard = None
 
 
 def pytest_sessionstart(session):
-    """Ensure Qt runs in headless mode for all tests."""
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    """Set up the test session."""
+    # Environment already configured for headless Qt
+    pass
 
 
 from src.services import StorageService  # noqa: E402
