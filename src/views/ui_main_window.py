@@ -11,6 +11,7 @@
 
 from PySide6.QtCore import QCoreApplication, QMetaObject, QSize, Qt
 from PySide6.QtGui import QFont, QIcon
+from PySide6 import QtWidgets  # noqa: F401 – gives access to QtWidgets.QStackedLayout
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
