@@ -59,10 +59,11 @@ def in_memory_storage():
 
 
 @pytest.fixture(scope="session")
-def migrated_db_session():
+def migrated_db_session(pytestconfig):
     """Return a context manager yielding sessions on a migrated in-memory database."""
+    worker = pytestconfig.workerinput.get("workerid", "main")
     engine = create_engine(
-        "sqlite:///file:memdb1?mode=memory&cache=shared",
+        f"sqlite:///file:memdb_{worker}?mode=memory&cache=shared",
         connect_args={"check_same_thread": False, "uri": True},
         poolclass=StaticPool,
     )
