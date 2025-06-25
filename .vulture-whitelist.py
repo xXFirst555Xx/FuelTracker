@@ -45,6 +45,8 @@ _ = (
     tests.test_launcher_update.qt_widgets.QProgressBar,
     tests.test_launcher_update.qt_widgets.QSplashScreen,
     tests.test_launcher_update.qt_gui.QPixmap,
+    tests.conftest.pytest_sessionstart,
+    tests.conftest._cleanup_db,
 )
 
 __all__ = ["_"]
