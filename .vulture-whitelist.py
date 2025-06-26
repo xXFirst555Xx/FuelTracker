@@ -51,7 +51,10 @@ _ = (
     tests.test_launcher_update.qt_widgets.QProgressBar,
     tests.test_launcher_update.qt_widgets.QSplashScreen,
     tests.test_launcher_update.qt_gui.QPixmap,
+    tests.conftest._unraisable_hook,
     tests.conftest.pytest_sessionstart,
+    tests.conftest.pytest_sessionfinish,
+    tests.conftest.pytest_configure,
     tests.conftest._cleanup_db,
     _dummy_axid,
 )

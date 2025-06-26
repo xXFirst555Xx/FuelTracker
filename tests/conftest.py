@@ -52,10 +52,12 @@ def _unraisable_hook(unraisable: object) -> None:
 
 
 sys.unraisablehook = _unraisable_hook
+_ = sys.unraisablehook  # avoid vulture false positive
 
 
 def pytest_sessionfinish(session, exitstatus):
     """Clean up any temporary dirs left by third-party libraries."""
+    _ = exitstatus  # avoid vulture false positive
     import glob
     import shutil
 
@@ -118,6 +120,7 @@ def pytest_configure(config):
         _config.stash[ue.unraisable_exceptions].clear()
 
     ue.collect_unraisable = _ignore
+    _ = ue.collect_unraisable  # avoid vulture false positive
 
 
 from src.services import StorageService  # noqa: E402
