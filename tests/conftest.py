@@ -38,6 +38,17 @@ if PYSIDE_AVAILABLE:
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"PyPDF2")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"fpdf\\..*")
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=r"pkg_resources is deprecated as an API",
+)
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    module=r"matplotlib.*",
+    message=r"Glyph \d+ .*",
+)
 
 
 @pytest.fixture(scope="session")

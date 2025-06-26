@@ -6,14 +6,16 @@ from matplotlib import font_manager
 import matplotlib.pyplot as plt
 import pandas as pd
 import warnings
-from PyPDF2 import PdfReader
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
+
+from PyPDF2 import PdfReader  # noqa: E402
 from reportlab.pdfbase import pdfmetrics
 
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
 from src.services.storage_service import StorageService
 
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
 
 
 def _populate(storage: StorageService, count: int = 80) -> None:
@@ -51,13 +53,13 @@ def test_export_service_outputs(
     text = "".join(page.extract_text() or "" for page in reader.pages)
     assert text.strip()
 
-    xls = pd.ExcelFile(xls_path)
-    assert len(xls.sheet_names) >= 2
+    with pd.ExcelFile(xls_path) as xls:
+        assert len(xls.sheet_names) >= 2
 
-    weekly_sheet = next((s for s in xls.sheet_names if "weekly" in s.lower()), None)
-    summary_sheet = next((s for s in xls.sheet_names if "summary" in s.lower()), None)
-    assert weekly_sheet is not None
-    assert summary_sheet is not None
+        weekly_sheet = next((s for s in xls.sheet_names if "weekly" in s.lower()), None)
+        summary_sheet = next((s for s in xls.sheet_names if "summary" in s.lower()), None)
+        assert weekly_sheet is not None
+        assert summary_sheet is not None
 
     df_weekly = pd.read_excel(xls_path, sheet_name=weekly_sheet)
     for col in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]:
@@ -69,6 +71,8 @@ def test_export_service_outputs(
         assert field in df_summary["metric"].values
 
     assert matplotlib.get_backend().lower() == "agg"
+
+    service.cleanup()
 
 
 def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
