@@ -89,7 +89,7 @@ class _ConnProxy:
 class StorageService:
     def __init__(
         self,
-        db_path: str | Path = Path(user_data_dir("FuelTracker", "YourOrg")) / "fuel.db",
+        db_path: str | Path | None = None,
         engine: Engine | None = None,
         password: str | None = None,
         vacuum_threshold: int = 100,
@@ -99,8 +99,8 @@ class StorageService:
 
         พารามิเตอร์
         ----------
-        db_path: str | Path
-            เส้นทางไปยังไฟล์ฐานข้อมูล SQLite ไม่ใช้ถ้ากำหนด ``engine``
+        db_path: str | Path | None
+            เส้นทางไปยังไฟล์ฐานข้อมูล SQLite (ไม่ใช้ถ้ากำหนด ``engine``)
         engine: Engine | None
             ออบเจ็กต์ Engine ที่เตรียมไว้ (ไม่บังคับ)
         vacuum_threshold:
@@ -120,6 +120,8 @@ class StorageService:
             self._password = password or ""
             SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
         else:
+            if db_path is None:
+                db_path = Path(user_data_dir("FuelTracker", "YourOrg")) / "fuel.db"
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
             if password is None:
