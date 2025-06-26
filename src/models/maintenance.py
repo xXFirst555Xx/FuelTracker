@@ -1,3 +1,5 @@
+"""Model for scheduled maintenance tasks."""
+
 from __future__ import annotations
 
 from datetime import date

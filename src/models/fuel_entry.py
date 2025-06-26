@@ -1,3 +1,5 @@
+"""Model for individual refueling records."""
+
 from __future__ import annotations
 
 from datetime import date

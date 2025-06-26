@@ -652,6 +652,7 @@ class MainController(QObject):
     # Dialog handlers
     # ------------------------------------------------------------------
     def open_add_vehicle_dialog(self) -> None:
+        """Display the dialog for creating a new vehicle."""
         dialog = AddVehicleDialog(self.window)
         dialog.buttonBox.accepted.connect(dialog.accept)
         dialog.buttonBox.rejected.connect(dialog.reject)
@@ -675,6 +676,7 @@ class MainController(QObject):
             self.refresh_vehicle_list()
 
     def open_edit_vehicle_dialog(self) -> None:
+        """Edit the currently selected vehicle."""
         item = self.window.vehicleListWidget.currentItem()
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกยานพาหนะ")
@@ -707,6 +709,7 @@ class MainController(QObject):
             self.refresh_vehicle_list()
 
     def delete_selected_vehicle(self) -> None:
+        """Remove the vehicle currently selected in the list."""
         item = self.window.vehicleListWidget.currentItem()
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเลือกรายการ")
@@ -726,6 +729,7 @@ class MainController(QObject):
         self.refresh_vehicle_list()
 
     def open_add_entry_dialog(self) -> None:
+        """Launch the dialog for recording a new fuel entry."""
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
@@ -829,6 +833,7 @@ class MainController(QObject):
             self._check_budget(entry.vehicle_id, entry.entry_date)
 
     def open_import_csv_dialog(self) -> None:
+        """Import refuel entries from a CSV file."""
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
@@ -884,11 +889,13 @@ class MainController(QObject):
             self._update_tray_tooltip()
 
     def open_about_dialog(self) -> None:
+        """Show the application's About dialog."""
         dialog = AboutDialog(self.window)
         dialog.buttonBox.accepted.connect(dialog.accept)
         dialog.exec()
 
     def open_add_maintenance_dialog(self) -> None:
+        """Create a new maintenance task for a vehicle."""
         if not self.storage.list_vehicles():
             QMessageBox.warning(self.window, "ไม่พบยานพาหนะ", "กรุณาเพิ่มยานพาหนะก่อน")
             return
@@ -921,6 +928,7 @@ class MainController(QObject):
             self._refresh_maintenance_panel()
 
     def open_edit_maintenance_dialog(self) -> None:
+        """Edit the selected maintenance task."""
         item = self.maint_dock.list_widget.currentItem()
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
@@ -971,6 +979,7 @@ class MainController(QObject):
             self._refresh_maintenance_panel()
 
     def mark_selected_maintenance_done(self) -> None:
+        """Mark the selected maintenance task as completed."""
         item = self.maint_dock.list_widget.currentItem()
         if item is None:
             QMessageBox.warning(self.window, "ไม่พบงาน", "กรุณาเลือกรายการ")
@@ -980,6 +989,7 @@ class MainController(QObject):
         self._refresh_maintenance_panel()
 
     def export_report(self) -> None:
+        """Export the current month's report as CSV and PDF."""
         today = date.today()
         csv_path_str, _ = QFileDialog.getSaveFileName(
             self.window,
@@ -1020,6 +1030,7 @@ class MainController(QObject):
     # Page switching
     # ------------------------------------------------------------------
     def show_dashboard(self) -> None:
+        """Switch the stacked widget back to the dashboard page."""
         if hasattr(self.window, "stackedWidget"):
             self.window.stackedWidget.setCurrentWidget(self.window.dashboardPage)
 
@@ -1028,6 +1039,7 @@ class MainController(QObject):
     # ------------------------------------------------------------------
 
     def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+        """Start the oil price update timer when the main window is shown."""
         if (
             getattr(self, "window", None) is not None
             and obj is self.window

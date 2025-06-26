@@ -1,3 +1,5 @@
+"""Dialog for creating a new fuel entry."""
+
 from typing import Callable, cast
 
 from PySide6.QtWidgets import QDialog, QWidget

@@ -1,4 +1,9 @@
-"""บริการจัดการการบันทึกข้อมูลด้วย SQLModel"""
+"""Data persistence helpers used by the application.
+
+This module contains :class:`StorageService` which provides a thin wrapper
+around SQLModel for storing and querying models.  It also includes
+utilities for encrypted databases, automatic backups and cleanup helpers.
+"""
 
 from pathlib import Path
 from datetime import datetime, date
@@ -603,18 +608,27 @@ class StorageService:
         compress: bool = False,
         max_backups: int = 30,
     ) -> Path:
-        """คัดลอกไฟล์ฐานข้อมูลไปยังที่สำรองโดยมีเวลาในชื่อไฟล์
-
-        คืนค่าที่ตั้งไฟล์สำรองที่สร้างขึ้น
+        """Create a timestamped backup of the current database.
 
         Parameters
         ----------
+        now:
+            Datetime value used in the backup file name. Defaults to ``datetime.now()``.
+        backup_dir:
+            Directory to place the backup in. ``~/.fueltracker/backups`` is used if
+            not provided.
         encrypted:
-            ถ้า ``True`` และมี SQLCipher จะเข้ารหัสไฟล์สำรองด้วยรหัสผ่านเดียวกัน
+            When ``True`` and SQLCipher is available, encrypt the backup with the
+            same password as the main database.
         compress:
-            ถ้า ``True`` จะบีบอัดไฟล์สำรองด้วย gzip แล้วเพิ่ม ``.gz`` ต่อท้ายชื่อไฟล์
+            Compress the resulting backup using ``gzip`` and add a ``.gz`` suffix.
         max_backups:
-            จำนวนไฟล์สำรองสูงสุดที่จะเก็บไว้ก่อนลบของเก่า ค่าเริ่มต้น ``30``
+            Maximum number of backup files to keep before old ones are deleted.
+
+        Returns
+        -------
+        Path
+            The path to the newly created backup file.
         """
 
         if self._db_path is None:

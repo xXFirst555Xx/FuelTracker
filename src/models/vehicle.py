@@ -1,3 +1,5 @@
+"""Model representing a vehicle registered in the system."""
+
 from __future__ import annotations
 
 from typing import Optional

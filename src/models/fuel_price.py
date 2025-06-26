@@ -1,3 +1,5 @@
+"""Model storing daily fuel prices for each station and type."""
+
 from __future__ import annotations
 
 import datetime
