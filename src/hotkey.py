@@ -67,15 +67,13 @@ class GlobalHotkey(QObject):
         """Invoke ``_wrapped_callback`` and always return ``1`` for Win32 hooks."""
         # Qt expects a Win32 hook callback to return an ``int``. Failing to do so
         # results in ``TypeError: WPARAM is simple, so must be an int object`` on
-        # Windows.  Using ``finally`` guarantees an integer is returned on every
-        # execution path.
+        # Windows.
         try:
             self._wrapped_callback(*args)
         except Exception as exc:  # pragma: no cover - defensive
             logger.exception("ข้อผิดพลาดตัวแปลงฮอตคีย์: %s", exc)
-        finally:
-            # Always return ``1`` to satisfy the Win32 hook requirement
-            return 1
+        # Always return ``1`` to satisfy the Win32 hook requirement
+        return 1
 
     def _wrapped_callback(self, *args: object) -> None:
         """Emit the hotkey signal."""
