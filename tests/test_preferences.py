@@ -33,3 +33,23 @@ def test_controller_reads_preferences(qapp, tmp_path, monkeypatch):
     assert calls["station"] == "bcp"
     assert calls.get("invoked")
     assert ctrl.config.theme == "dark"
+
+
+def test_price_update_disabled(qapp, tmp_path, monkeypatch):
+    cfg_path = tmp_path / "conf.json"
+    AppConfig(update_hours=0).save(cfg_path)
+    calls = {}
+
+    ctrl = MainController(db_path=tmp_path / "t.db", config_path=cfg_path)
+
+    def fake_single_shot(*_a, **_k):
+        calls["timer"] = True
+
+    monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
+    monkeypatch.setattr(
+        ctrl.thread_pool, "start", lambda job: calls.setdefault("started", True)
+    )
+    ctrl._schedule_price_update()
+
+    assert "timer" not in calls
+    assert "started" not in calls
