@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 from datetime import date
 from pathlib import Path
 import warnings
@@ -6,8 +7,9 @@ import matplotlib
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
 
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
-
+warnings.filterwarnings(
+    "ignore", category=DeprecationWarning, module="PyPDF2"
+)  # noqa: E402
 from PyPDF2 import PdfReader
 import pandas as pd
 import gc
@@ -16,9 +18,6 @@ from reportlab.pdfbase import pdfmetrics
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
 from src.services.storage_service import StorageService
-
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
-
 
 
 def _populate(storage: StorageService, count: int = 80) -> None:
@@ -60,7 +59,9 @@ def test_export_service_outputs(
         assert len(xls.sheet_names) >= 2
 
         weekly_sheet = next((s for s in xls.sheet_names if "weekly" in s.lower()), None)
-        summary_sheet = next((s for s in xls.sheet_names if "summary" in s.lower()), None)
+        summary_sheet = next(
+            (s for s in xls.sheet_names if "summary" in s.lower()), None
+        )
         assert weekly_sheet is not None
         assert summary_sheet is not None
 

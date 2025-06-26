@@ -58,8 +58,6 @@ def test_sync_command(monkeypatch, tmp_path):
     )
 
 
-
-
 def test_run_requires_pyside(monkeypatch, capsys, tmp_path):
     monkeypatch.setenv("DB_PATH", str(tmp_path / "db.sqlite"))
     for key in list(sys.modules):

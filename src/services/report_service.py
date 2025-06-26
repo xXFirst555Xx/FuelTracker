@@ -254,4 +254,3 @@ class ReportService:
             for ft, liters in self.storage.liters_by_fuel_type().items()
         }
         return pd.Series(data)
-
