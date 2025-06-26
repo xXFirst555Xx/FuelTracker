@@ -5,13 +5,15 @@ import matplotlib
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
 import pandas as pd
+import warnings
 from PyPDF2 import PdfReader
-
 from reportlab.pdfbase import pdfmetrics
 
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
 from src.services.storage_service import StorageService
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
 
 
 def _populate(storage: StorageService, count: int = 80) -> None:

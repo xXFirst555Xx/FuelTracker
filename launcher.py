@@ -46,12 +46,14 @@ def single_instance(name: str):
         yield
 
 
-def setup_logging() -> None:
+def setup_logging() -> logging.Handler:
     APP_DIR.mkdir(parents=True, exist_ok=True)
+    logging.shutdown()
     handler = RotatingFileHandler(
         LOG_FILE, maxBytes=512 * 1024, backupCount=5, encoding="utf-8"
     )
     logging.basicConfig(level=logging.INFO, handlers=[handler])
+    return handler
 
 
 def read_current_version() -> str:
@@ -148,9 +150,10 @@ def show_splash():
 
 
 def main() -> None:
-    setup_logging()
-    with single_instance(MUTEX_NAME):
-        app, splash, bar = show_splash()
+    handler = setup_logging()
+    try:
+        with single_instance(MUTEX_NAME):
+            app, splash, bar = show_splash()
 
         def update_progress(bytes_downloaded: int, bytes_expected: int) -> None:
             bar.setRange(0, bytes_expected)
@@ -164,6 +167,9 @@ def main() -> None:
             extracted, version = updater.download_and_extract(update_progress)
             install_version(str(version), extracted)
         splash.finish(None)
+    finally:
+        handler.close()
+        logging.shutdown()
     run_app()
 
 
