@@ -6,6 +6,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
+import warnings
 from sqlmodel import SQLModel, Session, create_engine
 from contextlib import contextmanager
 from sqlalchemy.pool import StaticPool
@@ -34,6 +35,16 @@ if PYSIDE_AVAILABLE:
         QtWidgets.QStandardItemModel = QtGui.QStandardItemModel  # type: ignore[attr-defined]
     if not hasattr(QtWidgets, "QStandardItem"):
         QtWidgets.QStandardItem = QtGui.QStandardItem  # type: ignore[attr-defined]
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"PyPDF2")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"fpdf\\..*")
+
+A_FIXTURE_MARKER = object()
+
+@pytest.fixture(scope="session")
+def worker_id() -> str:
+    """Provide default worker id when pytest-xdist is absent."""
+    return "master"
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 

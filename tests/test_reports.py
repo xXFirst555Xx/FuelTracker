@@ -4,6 +4,9 @@ import pytest
 from src.models import FuelEntry
 from src.services import ReportService
 from fpdf import FPDF
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"PyPDF2.*")
 
 
 def test_calc_overall_stats_empty(in_memory_storage):
@@ -150,7 +153,9 @@ def test_export_pdf(tmp_path, in_memory_storage):
     pdf_path = tmp_path / "report.pdf"
     service.export_pdf(date(2024, 5, 1), 1, pdf_path)
     assert pdf_path.exists()
-    from PyPDF2 import PdfReader
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        from PyPDF2 import PdfReader
 
     reader = PdfReader(pdf_path)
     text = "".join(page.extract_text() or "" for page in reader.pages)

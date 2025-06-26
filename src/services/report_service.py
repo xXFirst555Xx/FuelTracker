@@ -10,6 +10,7 @@ from pandas import DataFrame, Series
 
 import pandas as pd
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 import matplotlib
 from matplotlib import font_manager
 from typing import Any, Callable, cast
@@ -195,11 +196,11 @@ class ReportService:
                 title += f" - {vehicle.name}"
             else:
                 title += f" - ID {vehicle_id}"
-        pdf.cell(0, 10, title, ln=1)
+        pdf.cell(0, 10, title, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         pdf.set_font("Helvetica", size=12)
         for key, value in stats.items():
-            pdf.cell(0, 10, f"{key}: {value}", ln=1)
+            pdf.cell(0, 10, f"{key}: {value}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         if chart_buffer:
             pdf.image(chart_buffer, w=170)

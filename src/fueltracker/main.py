@@ -93,8 +93,8 @@ def run(argv: list[str] | None = None) -> None:
     if font_dir:
         for ttf in Path(font_dir).glob("*.ttf"):
             QFontDatabase.addApplicationFont(str(ttf))
-    db = QFontDatabase()
-    font_family = "Noto Sans Thai" if "Noto Sans Thai" in db.families() else "Tahoma"
+    families = QFontDatabase.families()
+    font_family = "Noto Sans Thai" if "Noto Sans Thai" in families else "Tahoma"
     QApplication.setFont(QFont(font_family, 10))
 
     # --- NEW: use MainController instead of bare MainWindow ---
