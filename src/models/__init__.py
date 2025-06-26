@@ -1,4 +1,4 @@
-"""โมเดลข้อมูลสำหรับแอป FuelTracker"""
+"""Data models used throughout the FuelTracker application."""
 
 from .fuel_entry import FuelEntry
 from .vehicle import Vehicle

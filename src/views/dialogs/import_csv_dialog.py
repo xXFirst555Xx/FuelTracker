@@ -1,3 +1,5 @@
+"""Dialog used for importing entries from a CSV file."""
+
 from typing import Callable, cast
 
 from PySide6.QtWidgets import QDialog, QWidget

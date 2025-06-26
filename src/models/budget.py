@@ -1,3 +1,5 @@
+"""Model storing a vehicle's monthly budget."""
+
 from __future__ import annotations
 
 from typing import Optional

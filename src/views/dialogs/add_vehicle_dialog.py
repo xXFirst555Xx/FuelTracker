@@ -1,3 +1,5 @@
+"""Dialog for adding or editing vehicles."""
+
 from typing import Callable, cast
 
 from PySide6.QtWidgets import QDialog, QWidget

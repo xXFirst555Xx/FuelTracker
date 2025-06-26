@@ -1,3 +1,5 @@
+"""Dialog for scheduling vehicle maintenance."""
+
 from typing import Callable, cast
 
 from PySide6.QtWidgets import QDialog, QWidget
