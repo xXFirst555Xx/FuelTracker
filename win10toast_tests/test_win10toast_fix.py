@@ -53,8 +53,12 @@ def test_no_wparam_crash(monkeypatch):
     monkeypatch.setitem(sys.modules, "win32api", win32api)
     monkeypatch.setitem(sys.modules, "win32con", win32con)
     monkeypatch.setitem(sys.modules, "win32gui", win32gui)
-    monkeypatch.setattr("pkg_resources.resource_filename", lambda *a, **k: "")
-    monkeypatch.setattr("pkg_resources.Requirement.parse", lambda *a, **k: None)
+
+    stub_pkg_resources = types.SimpleNamespace(
+        resource_filename=lambda *a, **k: "",
+        Requirement=types.SimpleNamespace(parse=lambda *a, **k: None),
+    )
+    monkeypatch.setitem(sys.modules, "pkg_resources", stub_pkg_resources)
 
     from win10toast import ToastNotifier
 

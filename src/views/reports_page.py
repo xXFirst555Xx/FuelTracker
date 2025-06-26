@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QStandardItemModel,
     QStandardItem,
 )
+import warnings
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from typing import Callable, cast
@@ -213,7 +214,9 @@ class _Worker(QThread):
 
         if ax2.get_legend_handles_labels()[0]:
             ax2.legend(loc="upper right")
-        fig.tight_layout()
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message=r"Glyph \d+.*")
+            fig.tight_layout()
         return fig
 
 

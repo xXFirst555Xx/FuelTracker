@@ -1,6 +1,28 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, Signal
+try:
+    from PySide6.QtCore import QObject, Signal  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    class QObject:
+        """Fallback QObject when PySide6 is unavailable."""
+
+        pass
+
+    class Signal:  # type: ignore
+        """Minimal Qt-like signal used for testing without PySide6."""
+
+        def __init__(self) -> None:
+            from typing import Callable
+
+            self._slots: list[Callable] = []
+
+        def connect(self, slot) -> None:  # noqa: D401 - simple stub
+            self._slots.append(slot)
+
+        def emit(self, *args, **kwargs) -> None:  # noqa: D401 - simple stub
+            for slot in list(self._slots):
+                slot(*args, **kwargs)
+
 from typing import Any
 import logging
 
