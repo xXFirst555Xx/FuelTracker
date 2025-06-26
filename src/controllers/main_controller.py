@@ -538,7 +538,7 @@ class MainController(QObject):
                     threaded=True,
                 )
             except Exception:
-                pass
+                logger.exception("Failed to show maintenance toast notification")
 
     def _on_palette_changed(self, *_: object) -> None:
         """Refresh stylesheet when the application's palette changes."""
@@ -1073,7 +1073,9 @@ class MainController(QObject):
                                 threaded=True,
                             )
                         except Exception:
-                            pass
+                            logger.exception(
+                                "Failed to show oil price update notification"
+                            )
 
         self.thread_pool.start(Job(self))
         interval_ms = self.config.update_hours * 3_600_000
@@ -1168,7 +1170,7 @@ class MainController(QObject):
         try:
             self.cleanup()
         except Exception:
-            pass
+            logger.exception("Error cleaning up MainController on deletion")
 
     def _close_event(self, event: QCloseEvent) -> None:
         if (
