@@ -73,7 +73,7 @@ def run(argv: list[str] | None = None) -> None:
         from PySide6.QtGui import QFont, QFontDatabase
     except ImportError:
         print("PySide6 is required")
-        raise SystemExit(1)
+        raise SystemExit(1) from None
 
     app = QApplication.instance()
     if not isinstance(app, QApplication):
