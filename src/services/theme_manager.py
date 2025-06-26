@@ -16,6 +16,7 @@ class ThemeManager(QObject):
         super().__init__()
         self.app = app
         self._qss_cache: dict[str, str] = {}
+        self._applying = False
         if hasattr(app, "paletteChanged"):
             app.paletteChanged.connect(self._on_palette_changed)
 
@@ -34,6 +35,8 @@ class ThemeManager(QObject):
         if not isinstance(self.app, QApplication):
             return
 
+        self._applying = True
+        
         theme = theme_override
         if theme is None:
             for arg in self.app.arguments():
@@ -64,6 +67,8 @@ class ThemeManager(QObject):
             self.app.setStyleSheet(self._qss_cache[theme])
         except OSError:
             pass
+        finally:
+            self._applying = False
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -79,4 +84,6 @@ class ThemeManager(QObject):
         return qss_map.get(theme)
 
     def _on_palette_changed(self, *_: object) -> None:
+        if self._applying:
+            return
         self.palette_changed.emit()

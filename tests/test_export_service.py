@@ -5,8 +5,12 @@ import warnings
 import matplotlib
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
+
 from PyPDF2 import PdfReader
 import pandas as pd
+import gc
 from reportlab.pdfbase import pdfmetrics
 
 from src.models import FuelEntry, Vehicle
@@ -72,6 +76,7 @@ def test_export_service_outputs(
     assert matplotlib.get_backend().lower() == "agg"
 
     service.cleanup()
+    gc.collect()
 
 
 def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
@@ -88,6 +93,7 @@ def test_cleanup_removes_tmpdirs(in_memory_storage: StorageService) -> None:
     assert all(p.exists() for p in tmp_dirs)
 
     service.cleanup()
+    gc.collect()
 
     for p in tmp_dirs:
         assert not p.exists()

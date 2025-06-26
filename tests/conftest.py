@@ -49,6 +49,11 @@ warnings.filterwarnings(
     module=r"matplotlib.*",
     message=r"Glyph \d+ .*",
 )
+warnings.filterwarnings(
+    "ignore",
+    category=ResourceWarning,
+    message=r"Implicitly cleaning up",
+)
 
 
 @pytest.fixture(scope="session")

@@ -1,8 +1,14 @@
 import sys
+import os
 from datetime import date
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
 from src.models import Vehicle, FuelEntry
+
+if os.environ.get("QT_QPA_PLATFORM") == "offscreen":
+    import pytest
+
+    pytest.skip("ui tests disabled in headless mode", allow_module_level=True)
 
 
 def test_mainwindow_launch(monkeypatch):
