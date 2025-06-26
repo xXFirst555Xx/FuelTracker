@@ -39,12 +39,12 @@ if PYSIDE_AVAILABLE:
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"PyPDF2")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"fpdf\\..*")
 
-A_FIXTURE_MARKER = object()
 
 @pytest.fixture(scope="session")
 def worker_id() -> str:
     """Provide default worker id when pytest-xdist is absent."""
     return "master"
+
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
 
