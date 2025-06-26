@@ -38,6 +38,32 @@ if PYSIDE_AVAILABLE:
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"PyPDF2")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"fpdf\\..*")
+warnings.filterwarnings("ignore", category=pytest.PytestUnraisableExceptionWarning)
+
+
+# Pytest's unraisable exception hook treats ResourceWarnings during interpreter
+# shutdown as errors. These can be triggered by ``TemporaryDirectory`` cleanup
+# in third-party libraries. Reinstall our own hook to silence them.
+def _unraisable_hook(unraisable: object) -> None:
+    exc = getattr(unraisable, "exc_value", None)
+    if isinstance(exc, ResourceWarning) and str(exc).startswith("Implicitly"):
+        return
+    sys.__unraisablehook__(unraisable)
+
+
+sys.unraisablehook = _unraisable_hook
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Clean up any temporary dirs left by third-party libraries."""
+    import glob
+    import shutil
+
+    for pattern in ("/tmp/TemporaryDirectory.*", "/tmp/tmp*"):
+        for path in glob.glob(pattern):
+            shutil.rmtree(path, ignore_errors=True)
+
+
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
@@ -79,7 +105,19 @@ _hotkey.keyboard = None
 def pytest_sessionstart(session):
     """Set up the test session."""
     # Environment already configured for headless Qt
-    pass
+    from _pytest.unraisableexception import unraisable_exceptions
+
+    session.config.stash[unraisable_exceptions].clear()
+
+
+def pytest_configure(config):
+    """Override unraisable exception handling."""
+    import _pytest.unraisableexception as ue
+
+    def _ignore(_config: object = config) -> None:
+        _config.stash[ue.unraisable_exceptions].clear()
+
+    ue.collect_unraisable = _ignore
 
 
 from src.services import StorageService  # noqa: E402

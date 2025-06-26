@@ -5,7 +5,9 @@ from src.services.tray_icon_manager import TrayIconManager
 
 def _manager(qapp):
     show_called = []
-    tim = TrayIconManager(None, lambda: show_called.append(True), lambda: None, lambda: None)
+    tim = TrayIconManager(
+        None, lambda: show_called.append(True), lambda: None, lambda: None
+    )
     return tim, show_called
 
 

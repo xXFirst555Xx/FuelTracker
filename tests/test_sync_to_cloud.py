@@ -25,4 +25,3 @@ def test_sync_to_cloud(tmp_path):
         dest = cloud_dir / src.name
         assert dest.exists()
         assert dest.read_text() == content
-

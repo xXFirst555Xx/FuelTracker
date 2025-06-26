@@ -1,29 +1,33 @@
 from __future__ import annotations
 
-try:
-    from PySide6.QtCore import QObject, Signal  # type: ignore
-except Exception:  # pragma: no cover - optional dependency
-    class QObject:
-        """Fallback QObject when PySide6 is unavailable."""
+from typing import Any, Callable, TYPE_CHECKING
 
-        pass
+if TYPE_CHECKING:
+    from PySide6.QtCore import QObject, Signal
+else:
+    try:  # pragma: no cover - optional dependency
+        from PySide6.QtCore import QObject, Signal
+    except Exception:  # pragma: no cover - optional dependency
 
-    class Signal:  # type: ignore
-        """Minimal Qt-like signal used for testing without PySide6."""
+        class QObject:
+            """Fallback QObject when PySide6 is unavailable."""
 
-        def __init__(self) -> None:
-            from typing import Callable
+            pass
 
-            self._slots: list[Callable] = []
+        class Signal:
+            """Minimal Qt-like signal used for testing without PySide6."""
 
-        def connect(self, slot) -> None:  # noqa: D401 - simple stub
-            self._slots.append(slot)
+            def __init__(self) -> None:
+                self._slots: list[Callable[..., Any]] = []
 
-        def emit(self, *args, **kwargs) -> None:  # noqa: D401 - simple stub
-            for slot in list(self._slots):
-                slot(*args, **kwargs)
+            def connect(self, slot: Callable[..., Any]) -> None:  # noqa: D401
+                self._slots.append(slot)
 
-from typing import Any
+            def emit(self, *args: Any, **kwargs: Any) -> None:  # noqa: D401
+                for slot in list(self._slots):
+                    slot(*args, **kwargs)
+
+
 import logging
 
 logger = logging.getLogger(__name__)

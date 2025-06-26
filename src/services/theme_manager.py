@@ -36,7 +36,7 @@ class ThemeManager(QObject):
             return
 
         self._applying = True
-        
+
         theme = theme_override
         if theme is None:
             for arg in self.app.arguments():

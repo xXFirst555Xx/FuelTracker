@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt
 from src.controllers import MainController
 from src.config import AppConfig
 
+
 @pytest.mark.parametrize(
     "env_theme, cli_arg, dark_flag, expected_colors",
     [
@@ -15,7 +16,9 @@ from src.config import AppConfig
         ("vivid", None, None, ["#FF9800"]),
     ],
 )
-def test_theme_colors(qapp, tmp_path, monkeypatch, env_theme, cli_arg, dark_flag, expected_colors):
+def test_theme_colors(
+    qapp, tmp_path, monkeypatch, env_theme, cli_arg, dark_flag, expected_colors
+):
     if env_theme is not None:
         monkeypatch.setenv("FT_THEME", env_theme)
     else:
