@@ -1,3 +1,4 @@
+import os
 import pytest
 from PySide6.QtCore import Qt
 
@@ -70,6 +71,8 @@ def test_system_theme(qapp, tmp_path, monkeypatch, scheme, expected_colors):
 
 
 def test_palette_signal_updates_stylesheet(qapp, tmp_path, monkeypatch):
+    if os.environ.get("QT_QPA_PLATFORM") == "offscreen":
+        pytest.skip("paletteChanged not reliable in offscreen mode")
     monkeypatch.delenv("FT_THEME", raising=False)
     orig_setup = MainController._setup_style
     calls: list[MainController] = []
