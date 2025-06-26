@@ -128,7 +128,7 @@ class GlobalHotkey(QObject):
                 try:
                     keyboard.remove_hotkey(self._format(self.sequence))
                 except Exception:
-                    pass
+                    logger.exception("Failed to remove global hotkey")
         except Exception as e:  # pragma: no cover - defensive
             logger.exception("ข้อผิดพลาดหยุดฮอตคีย์: %s", e)
         finally:
@@ -141,7 +141,7 @@ class GlobalHotkey(QObject):
             self.stop()
         except Exception:
             # Avoid spurious errors during interpreter shutdown
-            pass
+            logger.exception("Error stopping hotkey during object deletion")
 
     @staticmethod
     def _format(seq: str) -> str:
