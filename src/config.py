@@ -24,6 +24,16 @@ class AppConfig:
     @classmethod
     def load(cls, path: Path | None = None) -> "AppConfig":
         path = path or CONFIG_PATH
+
+        # During test runs avoid picking up a real user configuration file
+        # which could interfere with expected defaults.
+        if os.getenv("PYTEST_CURRENT_TEST"):
+            if path != CONFIG_PATH:
+                # Custom path still honoured to allow tests to override settings
+                pass
+            else:
+                return cls(theme=Settings().ft_theme)
+
         try:
             with open(path, "r", encoding="utf-8") as fh:
                 data = json.load(fh)
