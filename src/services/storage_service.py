@@ -654,7 +654,11 @@ class StorageService:
     def sync_to_cloud(self, backup_dir: Path, cloud_dir: Path) -> None:
         """คัดลอกโฟลเดอร์สำรองขึ้นพื้นที่ซิงก์คลาวด์"""
         cloud_dir.mkdir(parents=True, exist_ok=True)
+
         for file in backup_dir.glob("*.db"):
+            shutil.copy2(file, cloud_dir / file.name)
+
+        for file in backup_dir.glob("*.db.gz"):
             shutil.copy2(file, cloud_dir / file.name)
 
     def vacuum(self) -> None:

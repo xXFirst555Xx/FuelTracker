@@ -39,3 +39,4 @@ assets/app.ico
 # Temporary databases created during testing
 fuel.db
 file:memdb1*
+file:memdb_master*
