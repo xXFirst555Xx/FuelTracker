@@ -1040,6 +1040,9 @@ class MainController(QObject):
 
     def _schedule_price_update(self) -> None:
 
+        if self.config.update_hours <= 0:
+            return
+
         class Job(QRunnable):
             def __init__(self, controller: "MainController") -> None:
                 super().__init__()
