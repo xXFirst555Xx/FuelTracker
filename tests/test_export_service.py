@@ -1,20 +1,19 @@
 from datetime import date
 from pathlib import Path
+import warnings
 
 import matplotlib
 from matplotlib import font_manager
 import matplotlib.pyplot as plt
+from PyPDF2 import PdfReader
 import pandas as pd
-import warnings
-
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
-
-from PyPDF2 import PdfReader  # noqa: E402
 from reportlab.pdfbase import pdfmetrics
 
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
 from src.services.storage_service import StorageService
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="PyPDF2")
 
 
 
