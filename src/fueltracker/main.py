@@ -11,7 +11,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from alembic.config import Config
-from alembic.command import upgrade
+from alembic.command import upgrade, stamp
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, inspect, text
+
+from src.settings import Settings
 
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
@@ -20,6 +24,24 @@ if TYPE_CHECKING:  # pragma: no cover - for type checkers only
     from src.controllers.main_controller import MainController
 
 _controller: "MainController | None" = None
+
+
+def _upgrade_to_head(path: Path) -> None:
+    cfg = Config(str(ALEMBIC_INI))
+    cfg.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
+    engine = create_engine(f"sqlite:///{path}")
+    insp = inspect(engine)
+    tables = set(insp.get_table_names())
+    expected = {"fuelentry", "vehicle", "budget", "maintenance", "fuelprice"}
+    revision = None
+    if "alembic_version" in tables:
+        with engine.connect() as conn:
+            row = conn.execute(text("SELECT version_num FROM alembic_version")).first()
+            revision = row[0] if row else None
+    if expected.issubset(tables) and (revision is None or revision != ScriptDirectory.from_config(cfg).get_current_head()):
+        stamp(cfg, "head")
+    else:
+        upgrade(cfg, "head")
 
 
 def run(argv: list[str] | None = None) -> None:
@@ -34,8 +56,10 @@ def run(argv: list[str] | None = None) -> None:
         "QT_QPA_FONTDIR", str(Path(__file__).resolve().parents[2] / "fonts")
     )
 
+    env = Settings()
+
     if args.command == "migrate":
-        upgrade(Config(ALEMBIC_INI), "head")
+        _upgrade_to_head(env.db_path)
         return
     if args.command == "backup":
         from src.services import StorageService
@@ -44,9 +68,6 @@ def run(argv: list[str] | None = None) -> None:
         return
     if args.command == "sync":
         from src.services import StorageService
-        from src.settings import Settings
-
-        env = Settings()
         if env.ft_cloud_dir is None:
             raise SystemExit("FT_CLOUD_DIR not set")
 
@@ -57,7 +78,7 @@ def run(argv: list[str] | None = None) -> None:
         return
 
     # Always apply any pending migrations before launching the app
-    upgrade(Config(ALEMBIC_INI), "head")
+    _upgrade_to_head(env.db_path)
 
     logging.basicConfig(
         level=logging.INFO,
