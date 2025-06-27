@@ -82,3 +82,20 @@ def test_hotkey_adapter_handles_exception(monkeypatch):
     monkeypatch.setattr(gh, "_wrapped_callback", boom)
     # Should return 1 even if the wrapped callback raises an error
     assert gh._callback_adapter() == 1
+
+
+def test_start_import_error(monkeypatch):
+    import importlib
+    import src.hotkey as hk
+
+    hk.keyboard = hk._NOT_LOADED
+
+    def raise_import_error(name: str, package: str | None = None) -> None:
+        raise ImportError("boom")
+
+    monkeypatch.setattr(importlib, "import_module", raise_import_error)
+
+    gh = GlobalHotkey("Ctrl+Shift+N")
+    gh.start()
+    assert gh._registered is False
+    gh.stop()
