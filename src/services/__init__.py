@@ -14,12 +14,12 @@ from .oil_service import (
 try:
     from .theme_manager import ThemeManager
 except Exception:  # pragma: no cover - optional dependency
-    ThemeManager = None  # type: ignore[assignment]
+    ThemeManager = None  # type: ignore[misc]
 
 try:
     from .tray_icon_manager import TrayIconManager
 except Exception:  # pragma: no cover - optional dependency
-    TrayIconManager = None  # type: ignore[assignment]
+    TrayIconManager = None  # type: ignore[misc]
 
 __all__ = [
     "ReportService",
