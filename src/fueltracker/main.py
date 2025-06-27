@@ -27,6 +27,7 @@ _controller: "MainController | None" = None
 
 
 def _upgrade_to_head(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     cfg = Config(str(ALEMBIC_INI))
     cfg.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
     engine = create_engine(f"sqlite:///{path}")
@@ -38,7 +39,10 @@ def _upgrade_to_head(path: Path) -> None:
         with engine.connect() as conn:
             row = conn.execute(text("SELECT version_num FROM alembic_version")).first()
             revision = row[0] if row else None
-    if expected.issubset(tables) and (revision is None or revision != ScriptDirectory.from_config(cfg).get_current_head()):
+    if expected.issubset(tables) and (
+        revision is None
+        or revision != ScriptDirectory.from_config(cfg).get_current_head()
+    ):
         stamp(cfg, "head")
     else:
         upgrade(cfg, "head")
@@ -68,6 +72,7 @@ def run(argv: list[str] | None = None) -> None:
         return
     if args.command == "sync":
         from src.services import StorageService
+
         if env.ft_cloud_dir is None:
             raise SystemExit("FT_CLOUD_DIR not set")
 
