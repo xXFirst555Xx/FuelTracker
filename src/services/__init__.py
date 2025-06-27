@@ -11,8 +11,15 @@ from .oil_service import (
     purge_old_prices,
     update_missing_liters,
 )
-from .theme_manager import ThemeManager
-from .tray_icon_manager import TrayIconManager
+try:
+    from .theme_manager import ThemeManager
+except Exception:  # pragma: no cover - optional dependency
+    ThemeManager = None  # type: ignore[assignment]
+
+try:
+    from .tray_icon_manager import TrayIconManager
+except Exception:  # pragma: no cover - optional dependency
+    TrayIconManager = None  # type: ignore[assignment]
 
 __all__ = [
     "ReportService",
@@ -24,6 +31,9 @@ __all__ = [
     "get_price",
     "purge_old_prices",
     "update_missing_liters",
-    "ThemeManager",
-    "TrayIconManager",
 ]
+
+if ThemeManager is not None:
+    __all__.append("ThemeManager")
+if TrayIconManager is not None:
+    __all__.append("TrayIconManager")
