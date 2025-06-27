@@ -22,7 +22,7 @@ pyinstaller ^
   --icon assets\fuel.ico ^
   --add-data "tuf_metadata\\root.json;tuf_metadata" ^
   --version-file build\version_final.txt ^
-  src\fueltracker\__main__.py
+  fueltracker\__main__.py
 
 if exist dist\FuelTracker\FuelTracker.exe (
     echo Build succeeded: dist\FuelTracker\FuelTracker.exe
