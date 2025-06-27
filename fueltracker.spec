@@ -26,7 +26,7 @@ if not os.path.exists(ICON_PATH):
 
 a = Analysis(
     ['fueltracker/__main__.py'],
-    pathex=[],
+    pathex=['src', '.'],
     binaries=[],
     datas=[
         ('assets/*', 'assets'),
