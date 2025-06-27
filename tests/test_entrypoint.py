@@ -15,15 +15,13 @@ def test_console_script() -> None:
     assert scripts["fueltracker-launcher"] == "launcher:main"
 
 
-def test_backup_command(monkeypatch):
-    called = {}
-
+def test_backup_command(monkeypatch, capsys):
     class Dummy:
         def __init__(self):
             pass
 
         def auto_backup(self):
-            called["b"] = True
+            return Path("my_backup.db")
 
     import src.services as services
 
@@ -31,7 +29,8 @@ def test_backup_command(monkeypatch):
 
     run(["backup"])
 
-    assert called.get("b")
+    out = capsys.readouterr().out.strip()
+    assert out.endswith("my_backup.db")
 
 
 def test_sync_command(monkeypatch, tmp_path):
