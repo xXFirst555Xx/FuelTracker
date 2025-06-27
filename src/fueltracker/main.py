@@ -29,6 +29,7 @@ _controller: "MainController | None" = None
 def _upgrade_to_head(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     cfg = Config(str(ALEMBIC_INI))
+    cfg.set_main_option("script_location", "fueltracker:migrations")
     cfg.set_main_option("sqlalchemy.url", f"sqlite:///{path}")
     engine = create_engine(f"sqlite:///{path}")
     insp = inspect(engine)
