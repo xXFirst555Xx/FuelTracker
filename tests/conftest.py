@@ -86,8 +86,8 @@ warnings.filterwarnings(
 
 @pytest.fixture(scope="session")
 def worker_id() -> str:
-    """Provide default worker id when pytest-xdist is absent."""
-    return "master"
+    """Provide a worker id for pytest-xdist in-memory databases."""
+    return os.environ.get("PYTEST_XDIST_WORKER", "master")
 
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
