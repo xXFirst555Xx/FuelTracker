@@ -68,7 +68,8 @@ def run(argv: list[str] | None = None) -> None:
     if args.command == "backup":
         from src.services import StorageService
 
-        StorageService().auto_backup()
+        path = StorageService().auto_backup()
+        print(path)
         return
     if args.command == "sync":
         from src.services import StorageService
