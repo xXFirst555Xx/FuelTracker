@@ -9,6 +9,6 @@ try:
         from PySide6.QtWidgets import QStackedLayout  # noqa: F401
 
         QtWidgets.QStackedLayout = QStackedLayout
-except ModuleNotFoundError:
+except Exception:
     # PySide6 not available during some static analysis; ignore.
     pass
