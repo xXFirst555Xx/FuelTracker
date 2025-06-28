@@ -22,7 +22,7 @@ _update_thread: Thread | None = None
 
 def _update_loop(interval: int) -> None:
     # Avoid contacting update servers when running under pytest
-    if os.getenv("PYTEST_RUNNING"):
+    if os.getenv("PYTEST_CURRENT_TEST"):
         return
 
     app_dir = data_dir()
@@ -48,7 +48,7 @@ def _update_loop(interval: int) -> None:
 def start_async(interval_hours: int = 24) -> None:
     """Start background update checking."""
     global _update_thread
-    if os.getenv("PYTEST_RUNNING"):
+    if os.getenv("PYTEST_CURRENT_TEST"):
         return
     if interval_hours <= 0:
         return
