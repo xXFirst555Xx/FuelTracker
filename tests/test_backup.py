@@ -122,3 +122,42 @@ def test_daily_backup_timer(qapp, tmp_path, monkeypatch):
     # simulate timer trigger
     calls["cb"]()
     assert count["n"] == 2
+
+
+def test_daily_backup_handles_error(qapp, monkeypatch):
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    SQLModel.metadata.create_all(engine)
+    storage = StorageService(engine=engine)
+
+    monkeypatch.setattr("src.hotkey.keyboard", None, raising=False)
+    monkeypatch.setattr(
+        "src.controllers.main_controller.StorageService", lambda *a, **k: storage
+    )
+
+    calls: dict[str, Any] = {}
+
+    def fake_single_shot(ms: int, cb: callable) -> None:
+        calls["ms"] = ms
+        calls["cb"] = cb
+
+    monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
+
+    def fail_backup() -> Path:
+        raise RuntimeError("fail")
+
+    monkeypatch.setattr(storage, "auto_backup", fail_backup)
+    sync_calls: list[tuple[Path, Path]] = []
+    monkeypatch.setattr(storage, "sync_to_cloud", lambda *a: sync_calls.append(a))
+
+    MainController()
+
+    assert calls["ms"] == 86_400_000
+    assert not sync_calls
+
+    # simulate timer trigger; should not raise
+    calls["cb"]()
+    assert not sync_calls

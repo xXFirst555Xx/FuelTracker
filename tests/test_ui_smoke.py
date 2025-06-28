@@ -1,6 +1,7 @@
 import sys
 import os
 from datetime import date
+from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QCloseEvent
 from src.models import Vehicle, FuelEntry
@@ -80,3 +81,17 @@ def test_cleanup_unregisters_hotkey(main_controller):
     assert ctrl.global_hotkey is not None
     ctrl.cleanup()
     assert ctrl.global_hotkey is None
+
+
+def test_cleanup_handles_missing_db(main_controller, monkeypatch):
+    ctrl = main_controller
+
+    def fail_backup() -> Path:
+        raise RuntimeError("fail")
+
+    monkeypatch.setattr(ctrl.storage, "auto_backup", fail_backup)
+    called: list[tuple[Path, Path]] = []
+    monkeypatch.setattr(ctrl.storage, "sync_to_cloud", lambda *a: called.append(a))
+
+    ctrl.cleanup()
+    assert not called

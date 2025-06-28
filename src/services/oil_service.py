@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Any, Dict, Optional, cast
 import os
 
-import requests
+import requests  # type: ignore[import-untyped]
 from sqlmodel import Session, select
 from sqlalchemy import delete
 

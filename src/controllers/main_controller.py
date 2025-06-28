@@ -68,7 +68,8 @@ import logging
 import os
 import sys
 from datetime import datetime
-import requests
+import sqlite3
+import requests  # type: ignore[import-untyped]
 import shutil
 
 from ..settings import Settings
@@ -1118,8 +1119,12 @@ class MainController(QObject):
 
     def _schedule_daily_backup(self) -> None:
         """Perform daily backup and reschedule the timer."""
-        backup = self.storage.auto_backup()
-        if self.sync_enabled and self.cloud_path is not None:
+        backup: Path | None = None
+        try:
+            backup = self.storage.auto_backup()
+        except (RuntimeError, sqlite3.DatabaseError):
+            backup = None
+        if backup is not None and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
         QTimer.singleShot(86_400_000, self._schedule_daily_backup)
 
@@ -1159,19 +1164,24 @@ class MainController(QObject):
         self.undo_stack.push(cmd)
 
     def cleanup(self) -> None:
-        if hasattr(self.window, "removeEventFilter"):
+        if hasattr(self, "window") and hasattr(self.window, "removeEventFilter"):
             try:
                 self.window.removeEventFilter(self)
             except RuntimeError:
                 pass
         try:
-            self.settings.setValue("windowGeometry", self.window.saveGeometry())
-            self.settings.setValue("windowState", self.window.saveState())
+            if hasattr(self, "window"):
+                self.settings.setValue("windowGeometry", self.window.saveGeometry())
+                self.settings.setValue("windowState", self.window.saveState())
         except RuntimeError:
             # Window already destroyed
             pass
-        backup = self.storage.auto_backup()
-        if self.sync_enabled and self.cloud_path is not None:
+        backup: Path | None = None
+        try:
+            backup = self.storage.auto_backup()
+        except (RuntimeError, sqlite3.DatabaseError):
+            backup = None
+        if backup is not None and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
         self.export_service.cleanup()
         self._unregister_hotkey()
