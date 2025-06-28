@@ -91,6 +91,7 @@ def test_start_import_error(monkeypatch):
     hk.keyboard = hk._NOT_LOADED
 
     def raise_import_error(name: str, package: str | None = None) -> None:
+        _ = package  # avoid vulture false positive
         raise ImportError("boom")
 
     monkeypatch.setattr(importlib, "import_module", raise_import_error)
