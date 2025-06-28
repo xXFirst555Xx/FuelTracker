@@ -68,7 +68,7 @@ import logging
 import os
 import sys
 from datetime import datetime
-import requests
+import requests  # type: ignore[import-untyped]
 import shutil
 
 from ..settings import Settings
@@ -1165,14 +1165,15 @@ class MainController(QObject):
         self.undo_stack.push(cmd)
 
     def cleanup(self) -> None:
-        if hasattr(self.window, "removeEventFilter"):
+        if hasattr(self, "window") and hasattr(self.window, "removeEventFilter"):
             try:
                 self.window.removeEventFilter(self)
             except RuntimeError:
                 pass
         try:
-            self.settings.setValue("windowGeometry", self.window.saveGeometry())
-            self.settings.setValue("windowState", self.window.saveState())
+            if hasattr(self, "window"):
+                self.settings.setValue("windowGeometry", self.window.saveGeometry())
+                self.settings.setValue("windowState", self.window.saveState())
         except RuntimeError:
             # Window already destroyed
             pass

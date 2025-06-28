@@ -129,8 +129,7 @@ class StorageService:
                 engine.url.query.get("mode") == "memory"
                 or engine.url.database == ":memory:"
                 or (
-                    engine.url.database
-                    and engine.url.database.startswith("file:memdb")
+                    engine.url.database and engine.url.database.startswith("file:memdb")
                 )
             ):
                 self._db_path = None
