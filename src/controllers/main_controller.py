@@ -1118,9 +1118,15 @@ class MainController(QObject):
 
     def _schedule_daily_backup(self) -> None:
         """Perform daily backup and reschedule the timer."""
-        backup = self.storage.auto_backup()
-        if self.sync_enabled and self.cloud_path is not None:
+        backup: Path | None = None
+        try:
+            backup = self.storage.auto_backup()
+        except Exception:  # pragma: no cover - ignore failures with in-memory DB
+            backup = None
+
+        if backup and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
+
         QTimer.singleShot(86_400_000, self._schedule_daily_backup)
 
     def filter_entries(self) -> list[FuelEntry]:
@@ -1170,8 +1176,13 @@ class MainController(QObject):
         except RuntimeError:
             # Window already destroyed
             pass
-        backup = self.storage.auto_backup()
-        if self.sync_enabled and self.cloud_path is not None:
+        backup: Path | None = None
+        try:
+            backup = self.storage.auto_backup()
+        except Exception:  # pragma: no cover - ignore failures with in-memory DB
+            backup = None
+
+        if backup and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
         self.export_service.cleanup()
         self._unregister_hotkey()
