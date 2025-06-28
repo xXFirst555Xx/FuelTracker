@@ -121,7 +121,22 @@ class StorageService:
 
         if engine is not None:
             self.engine = engine
-            self._db_path = Path(engine.url.database) if engine.url.database else None
+            # Determine the database path for a provided engine. In-memory
+            # SQLite URLs ("sqlite:///:memory:" or "file:memdb*?mode=memory")
+            # should not have a filesystem path.
+            if (
+                engine.url.query.get("mode") == "memory"
+                or engine.url.database == ":memory:"
+                or (
+                    engine.url.database
+                    and engine.url.database.startswith("file:memdb")
+                )
+            ):
+                self._db_path = None
+            else:
+                self._db_path = (
+                    Path(engine.url.database) if engine.url.database else None
+                )
             self._password = password or ""
             SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
         else:
