@@ -69,6 +69,7 @@ import os
 import sys
 from datetime import datetime
 import requests  # type: ignore[import-untyped]
+import sqlite3
 import shutil
 
 from ..settings import Settings
@@ -1121,7 +1122,7 @@ class MainController(QObject):
         backup: Path | None = None
         try:
             backup = self.storage.auto_backup()
-        except RuntimeError:
+        except (RuntimeError, sqlite3.DatabaseError):
             backup = None
         if backup is not None and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)
@@ -1178,7 +1179,7 @@ class MainController(QObject):
         backup: Path | None = None
         try:
             backup = self.storage.auto_backup()
-        except RuntimeError:
+        except (RuntimeError, sqlite3.DatabaseError):
             backup = None
         if backup is not None and self.sync_enabled and self.cloud_path is not None:
             self.storage.sync_to_cloud(backup.parent, self.cloud_path)

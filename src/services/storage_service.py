@@ -12,6 +12,7 @@ import os
 import shutil
 import gzip
 from getpass import getpass
+import sys
 from decimal import Decimal
 from contextlib import closing
 
@@ -128,8 +129,7 @@ class StorageService:
                 engine.url.query.get("mode") == "memory"
                 or engine.url.database == ":memory:"
                 or (
-                    engine.url.database
-                    and engine.url.database.startswith("file:memdb")
+                    engine.url.database and engine.url.database.startswith("file:memdb")
                 )
             ):
                 self._db_path = None
@@ -147,7 +147,13 @@ class StorageService:
             if password is None:
                 if _SQLCIPHER_AVAILABLE:
                     env = Settings()
-                    password = env.ft_db_password or getpass("DB password: ")
+                    password = env.ft_db_password
+                    if password is None and (
+                        not sys.stdin.isatty() or os.environ.get("PYTEST_CURRENT_TEST")
+                    ):
+                        password = ""
+                    if password is None:
+                        password = getpass("DB password: ")
                 else:
                     password = ""
             if password and db_path.exists() and _is_plain_sqlite(db_path):

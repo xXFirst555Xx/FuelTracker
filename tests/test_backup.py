@@ -147,7 +147,7 @@ def test_daily_backup_handles_error(qapp, monkeypatch):
     monkeypatch.setattr(QTimer, "singleShot", fake_single_shot)
 
     def fail_backup() -> Path:
-        raise RuntimeError("fail")
+        raise sqlite3.DatabaseError("fail")
 
     monkeypatch.setattr(storage, "auto_backup", fail_backup)
     sync_calls: list[tuple[Path, Path]] = []
