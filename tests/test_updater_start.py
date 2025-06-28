@@ -29,6 +29,9 @@ def test_run_starts_background_updater(monkeypatch):
 
     monkeypatch.setattr(updater, "Thread", DummyThread)
 
+    # Allow updater.start_async() to run during this test
+    monkeypatch.setenv("PYTEST_CURRENT_TEST", "")
+
     main.run([])
 
     assert started.get("t")
