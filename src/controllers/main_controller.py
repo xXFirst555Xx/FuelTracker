@@ -68,7 +68,7 @@ import logging
 import os
 import sys
 from datetime import datetime
-import requests  # type: ignore[import-untyped]
+import requests
 import shutil
 
 from ..settings import Settings
