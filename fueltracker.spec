@@ -31,6 +31,8 @@ a = Analysis(
     datas=[
         ('assets/*', 'assets'),
         ('alembic.ini', '.'),
+        ('alembic/env.py', 'alembic'),
+        ('alembic/versions/*', 'alembic/versions'),
         ('src/fueltracker/migrations/*', 'fueltracker/migrations'),
     ],
     hiddenimports=[],
