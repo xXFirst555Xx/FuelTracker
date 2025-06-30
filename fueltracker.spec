@@ -35,7 +35,7 @@ a = Analysis(
         ('alembic/versions/*', 'alembic/versions'),
         ('src/fueltracker/migrations/*', 'fueltracker/migrations'),
     ],
-    hiddenimports=[],
+    hiddenimports=["logging.config"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
