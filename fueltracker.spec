@@ -31,7 +31,7 @@ a = Analysis(
     datas=[
         ('assets/*', 'assets'),
         ('alembic.ini', '.'),
-        ('fueltracker/migrations/*', 'fueltracker/migrations'),
+        ('src/fueltracker/migrations/*', 'fueltracker/migrations'),
     ],
     hiddenimports=[],
     hookspath=[],
