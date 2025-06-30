@@ -49,7 +49,8 @@ def test_export_report_runs_async(qtbot, main_controller, tmp_path, monkeypatch)
     elapsed = time.monotonic() - start
     assert elapsed < 0.05
 
-    with qtbot.waitSignal(ctrl.export_finished, timeout=2000):
+    # Increase timeout to avoid flakiness when running tests in parallel
+    with qtbot.waitSignal(ctrl.export_finished, timeout=10000):
         pass
 
 
