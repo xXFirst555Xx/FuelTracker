@@ -44,9 +44,9 @@ def _ensure_keyboard() -> None:
     if keyboard is not _NOT_LOADED:
         return
     try:  # pragma: no cover - optional dependency
-        import keyboard as kb
+        from importlib import import_module
 
-        keyboard = kb
+        keyboard = import_module("keyboard")
     except Exception:
         keyboard = None
 
@@ -59,6 +59,7 @@ class GlobalHotkey(QObject):
         self.sequence = sequence
         self._registered = False
         self._listener: Any | None = None
+        self._handle: Any | None = None
         # Guard flag used during shutdown to avoid race conditions when the
         # backend fires callbacks as we are tearing down.
         self._stopping = False
@@ -98,7 +99,7 @@ class GlobalHotkey(QObject):
                 )
                 self._listener.start()
             else:
-                keyboard.add_hotkey(
+                self._handle = keyboard.add_hotkey(
                     self._format(self.sequence),
                     self._callback_adapter,
                 )
@@ -125,10 +126,13 @@ class GlobalHotkey(QObject):
                     finally:
                         self._listener = None
             else:
-                try:
-                    keyboard.remove_hotkey(self._format(self.sequence))
-                except Exception:
-                    logger.exception("Failed to remove global hotkey")
+                if self._handle is not None:
+                    try:
+                        keyboard.remove_hotkey(self._handle)
+                    except Exception:
+                        logger.exception("Failed to remove global hotkey")
+                    finally:
+                        self._handle = None
         except Exception as e:  # pragma: no cover - defensive
             logger.exception("ข้อผิดพลาดหยุดฮอตคีย์: %s", e)
         finally:
