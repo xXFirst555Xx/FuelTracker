@@ -170,3 +170,40 @@ def test_vehicle_monthly_stats(in_memory_storage: StorageService) -> None:
     assert dist == 100.0
     assert liters == 15.0
     assert price == 30.0
+
+
+# Extra tests for edge cases
+
+
+def test_get_vehicle_stats_no_entries(in_memory_storage: StorageService) -> None:
+    storage = in_memory_storage
+    vehicle = Vehicle(
+        name="No Entries",
+        vehicle_type="sedan",
+        license_plate="NONE",
+        tank_capacity_liters=45.0,
+    )
+    storage.add_vehicle(vehicle)
+
+    dist, liters, price = storage.get_vehicle_stats(vehicle.id)
+
+    assert dist == 0.0
+    assert liters == 0.0
+    assert price == 0.0
+
+
+def test_vehicle_monthly_stats_no_entries(in_memory_storage: StorageService) -> None:
+    storage = in_memory_storage
+    vehicle = Vehicle(
+        name="Empty",
+        vehicle_type="hatch",
+        license_plate="EMPTY",
+        tank_capacity_liters=40.0,
+    )
+    storage.add_vehicle(vehicle)
+
+    dist, liters, price = storage.vehicle_monthly_stats(vehicle.id, 2024, 1)
+
+    assert dist == 0.0
+    assert liters == 0.0
+    assert price == 0.0
