@@ -25,9 +25,9 @@ def test_backup_rotation(tmp_path, monkeypatch):
         Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
     )
     now = datetime(2024, 1, 1, 0, 0)
-    for i in range(35):
+    for i in range(10):
         backup = storage.auto_backup(
-            now=now + timedelta(minutes=i), backup_dir=tmp_path, max_backups=30
+            now=now + timedelta(minutes=i), backup_dir=tmp_path, max_backups=5
         )
         if i == 0:
             conn = sqlite3.connect(backup)
@@ -45,7 +45,7 @@ def test_backup_rotation(tmp_path, monkeypatch):
             else:
                 backup.unlink()
     backups = sorted(p for p in tmp_path.glob("*.db") if p.name != "fuel.db")
-    assert len(backups) == 30
+    assert len(backups) == 5
     first = backups[0].stem
     assert first == (now + timedelta(minutes=5)).strftime("%y-%m-%d_%H%M")
 
