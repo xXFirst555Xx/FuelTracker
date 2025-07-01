@@ -14,6 +14,8 @@ from PyPDF2 import PdfReader
 import pandas as pd
 import gc
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib.pagesizes import A4
 
 from src.models import FuelEntry, Vehicle
 from src.services.export_service import ExportService
@@ -156,3 +158,27 @@ def test_plot_dual_axis_empty_df(monkeypatch, in_memory_storage):
     service._plot_dual_axis(fig, df)
 
     assert fig.axes  # ensures axes were created without error
+
+
+def test_page_summary_creates_directory(tmp_path, in_memory_storage):
+    service = ExportService(in_memory_storage)
+    df = pd.DataFrame(
+        {
+            "date": [pd.Timestamp(2024, 1, 1)],
+            "vehicle_id": [1],
+            "fuel_type": ["g"],
+            "odo_before": [0],
+            "odo_after": [10],
+            "distance": [10],
+            "liters": [1.0],
+            "amount_spent": [10.0],
+        }
+    )
+    tmp_dir = tmp_path / "missing"
+    canvas = Canvas(str(tmp_path / "out.pdf"), pagesize=A4)
+    try:
+        charts = service._page_summary(canvas, "Helvetica", df, "2024-01", None, tmp_dir)
+    finally:
+        canvas.save()
+    for c in charts:
+        assert c.exists()
