@@ -124,7 +124,11 @@ def pytest_configure(config):
 
 
 from src.services import StorageService  # noqa: E402
-from src.controllers.main_controller import MainController  # noqa: E402
+
+if PYSIDE_AVAILABLE:
+    from src.controllers.main_controller import MainController  # noqa: E402
+else:  # pragma: no cover - PySide6 not available
+    MainController = None  # type: ignore
 
 
 @pytest.fixture
