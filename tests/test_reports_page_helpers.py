@@ -3,19 +3,23 @@ import pandas as pd
 from PySide6.QtWidgets import QApplication
 from src.views.reports_page import _Worker, ReportsPage
 from src.services.report_service import ReportService
-from src.models import Vehicle
+from src.models import Vehicle, FuelEntry
 
 class DummyStorage:
     def __init__(self):
         self.vehicles = []
         self.budgets = {}
         self.spent = {}
+        self.entries = {}
     def list_vehicles(self):
         return self.vehicles
     def get_budget(self, vid):
         return self.budgets.get(vid)
     def get_total_spent(self, vid, year, month):
         return self.spent.get((vid, year, month), 0.0)
+
+    def get_entries_by_vehicle(self, vid):
+        return self.entries.get(vid, [])
 
 class DummyService(ReportService):
     def __init__(self):
@@ -65,3 +69,35 @@ def test_budget_remaining_all(qtbot):
     qtbot.addWidget(page)
     remain = page._budget_remaining(date(2024,5,1), None)
     assert remain == 200.0
+
+
+def test_monthly_chart_specific(qtbot):
+    service = DummyService()
+    worker = _Worker(service, 1)
+
+    df = pd.DataFrame({
+        'month': [pd.Period('2024-01', freq='M'), pd.Period('2024-02', freq='M')],
+        'liters': [10, 20],
+        'km_per_l': [12.0, 14.0],
+    })
+    fig = worker._monthly_chart(df, 1)
+    axes = fig.get_axes()
+    assert len(axes) == 2
+    bars = [patch.get_height() for patch in axes[0].patches]
+    assert bars == [10, 20]
+    assert list(axes[1].lines[0].get_ydata()) == [12.0, 14.0]
+
+
+def test_monthly_chart_all(qtbot):
+    service = DummyService()
+    service.storage.vehicles = [Vehicle(id=1, name='v1', vehicle_type='t', license_plate='x', tank_capacity_liters=1)]
+    service.storage.entries[1] = [
+        FuelEntry(entry_date=date(2024, 1, 10), vehicle_id=1, odo_before=0, odo_after=100, amount_spent=10, liters=5)
+    ]
+    worker = _Worker(service, None)
+
+    df = pd.DataFrame({'month': [pd.Period('2024-01', freq='M')], 'liters': [5]})
+    fig = worker._monthly_chart(df, None)
+    axes = fig.get_axes()
+    assert len(axes) == 2
+    assert len(axes[1].lines) == 1
