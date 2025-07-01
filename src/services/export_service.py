@@ -212,6 +212,7 @@ class ExportService:
         vehicle_id: int | None,
         tmp_dir: Path,
     ) -> list[Path]:
+        tmp_dir.mkdir(parents=True, exist_ok=True)
         chart = tmp_dir / f"{uuid.uuid4().hex}.png"
         fig = plt.Figure(figsize=(6, 4))
         self._plot_dual_axis(fig, df)
@@ -292,6 +293,7 @@ class ExportService:
             if y < 200:
                 break
 
+        tmp_dir.mkdir(parents=True, exist_ok=True)
         chart = tmp_dir / f"{uuid.uuid4().hex}.png"
         fig = plt.Figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
@@ -333,6 +335,7 @@ class ExportService:
         names = {v.id: v.name for v in self.storage.list_vehicles()}
         labels = [names.get(idx, str(idx)) for idx in data.index]
 
+        tmp_dir.mkdir(parents=True, exist_ok=True)
         chart = tmp_dir / f"{uuid.uuid4().hex}.png"
         fig = plt.Figure(figsize=(6, 4))
         ax1 = fig.add_subplot(111)
