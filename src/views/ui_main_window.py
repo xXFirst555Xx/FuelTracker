@@ -1,7 +1,7 @@
 # src/views/ui_main_window.py
 
-from PySide6.QtCore import Qt, QSize, QRect
-from PySide6.QtGui import QIcon, QFont, QColor
+from PySide6.QtCore import Qt, QRect, QSize
+from PySide6.QtGui import QColor, QFont, QCursor
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QPushButton, QFrame, QStackedWidget, QSpacerItem, 
                                QSizePolicy, QTableWidget, QHeaderView, QAbstractItemView)
@@ -15,26 +15,27 @@ class Ui_MainWindow(object):
         # --- 1. Main Container ---
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        # ทำให้ Background โปร่งใส เพื่อให้เห็นเงาและขอบมน
         self.centralwidget.setStyleSheet("background-color: transparent;") 
 
-        # Layout สำหรับ Shadow และ Margins
+        # Layout หลักสำหรับจัดการ Margin (เงา)
         self.shadowLayout = QVBoxLayout(self.centralwidget)
-        self.shadowLayout.setContentsMargins(10, 10, 10, 10)
+        self.shadowLayout.setContentsMargins(10, 10, 10, 10) # เว้นที่ 10px สำหรับเงา
         self.shadowLayout.setSpacing(0)
 
-        # Frame หลัก
+        # Frame ที่เป็นตัวหน้าต่างจริงๆ (Background สีน้ำเงินเข้ม)
         self.windowFrame = QFrame(self.centralwidget)
         self.windowFrame.setObjectName("windowFrame")
         self.windowFrame.setStyleSheet("""
             QFrame#windowFrame {
                 background-color: #0f172a; 
-                border-radius: 15px;
-                border: 1px solid #334155;
+                border-radius: 12px;
+                border: 1px solid #334155; /* ขอบบางๆ ให้ดูคม */
             }
         """)
         self.shadowLayout.addWidget(self.windowFrame)
 
-        # Layout แบ่งซ้าย-ขวา
+        # Layout ภายในแบ่ง ซ้าย (Sidebar) - ขวา (Content)
         self.mainLayout = QHBoxLayout(self.windowFrame)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainLayout.setSpacing(0)
@@ -46,17 +47,17 @@ class Ui_MainWindow(object):
         self.sidebarFrame.setStyleSheet("""
             QFrame#sidebarFrame {
                 background-color: #0f172a;
-                border-top-left-radius: 15px;
-                border-bottom-left-radius: 15px;
+                border-top-left-radius: 12px;
+                border-bottom-left-radius: 12px;
                 border-right: 1px solid #1e293b;
             }
             QPushButton {
                 text-align: left;
-                padding-left: 30px;
+                padding-left: 25px;
                 background-color: transparent;
                 color: #94a3b8;
                 border: none;
-                height: 50px;
+                height: 48px;
                 font-size: 14px;
                 font-weight: 500;
                 border-radius: 0px;
@@ -69,21 +70,23 @@ class Ui_MainWindow(object):
                 background-color: #1e293b;
                 color: #3b82f6; 
                 border-right: 3px solid #3b82f6;
-                font-weight: bold;
+                font-weight: 600;
             }
         """)
         
         self.sidebarLayout = QVBoxLayout(self.sidebarFrame)
-        self.sidebarLayout.setContentsMargins(0, 40, 0, 20)
-        self.sidebarLayout.setSpacing(10)
+        self.sidebarLayout.setContentsMargins(0, 35, 0, 20)
+        self.sidebarLayout.setSpacing(8)
 
+        # Logo Area
         self.appLabel = QLabel("FUEL TRACKER", self.sidebarFrame)
         self.appLabel.setAlignment(Qt.AlignCenter)
         self.appLabel.setStyleSheet("color: white; font-size: 20px; font-weight: 800; letter-spacing: 1px; border: none;")
         self.sidebarLayout.addWidget(self.appLabel)
         
-        self.sidebarLayout.addSpacing(20)
+        self.sidebarLayout.addSpacing(25)
 
+        # Menu Items
         self.btnHome = QPushButton(" หน้าแรก (Dashboard)", self.sidebarFrame)
         self.btnHome.setCheckable(True)
         self.btnHome.setChecked(True)
@@ -100,7 +103,8 @@ class Ui_MainWindow(object):
         self.sidebarLayout.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.sidebarLayout.addWidget(self.btnSettings)
         
-        self.versionLabel = QLabel("v1.0.0", self.sidebarFrame)
+        # Version Label
+        self.versionLabel = QLabel("v1.0.0 Stable", self.sidebarFrame)
         self.versionLabel.setAlignment(Qt.AlignCenter)
         self.versionLabel.setStyleSheet("color: #475569; font-size: 10px; margin-bottom: 5px; border: none;")
         self.sidebarLayout.addWidget(self.versionLabel)
@@ -112,8 +116,8 @@ class Ui_MainWindow(object):
         self.contentFrame.setStyleSheet("""
             QFrame { 
                 background-color: #1e293b; 
-                border-top-right-radius: 15px;
-                border-bottom-right-radius: 15px;
+                border-top-right-radius: 12px;
+                border-bottom-right-radius: 12px;
             }
             QLabel { color: white; }
         """)
@@ -122,39 +126,38 @@ class Ui_MainWindow(object):
         self.contentLayout.setContentsMargins(30, 20, 30, 30)
         self.contentLayout.setSpacing(20)
 
-        # --- Header ---
+        # --- Header Bar ---
         self.headerLayout = QHBoxLayout()
         self.pageTitle = QLabel("Dashboard", self.contentFrame)
         self.pageTitle.setStyleSheet("font-size: 24px; font-weight: bold; color: white; border: none;")
         
-        # Window Controls (Minimize, Maximize, Close)
+        # Window Controls (Min, Max, Close)
         self.windowBtnsLayout = QHBoxLayout()
         self.windowBtnsLayout.setSpacing(8)
         
-        # Style สำหรับปุ่มหน้าต่าง
         btn_style = """
-            QPushButton { background-color: #334155; border-radius: 15px; color: white; border: none; font-weight: bold; }
+            QPushButton { background-color: #334155; border-radius: 6px; color: white; border: none; font-weight: bold; }
             QPushButton:hover { background-color: #475569; }
+        """
+        close_style = """
+            QPushButton { background-color: #334155; border-radius: 6px; color: white; border: none; font-weight: bold; }
+            QPushButton:hover { background-color: #ef4444; }
         """
         
         self.btnMinimize = QPushButton("─", self.contentFrame)
-        self.btnMinimize.setFixedSize(30, 30)
-        self.btnMinimize.setCursor(Qt.PointingHandCursor)
+        self.btnMinimize.setFixedSize(32, 32)
+        self.btnMinimize.setCursor(QCursor(Qt.PointingHandCursor))
         self.btnMinimize.setStyleSheet(btn_style)
 
-        # [NEW] ปุ่ม Maximize
         self.btnMaximize = QPushButton("☐", self.contentFrame)
-        self.btnMaximize.setFixedSize(30, 30)
-        self.btnMaximize.setCursor(Qt.PointingHandCursor)
+        self.btnMaximize.setFixedSize(32, 32)
+        self.btnMaximize.setCursor(QCursor(Qt.PointingHandCursor))
         self.btnMaximize.setStyleSheet(btn_style)
 
         self.btnClose = QPushButton("✕", self.contentFrame)
-        self.btnClose.setFixedSize(30, 30)
-        self.btnClose.setCursor(Qt.PointingHandCursor)
-        self.btnClose.setStyleSheet("""
-            QPushButton { background-color: #334155; border-radius: 15px; color: white; border: none; font-weight: bold; }
-            QPushButton:hover { background-color: #ef4444; }
-        """)
+        self.btnClose.setFixedSize(32, 32)
+        self.btnClose.setCursor(QCursor(Qt.PointingHandCursor))
+        self.btnClose.setStyleSheet(close_style)
 
         self.windowBtnsLayout.addWidget(self.btnMinimize)
         self.windowBtnsLayout.addWidget(self.btnMaximize)
@@ -168,18 +171,23 @@ class Ui_MainWindow(object):
         # --- Action Buttons ---
         self.actionLayout = QHBoxLayout()
         self.btnAddFuel = QPushButton("+ เติมน้ำมัน", self.contentFrame)
-        self.btnAddFuel.setFixedSize(130, 40)
-        self.btnAddFuel.setCursor(Qt.PointingHandCursor)
+        self.btnAddFuel.setFixedSize(140, 42)
+        self.btnAddFuel.setCursor(QCursor(Qt.PointingHandCursor))
         self.btnAddFuel.setStyleSheet("""
-            QPushButton { background-color: #3b82f6; color: white; font-weight: bold; border-radius: 8px; border: none; }
-            QPushButton:hover { background-color: #2563eb; }
+            QPushButton { 
+                background-color: #3b82f6; color: white; font-weight: bold; border-radius: 8px; border: none; 
+            }
+            QPushButton:hover { background-color: #2563eb; margin-top: -2px; }
+            QPushButton:pressed { margin-top: 0px; }
         """)
         
         self.btnImport = QPushButton("นำเข้า CSV", self.contentFrame)
-        self.btnImport.setFixedSize(110, 40)
-        self.btnImport.setCursor(Qt.PointingHandCursor)
+        self.btnImport.setFixedSize(120, 42)
+        self.btnImport.setCursor(QCursor(Qt.PointingHandCursor))
         self.btnImport.setStyleSheet("""
-            QPushButton { background-color: #334155; color: white; border-radius: 8px; border: none; }
+            QPushButton { 
+                background-color: #334155; color: white; border-radius: 8px; border: none; 
+            }
             QPushButton:hover { background-color: #475569; }
         """)
 
@@ -192,6 +200,7 @@ class Ui_MainWindow(object):
         self.stackedWidget = QStackedWidget(self.contentFrame)
         self.stackedWidget.setStyleSheet("background-color: transparent;")
         
+        # Page 1: Home
         self.pageHome = QWidget()
         self.homeLayout = QVBoxLayout(self.pageHome)
         self.homeLayout.setContentsMargins(0, 0, 0, 0)
@@ -222,6 +231,9 @@ class Ui_MainWindow(object):
             }
             QTableWidget::item { padding: 10px; border-bottom: 1px solid #1e293b; }
             QTableWidget::item:selected { background-color: #334155; color: white; }
+            QScrollBar:vertical { background: #0f172a; width: 8px; margin: 0px; }
+            QScrollBar::handle:vertical { background: #475569; border-radius: 4px; min-height: 20px; }
+            QScrollBar::handle:vertical:hover { background: #64748b; }
         """)
         self.homeLayout.addWidget(self.fuelTable)
         self.stackedWidget.addWidget(self.pageHome)
