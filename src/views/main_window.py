@@ -2,7 +2,7 @@
 
 import sys
 from PySide6.QtWidgets import (QMainWindow, QGraphicsDropShadowEffect, QSizeGrip, 
-                               QButtonGroup, QMessageBox)
+                               QButtonGroup)
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QColor, QMouseEvent
 
@@ -17,29 +17,35 @@ class MainWindow(QMainWindow):
         self.setup_frameless_window()
         self.setup_connections()
         self.setup_sidebar_navigation()
+        
+        # ตัวแปรสำหรับลากหน้าต่าง
         self._old_pos = None
 
     def setup_frameless_window(self):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
-        # เงา (Shadow)
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(25)
-        shadow.setXOffset(0)
-        shadow.setYOffset(0)
-        shadow.setColor(QColor(0, 0, 0, 80))
-        # ใส่เงาที่ windowFrame แทน centralwidget เพื่อความเนียน
-        self.ui.windowFrame.setGraphicsEffect(shadow)
+        # Shadow Effect
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(25)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.shadow.setColor(QColor(0, 0, 0, 100))
+        self.ui.windowFrame.setGraphicsEffect(self.shadow)
         
-        # ปุ่มขยายหน้าต่าง (SizeGrip)
-        self.sizegrip = QSizeGrip(self.ui.windowFrame) # ใส่ใน windowFrame
+        # SizeGrip (ปุ่มขยายมุมขวาล่าง)
+        self.sizegrip = QSizeGrip(self.ui.windowFrame)
         self.sizegrip.setGeometry(100, 100, 25, 25)
-        self.sizegrip.setStyleSheet("background: transparent;") # ซ่อนพื้นหลัง size grip
+        self.sizegrip.setStyleSheet("background: transparent;")
+        # [สำคัญ] สั่งให้ SizeGrip ลอยอยู่บนสุด ป้องกันตารางบัง
+        self.sizegrip.raise_()
 
     def setup_connections(self):
         self.ui.btnClose.clicked.connect(self.close)
-        self.ui.btnMinimize.clicked.connect(self.showMinimized) # [NEW] เพิ่มปุ่มย่อ
+        self.ui.btnMinimize.clicked.connect(self.showMinimized)
+        
+        # [NEW] เชื่อมปุ่ม Maximize/Restore
+        self.ui.btnMaximize.clicked.connect(self.toggle_maximize)
 
         self.ui.btnAddFuel.clicked.connect(self.on_click_add_fuel)
         self.ui.btnImport.clicked.connect(self.on_click_import)
@@ -67,17 +73,45 @@ class MainWindow(QMainWindow):
             self.ui.stackedWidget.setCurrentWidget(self.ui.pageSettings)
         
     def on_click_add_fuel(self):
-        print("Opening Add Fuel Dialog...")
+        print("Add Fuel clicked")
 
     def on_click_import(self):
-        print("Opening Import Dialog...")
+        print("Import clicked")
 
-    # --- Mouse Events for Dragging ---
+    # --- [Logic ใหม่] การจัดการ Maximize / Restore ---
+    def toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+            self.ui.btnMaximize.setText("☐") # ไอคอนสี่เหลี่ยม (ขยาย)
+            # คืนค่า Margin และ Rounded Corners
+            self.ui.shadowLayout.setContentsMargins(10, 10, 10, 10)
+            self.ui.windowFrame.setStyleSheet("""
+                QFrame#windowFrame {
+                    background-color: #0f172a; 
+                    border-radius: 15px;
+                    border: 1px solid #334155;
+                }
+            """)
+        else:
+            self.showMaximized()
+            self.ui.btnMaximize.setText("❐") # ไอคอนซ้อนกัน (ย่อกลับ)
+            # ลบ Margin ออกเพื่อให้เต็มจอจริงๆ และลบขอบมน
+            self.ui.shadowLayout.setContentsMargins(0, 0, 0, 0)
+            self.ui.windowFrame.setStyleSheet("""
+                QFrame#windowFrame {
+                    background-color: #0f172a; 
+                    border-radius: 0px;
+                    border: none;
+                }
+            """)
+
+    # --- Mouse Events ---
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
-            # ยอมให้ลากเฉพาะเมื่อกดที่ Title Bar หรือ Sidebar เท่านั้น (กันไม่ให้ลากเวลากดตาราง)
-            # แต่เพื่อความง่าย ให้ลากได้ทั้งหน้าต่างยกเว้นปุ่ม
-            self._old_pos = event.globalPosition().toPoint()
+            # [Fix UX] อนุญาตให้ลากเฉพาะเมื่อกดที่ส่วนบน (Header) เท่านั้น (ความสูง < 60px)
+            # และต้องไม่ใช่สถานะ Maximize
+            if event.position().y() < 60 and not self.isMaximized():
+                self._old_pos = event.globalPosition().toPoint()
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if self._old_pos:
@@ -87,10 +121,16 @@ class MainWindow(QMainWindow):
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         self._old_pos = None
+        
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        # [New UX] ดับเบิลคลิกที่ Header เพื่อ Maximize
+        if event.button() == Qt.LeftButton and event.position().y() < 60:
+            self.toggle_maximize()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, 'sizegrip'):
             rect = self.ui.windowFrame.rect()
-            # ย้ายปุ่มขยายไปมุมขวาล่างของ Frame
+            # ขยับ SizeGrip และสั่งให้ลอยบนสุดเสมอ
             self.sizegrip.move(rect.width() - 25, rect.height() - 25)
+            self.sizegrip.raise_()
