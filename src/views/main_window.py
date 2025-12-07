@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.shadow.setBlurRadius(20)
         self.shadow.setXOffset(0)
         self.shadow.setYOffset(0)
-        self.shadow.setColor(QColor(0, 0, 0, 100))
+        self.shadow.setColor(QColor(0, 0, 0, 140))
         self.ui.windowFrame.setGraphicsEffect(self.shadow)
         
         self.sizegrip = QSizeGrip(self.ui.windowFrame)
@@ -117,14 +117,22 @@ class MainWindow(QMainWindow):
                 # ถ้า User ลากชนขอบบน -> ปรับ UI เป็น Maximize
                 self.ui.btnMaximize.setText("❐")
                 self.ui.shadowLayout.setContentsMargins(0, 0, 0, 0)
-                self.ui.windowFrame.setStyleSheet("QFrame#windowFrame { background-color: #0f172a; border-radius: 0px; border: none; }")
+                self.ui.windowFrame.setStyleSheet(
+                    "QFrame#windowFrame {"
+                    " background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b1220, stop:1 #0d1727);"
+                    " border-radius: 0px; border: none; }"
+                )
                 self.ui.windowFrame.setGraphicsEffect(None)
                 self.sizegrip.hide()
             else:
                 # ถ้า User ดึงกลับมา -> ปรับ UI เป็น Normal
                 self.ui.btnMaximize.setText("☐")
                 self.ui.shadowLayout.setContentsMargins(10, 10, 10, 10)
-                self.ui.windowFrame.setStyleSheet("QFrame#windowFrame { background-color: #0f172a; border-radius: 12px; border: 1px solid #334155; }")
+                self.ui.windowFrame.setStyleSheet(
+                    "QFrame#windowFrame {"
+                    " background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b1220, stop:1 #0d1727);"
+                    " border-radius: 14px; border: 1px solid #1f2937; }"
+                )
                 self.ui.windowFrame.setGraphicsEffect(self.shadow)
                 self.sizegrip.show()
         super().changeEvent(event)
