@@ -79,7 +79,7 @@ def run(argv: list[str] | None = None) -> None:
             raise SystemExit("FT_CLOUD_DIR not set")
 
         StorageService().sync_to_cloud(
-            Path.home() / ".fueltracker" / "backups",
+            env.db_path.parent / "backups",
             env.ft_cloud_dir,
         )
         return

@@ -5,7 +5,8 @@
 
 ## การสำรองข้อมูลอัตโนมัติ
 เมื่อปิดโปรแกรม ระบบจะคัดลอกฐานข้อมูลไปไว้ที่
-`~/.fueltracker/backups/YY-MM-DD_HHMM.db` เก็บไว้สูงสุด 30 ชุด
+`appdirs.user_data_dir("FuelTracker", "YourOrg")/backups/YY-MM-DD_HHMM.db`
+เก็บไว้สูงสุด 30 ชุด
 (ปรับจำนวนได้ด้วย `StorageService.auto_backup(max_backups=n)`) และลบไฟล์เก่ากว่านั้นให้เอง
 
 ถ้าเรียก `StorageService.auto_backup(encrypted=True)` และติดตั้ง SQLCipher จะสร้างไฟล์สำรองแบบเข้ารหัส
