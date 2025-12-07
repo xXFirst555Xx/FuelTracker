@@ -17,7 +17,6 @@ from decimal import Decimal
 from contextlib import closing
 
 from ..settings import Settings
-from appdirs import user_data_dir
 
 try:
     from pysqlcipher3 import dbapi2 as sqlcipher
@@ -141,7 +140,7 @@ class StorageService:
             SQLModel.metadata.create_all(self.engine, tables=list(ALL_TABLES))
         else:
             if db_path is None:
-                db_path = Path(user_data_dir("FuelTracker", "YourOrg")) / "fuel.db"
+                db_path = Settings().db_path
             db_path = Path(db_path)
             db_path.parent.mkdir(parents=True, exist_ok=True)
             if password is None:
@@ -636,8 +635,8 @@ class StorageService:
         now:
             Datetime value used in the backup file name. Defaults to ``datetime.now()``.
         backup_dir:
-            Directory to place the backup in. ``~/.fueltracker/backups`` is used if
-            not provided.
+            Directory to place the backup in. ``<db_path_parent>/backups`` is used
+            if not provided.
         encrypted:
             When ``True`` and SQLCipher is available, encrypt the backup with the
             same password as the main database.
@@ -657,8 +656,7 @@ class StorageService:
 
         now = now or datetime.now()
 
-        home_path = Path.home()
-        backup_dir = Path(backup_dir or home_path / ".fueltracker" / "backups")
+        backup_dir = Path(backup_dir or self._db_path.parent / "backups")
         backup_dir.mkdir(parents=True, exist_ok=True)
 
         backup_path = backup_dir / now.strftime("%y-%m-%d_%H%M.db")

@@ -17,6 +17,19 @@ from src.services.storage_service import _SQLCIPHER_AVAILABLE
 from src.models import Vehicle
 
 
+def test_default_backup_dir(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "src.settings.user_data_dir", lambda *_args, **_kwargs: str(tmp_path / "data")
+    )
+
+    storage = StorageService()
+    backup = storage.auto_backup(now=datetime(2024, 1, 1, 0, 0))
+
+    expected_data_dir = tmp_path / "data"
+    assert storage._db_path == expected_data_dir / "fuel.db"
+    assert backup.parent == expected_data_dir / "backups"
+
+
 def test_backup_rotation(tmp_path, monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda *_args, **_kwargs: None)
     db = tmp_path / "fuel.db"
