@@ -2,11 +2,17 @@
 
 import sys
 from PySide6.QtWidgets import (QMainWindow, QGraphicsDropShadowEffect, QSizeGrip, 
-                               QButtonGroup, QApplication)
-from PySide6.QtCore import Qt, QPoint
+                               QButtonGroup, QApplication, QMessageBox, QTableWidgetItem)
+from PySide6.QtCore import Qt, QPoint, QEvent
 from PySide6.QtGui import QColor, QMouseEvent
 
 from src.views.ui_main_window import Ui_MainWindow
+
+# Import Dialogs (ใช้ try-except กัน error กรณีไฟล์ยังไม่พร้อม)
+try:
+    from src.views.dialogs.add_entry_dialog import AddEntryDialog
+except ImportError:
+    AddEntryDialog = None
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -14,41 +20,35 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # ตั้งค่า Frameless และอื่นๆ
         self.setup_frameless_window()
         self.setup_connections()
         self.setup_sidebar_navigation()
-        
-        # ตัวแปรสำหรับลากหน้าต่าง
         self._old_pos = None
 
+        # [NEW] โหลดข้อมูลตัวอย่างทันทีที่เปิด
+        self.populate_dummy_data()
+
     def setup_frameless_window(self):
-        """ตั้งค่าหน้าต่างไร้ขอบและเงา"""
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
-        # สร้างเงา (Shadow)
         self.shadow = QGraphicsDropShadowEffect(self)
         self.shadow.setBlurRadius(20)
         self.shadow.setXOffset(0)
         self.shadow.setYOffset(0)
         self.shadow.setColor(QColor(0, 0, 0, 100))
-        
-        # ใส่เงาที่ windowFrame แทนตัว Main เพื่อไม่ให้เงาขาดเวลาขยาย
         self.ui.windowFrame.setGraphicsEffect(self.shadow)
         
-        # SizeGrip (ปุ่มดึงขยายมุมขวาล่าง)
         self.sizegrip = QSizeGrip(self.ui.windowFrame)
         self.sizegrip.setFixedSize(20, 20)
         self.sizegrip.setStyleSheet("background: transparent;")
-        self.sizegrip.raise_() # ยกให้ลอยเหนือ widget อื่นเสมอ
+        self.sizegrip.raise_()
 
     def setup_connections(self):
         self.ui.btnClose.clicked.connect(self.close)
         self.ui.btnMinimize.clicked.connect(self.showMinimized)
         self.ui.btnMaximize.clicked.connect(self.toggle_maximize)
 
-        # เชื่อมปุ่ม Action
         self.ui.btnAddFuel.clicked.connect(self.on_click_add_fuel)
         self.ui.btnImport.clicked.connect(self.on_click_import)
 
@@ -62,11 +62,9 @@ class MainWindow(QMainWindow):
         self.nav_group.buttonClicked.connect(self.on_navigation_changed)
 
     def on_navigation_changed(self, button):
-        # เปลี่ยน Title ตามชื่อปุ่ม
         title_text = button.text().split('(')[0].strip()
         self.ui.pageTitle.setText(title_text)
 
-        # เปลี่ยนหน้า StackedWidget
         if button == self.ui.btnHome:
             self.ui.stackedWidget.setCurrentWidget(self.ui.pageHome)
         elif button == self.ui.btnReports:
@@ -77,55 +75,69 @@ class MainWindow(QMainWindow):
             self.ui.stackedWidget.setCurrentWidget(self.ui.pageSettings)
         
     def on_click_add_fuel(self):
-        print("Add Fuel Clicked")
-        # TODO: เปิด Dialog เพิ่มข้อมูล
+        """เปิดหน้าต่างบันทึกข้อมูล"""
+        if AddEntryDialog:
+            dialog = AddEntryDialog(self)
+            if dialog.exec():
+                print("Saved!")
+                # self.refresh_data() # โหลดข้อมูลใหม่ตรงนี้
+        else:
+            QMessageBox.warning(self, "Warning", "AddEntryDialog not found/imported.")
 
     def on_click_import(self):
         print("Import Clicked")
-        # TODO: เปิด Dialog นำเข้าข้อมูล
 
-    # --- Logic จัดการ Maximize/Restore ---
+    # --- [NEW] Dummy Data Mockup ---
+    def populate_dummy_data(self):
+        """ใส่ข้อมูลตัวอย่างเพื่อให้ UI ดูสวยงามทันที"""
+        # อัปเดต Card
+        self.ui.lblTotalVal.setText("฿ 4,500.00")
+        self.ui.lblLitersVal.setText("125.50 L")
+        self.ui.lblAvgVal.setText("฿ 35.85")
+
+        # อัปเดตตาราง
+        data = [
+            ("2023-10-01", "Toyota Camry", "40.5 L", "35.50", "1,437.75"),
+            ("2023-10-08", "Honda Civic", "35.0 L", "36.00", "1,260.00"),
+            ("2023-10-15", "Toyota Camry", "50.0 L", "35.20", "1,760.00"),
+        ]
+        self.ui.fuelTable.setRowCount(len(data))
+        for row, (d, v, l, p, t) in enumerate(data):
+            self.ui.fuelTable.setItem(row, 0, QTableWidgetItem(d))
+            self.ui.fuelTable.setItem(row, 1, QTableWidgetItem(v))
+            self.ui.fuelTable.setItem(row, 2, QTableWidgetItem(l))
+            self.ui.fuelTable.setItem(row, 3, QTableWidgetItem(p))
+            self.ui.fuelTable.setItem(row, 4, QTableWidgetItem(t))
+
+    # --- Window State Management ---
+    def changeEvent(self, event):
+        """[PRO TIP] จัดการกรณี Windows Snap (ลากชนขอบบน)"""
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMaximized:
+                # ถ้า User ลากชนขอบบน -> ปรับ UI เป็น Maximize
+                self.ui.btnMaximize.setText("❐")
+                self.ui.shadowLayout.setContentsMargins(0, 0, 0, 0)
+                self.ui.windowFrame.setStyleSheet("QFrame#windowFrame { background-color: #0f172a; border-radius: 0px; border: none; }")
+                self.ui.windowFrame.setGraphicsEffect(None)
+                self.sizegrip.hide()
+            else:
+                # ถ้า User ดึงกลับมา -> ปรับ UI เป็น Normal
+                self.ui.btnMaximize.setText("☐")
+                self.ui.shadowLayout.setContentsMargins(10, 10, 10, 10)
+                self.ui.windowFrame.setStyleSheet("QFrame#windowFrame { background-color: #0f172a; border-radius: 12px; border: 1px solid #334155; }")
+                self.ui.windowFrame.setGraphicsEffect(self.shadow)
+                self.sizegrip.show()
+        super().changeEvent(event)
+
     def toggle_maximize(self):
         if self.isMaximized():
-            # คืนค่าหน้าต่างปกติ
             self.showNormal()
-            self.ui.btnMaximize.setText("☐")
-            
-            # คืนค่า Margin ให้มีที่ว่างสำหรับเงา
-            self.ui.shadowLayout.setContentsMargins(10, 10, 10, 10)
-            self.ui.windowFrame.setStyleSheet("""
-                QFrame#windowFrame {
-                    background-color: #0f172a; 
-                    border-radius: 12px;
-                    border: 1px solid #334155;
-                }
-            """)
-            # เปิดเงา และ ปุ่มขยาย
-            self.ui.windowFrame.setGraphicsEffect(self.shadow)
-            self.sizegrip.show()
         else:
-            # ขยายเต็มจอ
             self.showMaximized()
-            self.ui.btnMaximize.setText("❐")
-            
-            # ลบ Margin ออกเพื่อให้เต็มจอจริงๆ
-            self.ui.shadowLayout.setContentsMargins(0, 0, 0, 0)
-            # ลบขอบมนออกให้เป็นสี่เหลี่ยม
-            self.ui.windowFrame.setStyleSheet("""
-                QFrame#windowFrame {
-                    background-color: #0f172a; 
-                    border-radius: 0px;
-                    border: none;
-                }
-            """)
-            # ปิดเงา (ประหยัด Performance) และซ่อนปุ่มขยาย
-            self.ui.windowFrame.setGraphicsEffect(None)
-            self.sizegrip.hide()
 
-    # --- Mouse Events (ลากหน้าต่าง) ---
+    # --- Mouse Events ---
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.LeftButton:
-            # ยอมให้ลากเฉพาะเมื่อกดที่ Header ด้านบน (y < 60px) และไม่ได้ Maximize อยู่
             if event.position().y() < 60 and not self.isMaximized():
                 self._old_pos = event.globalPosition().toPoint()
 
@@ -139,13 +151,11 @@ class MainWindow(QMainWindow):
         self._old_pos = None
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
-        # ดับเบิลคลิกที่ Header เพื่อขยาย/ย่อ
         if event.button() == Qt.LeftButton and event.position().y() < 60:
             self.toggle_maximize()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # ย้ายปุ่ม SizeGrip ไปมุมขวาล่างเสมอ
         if hasattr(self, 'sizegrip') and self.sizegrip.isVisible():
             rect = self.ui.windowFrame.rect()
             self.sizegrip.move(rect.width() - 25, rect.height() - 25)
