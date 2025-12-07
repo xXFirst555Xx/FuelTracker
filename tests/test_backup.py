@@ -97,6 +97,51 @@ def test_compressed_backup(tmp_path):
         conn.execute("SELECT name FROM sqlite_master").fetchall()
 
 
+def test_compressed_backup_removes_uncompressed(tmp_path):
+    db = tmp_path / "fuel.db"
+    storage = StorageService(db_path=db)
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+
+    backup = storage.auto_backup(
+        now=datetime(2024, 1, 1, 12, 0), backup_dir=tmp_path, compress=True
+    )
+
+    assert backup.name == "24-01-01_1200.db.gz"
+    files = sorted(p.name for p in tmp_path.glob("*.db*"))
+    assert backup.name in files
+    assert "24-01-01_1200.db" not in files
+
+
+def test_auto_backup_removes_old_files_when_over_quota(tmp_path):
+    db = tmp_path / "fuel.db"
+    storage = StorageService(db_path=db)
+    storage.add_vehicle(
+        Vehicle(name="v", vehicle_type="t", license_plate="x", tank_capacity_liters=1)
+    )
+
+    max_backups = 3
+    base_time = datetime(2024, 1, 1, 0, 0)
+    for i in range(5):
+        name = (base_time + timedelta(minutes=i)).strftime("%y-%m-%d_%H%M.db")
+        (tmp_path / name).write_text("dummy")
+
+    storage.auto_backup(
+        now=base_time + timedelta(minutes=10),
+        backup_dir=tmp_path,
+        max_backups=max_backups,
+    )
+
+    backups = sorted(
+        p.name for p in tmp_path.glob("*.db*") if p.name != db.name
+    )
+    assert len(backups) == max_backups
+    assert "24-01-01_0000.db" not in backups
+    assert "24-01-01_0001.db" not in backups
+    assert "24-01-01_0002.db" not in backups
+
+
 def test_daily_backup_timer(qapp, tmp_path, monkeypatch):
     engine = create_engine(
         "sqlite:///:memory:",
